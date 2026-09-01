@@ -119,6 +119,8 @@ export interface Character {
     lineageSkillChoices?: SkillName[]
     lineageSavingThrowChoices?: AbilityName[]
     lineageToolChoices?: string[]
+    manualSavingThrows?: AbilityName[]
+    manualSkills?: SkillName[]
 
     armorName: string
     weaponNotes: string

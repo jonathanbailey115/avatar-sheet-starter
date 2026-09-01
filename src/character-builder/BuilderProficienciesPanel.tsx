@@ -1,10 +1,30 @@
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
-import type { AbilityName, Character, SkillName } from '../types/schema'
+import {
+    isSavesMigrated,
+    isSkillsMigrated,
+    migrateSavingThrowsOnToggle,
+    migrateSkillsOnToggle,
+    resolveGrantedSavingThrows,
+    resolveGrantedSkills,
+    resolveProficiencyContext,
+    toggleMember,
+} from '../lib/proficiencies'
+import type {
+    AbilityName,
+    Background,
+    Character,
+    CharacterClass,
+    Lineage,
+    SkillName,
+} from '../types/schema'
 
 type BuilderProficienciesPanelProps = {
     character: Character
     setCharacter: Dispatch<SetStateAction<Character>>
+    editableClasses: CharacterClass[]
+    editableLineages: Lineage[]
+    editableBackgrounds: Background[]
 }
 
 const savingThrowOptions: Array<{ key: AbilityName; label: string }> = [
@@ -81,31 +101,68 @@ function formatAbilityName(ability: AbilityName) {
 export function BuilderProficienciesPanel({
     character,
     setCharacter,
+    editableClasses,
+    editableLineages,
+    editableBackgrounds,
 }: BuilderProficienciesPanelProps) {
     const proficiencyBonus = getProficiencyBonus(character.level)
 
     const toggleSavingThrow = (ability: AbilityName) => {
         setCharacter((current) => {
-            const exists = current.savingThrowProficiencies.includes(ability)
+            const ctx = resolveProficiencyContext(
+                current,
+                editableClasses,
+                editableLineages,
+                editableBackgrounds,
+            )
+
+            if (!isSavesMigrated(current)) {
+                return {
+                    ...current,
+                    manualSavingThrows: migrateSavingThrowsOnToggle(current, ctx, ability),
+                }
+            }
+
+            const manualSaves = current.manualSavingThrows ?? []
+            const grantedSaves = resolveGrantedSavingThrows(current, ctx)
+
+            if (!manualSaves.includes(ability) && grantedSaves.includes(ability)) {
+                return current
+            }
 
             return {
                 ...current,
-                savingThrowProficiencies: exists
-                    ? current.savingThrowProficiencies.filter((item) => item !== ability)
-                    : [...current.savingThrowProficiencies, ability],
+                manualSavingThrows: toggleMember(manualSaves, ability),
             }
         })
     }
 
     const toggleSkill = (skill: SkillName) => {
         setCharacter((current) => {
-            const exists = current.skillProficiencies.includes(skill)
+            const ctx = resolveProficiencyContext(
+                current,
+                editableClasses,
+                editableLineages,
+                editableBackgrounds,
+            )
+
+            if (!isSkillsMigrated(current)) {
+                return {
+                    ...current,
+                    manualSkills: migrateSkillsOnToggle(current, ctx, skill),
+                }
+            }
+
+            const manualSkillPicks = current.manualSkills ?? []
+            const grantedSkillPicks = resolveGrantedSkills(current, ctx)
+
+            if (!manualSkillPicks.includes(skill) && grantedSkillPicks.includes(skill)) {
+                return current
+            }
 
             return {
                 ...current,
-                skillProficiencies: exists
-                    ? current.skillProficiencies.filter((item) => item !== skill)
-                    : [...current.skillProficiencies, skill],
+                manualSkills: toggleMember(manualSkillPicks, skill),
             }
         })
     }

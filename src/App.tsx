@@ -12,6 +12,12 @@ import {
     backgrounds,
 } from './data/seed'
 import { generateNpc } from './lib/generator'
+import {
+    deriveSavingThrowProficiencies,
+    deriveSkillProficiencies,
+    isSameSequence,
+    resolveProficiencyContext,
+} from './lib/proficiencies'
 import { bendingTypes, nations } from './types/schema'
 import { CampaignSummaryPanel } from './campaign-data/CampaignSummaryPanel'
 import { LineagesPanel } from './campaign-data/LineagesPanel'
@@ -753,20 +759,17 @@ export default function App() {
     }, [editableTechniques])
 
     useEffect(() => {
-        const selectedClass = editableClasses.find(
-            (item) => item.id === character.classId,
-        )
-
         setCharacter((current) => {
-            const nextSavingThrows = selectedClass?.savingThrows ?? []
+            const ctx = resolveProficiencyContext(
+                current,
+                editableClasses,
+                editableLineages,
+                [],
+            )
 
-            const isSame =
-                nextSavingThrows.length === current.savingThrowProficiencies.length &&
-                nextSavingThrows.every(
-                    (ability, index) => ability === current.savingThrowProficiencies[index],
-                )
+            const nextSavingThrows = deriveSavingThrowProficiencies(current, ctx)
 
-            if (isSame) {
+            if (isSameSequence(nextSavingThrows, current.savingThrowProficiencies)) {
                 return current
             }
 
@@ -775,28 +778,27 @@ export default function App() {
                 savingThrowProficiencies: nextSavingThrows,
             }
         })
-    }, [character.classId, editableClasses])
+    }, [
+        character.classId,
+        character.lineageId,
+        character.lineageSavingThrowChoices,
+        character.manualSavingThrows,
+        editableClasses,
+        editableLineages,
+    ])
 
     useEffect(() => {
-        const selectedBackground = editableBackgrounds.find(
-            (item) => item.id === character.backgroundId,
-        )
-
         setCharacter((current) => {
-            const nextSkillProficiencies = Array.from(
-                new Set([
-                    ...current.classSkillChoices,
-                    ...(selectedBackground?.skillProficiencies ?? []),
-                ]),
+            const ctx = resolveProficiencyContext(
+                current,
+                editableClasses,
+                editableLineages,
+                editableBackgrounds,
             )
 
-            const isSame =
-                nextSkillProficiencies.length === current.skillProficiencies.length &&
-                nextSkillProficiencies.every(
-                    (skill, index) => skill === current.skillProficiencies[index],
-                )
+            const nextSkillProficiencies = deriveSkillProficiencies(current, ctx)
 
-            if (isSame) {
+            if (isSameSequence(nextSkillProficiencies, current.skillProficiencies)) {
                 return current
             }
 
@@ -805,7 +807,17 @@ export default function App() {
                 skillProficiencies: nextSkillProficiencies,
             }
         })
-    }, [character.backgroundId, character.classSkillChoices, editableBackgrounds])
+    }, [
+        character.classId,
+        character.backgroundId,
+        character.classSkillChoices,
+        character.lineageId,
+        character.lineageSkillChoices,
+        character.manualSkills,
+        editableClasses,
+        editableBackgrounds,
+        editableLineages,
+    ])
 
     return (
         <main className="app-shell">
@@ -999,6 +1011,9 @@ export default function App() {
                         <BuilderProficienciesPanel
                             character={character}
                             setCharacter={setCharacter}
+                            editableClasses={editableClasses}
+                            editableLineages={editableLineages}
+                            editableBackgrounds={editableBackgrounds}
                         />
                     )}
 

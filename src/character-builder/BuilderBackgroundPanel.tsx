@@ -32,13 +32,6 @@ export function BuilderBackgroundPanel({
             editableBackgrounds.find((item) => item.id === backgroundId) ?? null
 
         setCharacter((current) => {
-            const filteredSkillProficiencies = current.skillProficiencies.filter(
-                (skill) =>
-                    !editableBackgrounds.some((background) =>
-                        background.skillProficiencies.includes(skill),
-                    ),
-            )
-
             const filteredToolProficiencies = current.toolProficiencies.filter(
                 (tool) =>
                     !editableBackgrounds.some((background) =>
@@ -57,7 +50,6 @@ export function BuilderBackgroundPanel({
                 return {
                     ...current,
                     backgroundId: undefined,
-                    skillProficiencies: filteredSkillProficiencies,
                     toolProficiencies: filteredToolProficiencies,
                     languages: filteredLanguages,
                 }
@@ -66,12 +58,6 @@ export function BuilderBackgroundPanel({
             return {
                 ...current,
                 backgroundId: nextBackground.id,
-                skillProficiencies: Array.from(
-                    new Set([
-                        ...filteredSkillProficiencies,
-                        ...nextBackground.skillProficiencies,
-                    ]),
-                ),
                 toolProficiencies: Array.from(
                     new Set([
                         ...filteredToolProficiencies,
