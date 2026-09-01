@@ -8,6 +8,9 @@ dist/
 .vs/
 .vscode/
 
+# ATLA Homebrew reference folder
+reference/
+
 # Environment files and secrets
 .env
 .env.*
