@@ -175,10 +175,22 @@ export default function App() {
                 (style) => style.name === current.style,
             )
 
+            if (currentLineageStillValid) {
+                return {
+                    ...current,
+                    nation,
+                    lineageId: current.lineageId,
+                    style: currentStyleStillValid ? current.style : '',
+                }
+            }
+
             return {
                 ...current,
                 nation,
-                lineageId: currentLineageStillValid ? current.lineageId : '',
+                lineageId: '',
+                lineageSavingThrowChoices: [],
+                lineageSkillChoices: [],
+                lineageToolChoices: [],
                 style: currentStyleStillValid ? current.style : '',
             }
         })
@@ -710,10 +722,17 @@ export default function App() {
     }
 
     useEffect(() => {
+        if (character.lineageId === '') {
+            return
+        }
+
         if (!filteredLineages.some((lineage) => lineage.id === character.lineageId)) {
             setCharacter((current) => ({
                 ...current,
                 lineageId: '',
+                lineageSavingThrowChoices: [],
+                lineageSkillChoices: [],
+                lineageToolChoices: [],
             }))
         }
     }, [filteredLineages, character.lineageId])
@@ -997,6 +1016,7 @@ export default function App() {
                             nations={nations}
                             filteredLineages={filteredLineages}
                             handleNationChange={handleNationChange}
+                            editableFeatures={editableFeatures}
                         />
                     )}
 
