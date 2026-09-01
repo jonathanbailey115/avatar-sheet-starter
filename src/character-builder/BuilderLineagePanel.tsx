@@ -1,7 +1,12 @@
 import { useMemo } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
-import { applyChoiceLimit, isSavesMigrated, isSkillsMigrated } from '../lib/proficiencies'
+import {
+    applyChoiceLimit,
+    isSavesMigrated,
+    isSkillsMigrated,
+    isToolsMigrated,
+} from '../lib/proficiencies'
 import type {
     AbilityName,
     Character,
@@ -167,6 +172,58 @@ export function BuilderLineagePanel({
         })
     }
 
+    const toolChoiceSet = selectedLineage?.toolChoices
+
+    const hasToolChoices =
+        toolChoiceSet !== undefined &&
+        toolChoiceSet.choose > 0 &&
+        toolChoiceSet.options.length > 0
+
+    const toolChoiceCap = toolChoiceSet?.choose ?? 0
+    const toolChoiceOptions = toolChoiceSet?.options ?? []
+
+    const selectedLineageToolChoices = applyChoiceLimit(
+        character.lineageToolChoices,
+        toolChoiceSet,
+    )
+
+    const toolsCaption = isToolsMigrated(character)
+        ? 'These selections are included in your current tool proficiencies.'
+        : 'Lineage tool choices are recorded here. Tool proficiency integration begins after you edit tools in the Proficiencies panel.'
+
+    const toggleLineageToolChoice = (tool: string) => {
+        const choiceSet = selectedLineage?.toolChoices
+
+        if (!choiceSet) {
+            return
+        }
+
+        setCharacter((current) => {
+            const currentSelections = applyChoiceLimit(
+                current.lineageToolChoices,
+                choiceSet,
+            )
+
+            if (currentSelections.includes(tool)) {
+                return {
+                    ...current,
+                    lineageToolChoices: (current.lineageToolChoices ?? []).filter(
+                        (item) => item !== tool,
+                    ),
+                }
+            }
+
+            if (currentSelections.length >= choiceSet.choose) {
+                return current
+            }
+
+            return {
+                ...current,
+                lineageToolChoices: [...(current.lineageToolChoices ?? []), tool],
+            }
+        })
+    }
+
     return (
         <div className="grid">
             <SectionCard title="Nation and Lineage">
@@ -295,6 +352,41 @@ export function BuilderLineagePanel({
                                         onChange={() => toggleLineageSkillChoice(skill)}
                                     />
                                     <span>{skill}</span>
+                                </label>
+                            )
+                        })}
+                    </div>
+                </SectionCard>
+            )}
+
+            {hasToolChoices && (
+                <SectionCard title="Lineage Tool Choices">
+                    <p>
+                        Choose {toolChoiceCap} tool option
+                        {toolChoiceCap === 1 ? '' : 's'}:
+                    </p>
+                    <p>
+                        Selected: {selectedLineageToolChoices.length} / {toolChoiceCap}
+                    </p>
+                    <p>
+                        <small>{toolsCaption}</small>
+                    </p>
+                    <div className="checkbox-list">
+                        {toolChoiceOptions.map((tool) => {
+                            const isChecked = selectedLineageToolChoices.includes(tool)
+                            const disableUnchecked =
+                                !isChecked &&
+                                selectedLineageToolChoices.length >= toolChoiceCap
+
+                            return (
+                                <label key={tool} className="checkbox-item">
+                                    <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        disabled={disableUnchecked}
+                                        onChange={() => toggleLineageToolChoice(tool)}
+                                    />
+                                    <span>{tool}</span>
                                 </label>
                             )
                         })}

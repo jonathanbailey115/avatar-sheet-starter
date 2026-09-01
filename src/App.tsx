@@ -13,6 +13,8 @@ import {
 } from './data/seed'
 import { generateNpc } from './lib/generator'
 import {
+    deriveMigratedLanguages,
+    deriveMigratedTools,
     deriveSavingThrowProficiencies,
     deriveSkillProficiencies,
     isSameSequence,
@@ -834,6 +836,71 @@ export default function App() {
         character.lineageSkillChoices,
         character.manualSkills,
         editableClasses,
+        editableBackgrounds,
+        editableLineages,
+    ])
+
+    useEffect(() => {
+        setCharacter((current) => {
+            if (current.manualTools === undefined) {
+                return current
+            }
+
+            const ctx = resolveProficiencyContext(
+                current,
+                editableClasses,
+                editableLineages,
+                editableBackgrounds,
+            )
+
+            const nextTools = deriveMigratedTools(current, ctx)
+
+            if (isSameSequence(nextTools, current.toolProficiencies)) {
+                return current
+            }
+
+            return {
+                ...current,
+                toolProficiencies: nextTools,
+            }
+        })
+    }, [
+        character.backgroundId,
+        character.lineageId,
+        character.lineageToolChoices,
+        character.manualTools,
+        editableBackgrounds,
+        editableLineages,
+    ])
+
+    useEffect(() => {
+        setCharacter((current) => {
+            if (current.manualLanguages === undefined) {
+                return current
+            }
+
+            const ctx = resolveProficiencyContext(
+                current,
+                editableClasses,
+                editableLineages,
+                editableBackgrounds,
+            )
+
+            const nextLanguages = deriveMigratedLanguages(current, ctx)
+
+            if (isSameSequence(nextLanguages, current.languages)) {
+                return current
+            }
+
+            return {
+                ...current,
+                languages: nextLanguages,
+            }
+        })
+    }, [
+        character.backgroundId,
+        character.lineageId,
+        character.manualLanguages,
         editableBackgrounds,
         editableLineages,
     ])

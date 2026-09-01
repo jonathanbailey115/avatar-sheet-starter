@@ -1,7 +1,50 @@
 import { useMemo } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
+import { isLanguagesMigrated, isToolsMigrated } from '../lib/proficiencies'
 import type { Background, Character, Feature } from '../types/schema'
+
+function legacyToolsAfterBackgroundChange(
+    current: Character,
+    editableBackgrounds: Background[],
+    nextBackground: Background | null,
+): string[] {
+    const filtered = current.toolProficiencies.filter(
+        (tool) =>
+            !editableBackgrounds.some((background) =>
+                background.toolProficiencies.includes(tool),
+            ),
+    )
+
+    if (!nextBackground) {
+        return filtered
+    }
+
+    return Array.from(
+        new Set([...filtered, ...nextBackground.toolProficiencies]),
+    )
+}
+
+function legacyLanguagesAfterBackgroundChange(
+    current: Character,
+    editableBackgrounds: Background[],
+    nextBackground: Background | null,
+): string[] {
+    const filtered = current.languages.filter(
+        (language) =>
+            !editableBackgrounds.some((background) =>
+                background.languages.includes(language),
+            ),
+    )
+
+    if (!nextBackground) {
+        return filtered
+    }
+
+    return Array.from(
+        new Set([...filtered, ...nextBackground.languages]),
+    )
+}
 
 type BuilderBackgroundPanelProps = {
     character: Character
@@ -32,44 +75,31 @@ export function BuilderBackgroundPanel({
             editableBackgrounds.find((item) => item.id === backgroundId) ?? null
 
         setCharacter((current) => {
-            const filteredToolProficiencies = current.toolProficiencies.filter(
-                (tool) =>
-                    !editableBackgrounds.some((background) =>
-                        background.toolProficiencies.includes(tool),
-                    ),
-            )
+            const legacyToolUpdates = isToolsMigrated(current)
+                ? {}
+                : {
+                      toolProficiencies: legacyToolsAfterBackgroundChange(
+                          current,
+                          editableBackgrounds,
+                          nextBackground,
+                      ),
+                  }
 
-            const filteredLanguages = current.languages.filter(
-                (language) =>
-                    !editableBackgrounds.some((background) =>
-                        background.languages.includes(language),
-                    ),
-            )
-
-            if (!nextBackground) {
-                return {
-                    ...current,
-                    backgroundId: undefined,
-                    toolProficiencies: filteredToolProficiencies,
-                    languages: filteredLanguages,
-                }
-            }
+            const legacyLanguageUpdates = isLanguagesMigrated(current)
+                ? {}
+                : {
+                      languages: legacyLanguagesAfterBackgroundChange(
+                          current,
+                          editableBackgrounds,
+                          nextBackground,
+                      ),
+                  }
 
             return {
                 ...current,
-                backgroundId: nextBackground.id,
-                toolProficiencies: Array.from(
-                    new Set([
-                        ...filteredToolProficiencies,
-                        ...nextBackground.toolProficiencies,
-                    ]),
-                ),
-                languages: Array.from(
-                    new Set([
-                        ...filteredLanguages,
-                        ...nextBackground.languages,
-                    ]),
-                ),
+                backgroundId: nextBackground ? nextBackground.id : undefined,
+                ...legacyToolUpdates,
+                ...legacyLanguageUpdates,
             }
         })
     }

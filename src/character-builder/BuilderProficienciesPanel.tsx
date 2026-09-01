@@ -1,10 +1,14 @@
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
 import {
+    isLanguagesMigrated,
     isSavesMigrated,
     isSkillsMigrated,
+    isToolsMigrated,
+    migrateLanguagesOnEdit,
     migrateSavingThrowsOnToggle,
     migrateSkillsOnToggle,
+    migrateToolsOnEdit,
     resolveGrantedSavingThrows,
     resolveGrantedSkills,
     resolveProficiencyContext,
@@ -167,19 +171,36 @@ export function BuilderProficienciesPanel({
         })
     }
 
-    const updateCommaSeparatedList = (
-        field: 'toolProficiencies' | 'languages',
-        value: string,
-    ) => {
-        const items = value
-            .split(',')
-            .map((item) => item.trim())
-            .filter(Boolean)
+    const updateTools = (value: string) => {
+        setCharacter((current) => {
+            const ctx = resolveProficiencyContext(
+                current,
+                editableClasses,
+                editableLineages,
+                editableBackgrounds,
+            )
 
-        setCharacter((current) => ({
-            ...current,
-            [field]: items,
-        }))
+            return {
+                ...current,
+                manualTools: migrateToolsOnEdit(current, ctx, value),
+            }
+        })
+    }
+
+    const updateLanguages = (value: string) => {
+        setCharacter((current) => {
+            const ctx = resolveProficiencyContext(
+                current,
+                editableClasses,
+                editableLineages,
+                editableBackgrounds,
+            )
+
+            return {
+                ...current,
+                manualLanguages: migrateLanguagesOnEdit(current, ctx, value),
+            }
+        })
     }
 
     const getSaveTotal = (ability: AbilityName) => {
@@ -300,12 +321,19 @@ export function BuilderProficienciesPanel({
                         <textarea
                             rows={3}
                             value={character.toolProficiencies.join(', ')}
-                            onChange={(event) =>
-                                updateCommaSeparatedList('toolProficiencies', event.target.value)
-                            }
+                            onChange={(event) => updateTools(event.target.value)}
                             placeholder="Herbalism kit, calligrapher's tools, navigator's tools"
                         />
                     </label>
+                    {isToolsMigrated(character) && (
+                        <p>
+                            <small>
+                                Background and lineage grants are included automatically.
+                                Removing a granted entry here does not remove the grant;
+                                change its source to remove it.
+                            </small>
+                        </p>
+                    )}
                 </div>
 
                 <div className="proficiency-section">
@@ -314,12 +342,19 @@ export function BuilderProficienciesPanel({
                         <textarea
                             rows={3}
                             value={character.languages.join(', ')}
-                            onChange={(event) =>
-                                updateCommaSeparatedList('languages', event.target.value)
-                            }
+                            onChange={(event) => updateLanguages(event.target.value)}
                             placeholder="Common, Primordial, Fire Nation dialect"
                         />
                     </label>
+                    {isLanguagesMigrated(character) && (
+                        <p>
+                            <small>
+                                Background and lineage grants are included automatically.
+                                Removing a granted entry here does not remove the grant;
+                                change its source to remove it.
+                            </small>
+                        </p>
+                    )}
                 </div>
             </SectionCard>
         </div>

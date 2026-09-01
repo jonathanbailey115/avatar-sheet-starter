@@ -247,3 +247,149 @@ export function migrateSkillsOnToggle(
 
     return toggleMember(baselineManual, skill)
 }
+
+export function parseListInput(value: string): string[] {
+    const result: string[] = []
+
+    for (const rawEntry of value.split(',')) {
+        const entry = rawEntry.trim().replace(/\s+/g, ' ')
+
+        if (entry === '') {
+            continue
+        }
+
+        const alreadyListed = result.some(
+            (item) => item.toLowerCase() === entry.toLowerCase(),
+        )
+
+        if (!alreadyListed) {
+            result.push(entry)
+        }
+    }
+
+    return result
+}
+
+export function uniqueUnionLoose(
+    groups: Array<ReadonlyArray<string>>,
+): string[] {
+    const result: string[] = []
+
+    for (const group of groups) {
+        for (const item of group) {
+            const alreadyListed = result.some(
+                (existing) => existing.toLowerCase() === item.toLowerCase(),
+            )
+
+            if (!alreadyListed) {
+                result.push(item)
+            }
+        }
+    }
+
+    return result
+}
+
+export function differenceLoose(
+    from: ReadonlyArray<string>,
+    remove: ReadonlyArray<string>,
+): string[] {
+    return from.filter(
+        (item) =>
+            !remove.some((entry) => entry.toLowerCase() === item.toLowerCase()),
+    )
+}
+
+export function isToolsMigrated(character: Character): boolean {
+    return character.manualTools !== undefined
+}
+
+export function isLanguagesMigrated(character: Character): boolean {
+    return character.manualLanguages !== undefined
+}
+
+export function resolveBackgroundTools(ctx: ProficiencySourceContext): string[] {
+    return ctx.backgroundRecord?.toolProficiencies ?? []
+}
+
+export function resolveLineageToolChoices(
+    character: Character,
+    ctx: ProficiencySourceContext,
+): string[] {
+    return applyChoiceLimit(
+        character.lineageToolChoices,
+        ctx.lineageRecord?.toolChoices,
+    )
+}
+
+export function resolveGrantedTools(
+    character: Character,
+    ctx: ProficiencySourceContext,
+): string[] {
+    return uniqueUnionLoose([
+        resolveLineageToolChoices(character, ctx),
+        resolveBackgroundTools(ctx),
+    ])
+}
+
+export function resolveLineageLanguages(ctx: ProficiencySourceContext): string[] {
+    return ctx.lineageRecord?.languageProficiencies ?? []
+}
+
+export function resolveBackgroundLanguages(ctx: ProficiencySourceContext): string[] {
+    return ctx.backgroundRecord?.languages ?? []
+}
+
+export function resolveGrantedLanguages(
+    character: Character,
+    ctx: ProficiencySourceContext,
+): string[] {
+    return uniqueUnionLoose([
+        resolveLineageLanguages(ctx),
+        resolveBackgroundLanguages(ctx),
+    ])
+}
+
+export function deriveMigratedTools(
+    character: Character,
+    ctx: ProficiencySourceContext,
+): string[] {
+    return uniqueUnionLoose([
+        resolveLineageToolChoices(character, ctx),
+        resolveBackgroundTools(ctx),
+        character.manualTools ?? [],
+    ])
+}
+
+export function deriveMigratedLanguages(
+    character: Character,
+    ctx: ProficiencySourceContext,
+): string[] {
+    return uniqueUnionLoose([
+        resolveLineageLanguages(ctx),
+        resolveBackgroundLanguages(ctx),
+        character.manualLanguages ?? [],
+    ])
+}
+
+export function migrateToolsOnEdit(
+    character: Character,
+    ctx: ProficiencySourceContext,
+    text: string,
+): string[] {
+    return differenceLoose(
+        parseListInput(text),
+        resolveGrantedTools(character, ctx),
+    )
+}
+
+export function migrateLanguagesOnEdit(
+    character: Character,
+    ctx: ProficiencySourceContext,
+    text: string,
+): string[] {
+    return differenceLoose(
+        parseListInput(text),
+        resolveGrantedLanguages(character, ctx),
+    )
+}
