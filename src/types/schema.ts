@@ -8,6 +8,18 @@ export interface Lineage {
     name: string
     nation: Nation | 'Any'
     description: string
+    hitDiceText?: string
+    hitPointsAtFirstLevelText?: string
+    hitPointsPerLevelText?: string
+    savingThrows?: AbilityName[]
+    savingThrowChoices?: ChoiceSet<AbilityName>
+    skillChoices?: ChoiceSet<SkillName>
+    armorProficiencies?: string[]
+    weaponProficiencies?: string[]
+    toolChoices?: ChoiceSet<string>
+    languageProficiencies?: string[]
+    allowedBendingTypes?: BendingType[]
+    featureIds?: string[]
 }
 
 export interface Style {
@@ -66,6 +78,11 @@ export type SkillName =
     | 'Stealth'
     | 'Survival'
 
+export interface ChoiceSet<T> {
+    choose: number
+    options: T[]
+}
+
 export interface Character {
     id: string
     role: CharacterRole
@@ -99,6 +116,9 @@ export interface Character {
     selectedFeatureIds: string[]
     classId: string
     subclassId?: string
+    lineageSkillChoices?: SkillName[]
+    lineageSavingThrowChoices?: AbilityName[]
+    lineageToolChoices?: string[]
 
     armorName: string
     weaponNotes: string
