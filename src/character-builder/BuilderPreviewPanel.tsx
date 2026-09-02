@@ -111,11 +111,14 @@ export function BuilderPreviewPanel({
 
         const backgroundFeatureIds = selectedBackground?.featureIds ?? []
 
+        const lineageFeatureIds = selectedLineage?.featureIds ?? []
+
         const combinedFeatureIds = Array.from(
             new Set([
                 ...classFeatureIds,
                 ...subclassFeatureIds,
                 ...backgroundFeatureIds,
+                ...lineageFeatureIds,
                 ...character.selectedFeatureIds,
             ]),
         )
@@ -127,6 +130,7 @@ export function BuilderPreviewPanel({
         selectedClass,
         selectedSubclass,
         selectedBackground,
+        selectedLineage,
         character.level,
         character.selectedFeatureIds,
         editableFeatures,

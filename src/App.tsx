@@ -1110,6 +1110,7 @@ export default function App() {
                             editableClasses={editableClasses}
                             editableSubclasses={editableSubclasses}
                             editableBackgrounds={editableBackgrounds}
+                            editableLineages={editableLineages}
                             editableFeatures={editableFeatures}
                             setCharacter={setCharacter}
                         />

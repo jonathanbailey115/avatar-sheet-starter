@@ -7,6 +7,7 @@ import type {
     CharacterClass,
     CharacterSubclass,
     Feature,
+    Lineage,
 } from '../types/schema'
 
 type FeatureFilter = 'All' | Feature['featureType']
@@ -16,6 +17,7 @@ type BuilderFeaturesPanelProps = {
     editableClasses: CharacterClass[]
     editableSubclasses: CharacterSubclass[]
     editableBackgrounds: Background[]
+    editableLineages: Lineage[]
     editableFeatures: Feature[]
     setCharacter: Dispatch<SetStateAction<Character>>
 }
@@ -34,6 +36,7 @@ export function BuilderFeaturesPanel({
     editableClasses,
     editableSubclasses,
     editableBackgrounds,
+    editableLineages,
     editableFeatures,
     setCharacter,
 }: BuilderFeaturesPanelProps) {
@@ -51,6 +54,9 @@ export function BuilderFeaturesPanel({
     const selectedBackground =
         editableBackgrounds.find((item) => item.id === character.backgroundId) ?? null
 
+    const selectedLineage =
+        editableLineages.find((item) => item.id === character.lineageId) ?? null
+
     const autoGrantedFeatureIds = useMemo(() => {
         const classFeatureIds =
             selectedClass?.featureGrants
@@ -64,14 +70,17 @@ export function BuilderFeaturesPanel({
 
         const backgroundFeatureIds = selectedBackground?.featureIds ?? []
 
+        const lineageFeatureIds = selectedLineage?.featureIds ?? []
+
         return Array.from(
             new Set([
                 ...classFeatureIds,
                 ...subclassFeatureIds,
                 ...backgroundFeatureIds,
+                ...lineageFeatureIds,
             ]),
         )
-    }, [selectedClass, selectedSubclass, selectedBackground, character.level])
+    }, [selectedClass, selectedSubclass, selectedBackground, selectedLineage, character.level])
 
     const autoGrantedFeatureIdSet = useMemo(
         () => new Set(autoGrantedFeatureIds),
