@@ -184,6 +184,10 @@ export const lineages: Lineage[] = [
             options: ['Thieves’ Tools', "Smith's Tools", 'Disguise Kit'],
         },
         allowedBendingTypes: ['Earth'],
+        featureIds: [
+            'lineage-earth-kingdom-unarmored-defense',
+            'lineage-earth-kingdom-lay-of-the-land',
+        ],
     },
     {
         id: 'fire-nation-human',
@@ -527,6 +531,26 @@ export const features: Feature[] = [
         isActiveByDefault: true,
         uses: undefined,
         recharge: null,
+    },
+    {
+        id: 'lineage-earth-kingdom-unarmored-defense',
+        name: 'Unarmored Defense',
+        description:
+            "As a member of the Earth Nation, you are naturally resilient. When you aren't wearing any armor your armor class is equal to 10 + Your Dexterity Modifier + Your Constitution Modifier.",
+        source: 'Lineage',
+        featureType: 'Passive',
+        levelRequirement: 1,
+        isActiveByDefault: true,
+    },
+    {
+        id: 'lineage-earth-kingdom-lay-of-the-land',
+        name: 'Lay of the Land',
+        description:
+            'Land may be comforting but home is where you feel your best at bending. Starting at level 1, choose one type of favored terrain: Arctic, Forest, Swamp, Desert, Savannah, Hills, Mountains, Underground, Volcanic. When you make an Intelligence or Constitution Check related to your favored terrain, you add your proficiency bonus to that skill check if you aren’t proficient or your proficiency bonus is doubled if you are proficient in that skill. While traveling in your favored terrain for at least 30 minutes you gain the following benefits: Even when you are engaged in another activity while traveling (such as foraging, navigating, or tracking), you remain alert to danger. If you are traveling alone, you can move stealthily at a normal pace. When you forage, you find twice as much food as you normally would. While tracking other creatures, you also learn their exact number, their sizes, and how long ago they passed through the area. At level 6 and 10 you can choose 1 additional favored terrain.',
+        source: 'Lineage',
+        featureType: 'Passive',
+        levelRequirement: 1,
+        isActiveByDefault: true,
     },
 ]
 

@@ -85,7 +85,9 @@ export function BuilderFeaturesPanel({
 
             const passesLevel = feature.levelRequirement <= character.level
 
-            return passesFilter && passesLevel
+            const isNotLineageFeature = feature.source !== 'Lineage'
+
+            return passesFilter && passesLevel && isNotLineageFeature
         })
     }, [activeFilter, editableFeatures, character.level])
 
