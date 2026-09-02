@@ -119,6 +119,7 @@ export interface Character {
     lineageSkillChoices?: SkillName[]
     lineageSavingThrowChoices?: AbilityName[]
     lineageToolChoices?: string[]
+    lineageFavoredTerrains?: string[]
     manualSavingThrows?: AbilityName[]
     manualSkills?: SkillName[]
     manualTools?: string[]

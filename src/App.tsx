@@ -193,6 +193,7 @@ export default function App() {
                 lineageSavingThrowChoices: [],
                 lineageSkillChoices: [],
                 lineageToolChoices: [],
+                lineageFavoredTerrains: [],
                 style: currentStyleStillValid ? current.style : '',
             }
         })
@@ -735,6 +736,7 @@ export default function App() {
                 lineageSavingThrowChoices: [],
                 lineageSkillChoices: [],
                 lineageToolChoices: [],
+                lineageFavoredTerrains: [],
             }))
         }
     }, [filteredLineages, character.lineageId])

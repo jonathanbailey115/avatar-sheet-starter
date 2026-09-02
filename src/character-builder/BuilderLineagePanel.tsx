@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
 import {
@@ -15,6 +15,27 @@ import type {
     Nation,
     SkillName,
 } from '../types/schema'
+
+const LAY_OF_THE_LAND_FEATURE_ID = 'lineage-earth-kingdom-lay-of-the-land'
+
+const FAVORED_TERRAINS = [
+    'Arctic',
+    'Forest',
+    'Swamp',
+    'Desert',
+    'Savannah',
+    'Hills',
+    'Mountains',
+    'Underground',
+    'Volcanic',
+] as const
+
+function getMaxFavoredTerrains(level: number): number {
+    if (level < 1) return 0
+    if (level < 6) return 1
+    if (level < 10) return 2
+    return 3
+}
 
 type BuilderLineagePanelProps = {
     character: Character
@@ -85,6 +106,38 @@ export function BuilderLineagePanel({
             .filter((feature): feature is Feature => Boolean(feature))
     }, [selectedLineage, editableFeatures])
 
+    const hasLayOfTheLand = useMemo(
+        () => selectedLineage?.featureIds?.includes(LAY_OF_THE_LAND_FEATURE_ID) ?? false,
+        [selectedLineage],
+    )
+
+    const maxFavoredTerrains = getMaxFavoredTerrains(character.level)
+
+    const selectedFavoredTerrains = useMemo(() => {
+        const cap = getMaxFavoredTerrains(character.level)
+        const result: string[] = []
+        for (const terrain of character.lineageFavoredTerrains ?? []) {
+            if (FAVORED_TERRAINS.includes(terrain as typeof FAVORED_TERRAINS[number]) && !result.includes(terrain)) {
+                result.push(terrain)
+            }
+            if (result.length >= cap) break
+        }
+        return result
+    }, [character.lineageFavoredTerrains, character.level])
+
+    useEffect(() => {
+        if (!hasLayOfTheLand) return
+        const sanitized = selectedFavoredTerrains
+        const stored = character.lineageFavoredTerrains
+        if (stored === undefined && sanitized.length === 0) return
+        const same = stored !== undefined && stored.length === sanitized.length && stored.every((v, i) => v === sanitized[i])
+        if (same) return
+        setCharacter((current) => ({
+            ...current,
+            lineageFavoredTerrains: sanitized,
+        }))
+    }, [hasLayOfTheLand, selectedFavoredTerrains, character.lineageFavoredTerrains, setCharacter])
+
     const savesCaption = isSavesMigrated(character)
         ? 'These selections are included in your current saving throw proficiencies.'
         : 'Lineage choices are recorded here. Saving throw proficiency integration begins after you make a manual saving throw selection.'
@@ -100,6 +153,7 @@ export function BuilderLineagePanel({
             lineageSavingThrowChoices: [],
             lineageSkillChoices: [],
             lineageToolChoices: [],
+            lineageFavoredTerrains: [],
         }))
     }
 
@@ -220,6 +274,32 @@ export function BuilderLineagePanel({
             return {
                 ...current,
                 lineageToolChoices: [...(current.lineageToolChoices ?? []), tool],
+            }
+        })
+    }
+
+    const toggleFavoredTerrain = (terrain: string) => {
+        if (!FAVORED_TERRAINS.includes(terrain as typeof FAVORED_TERRAINS[number])) return
+
+        setCharacter((current) => {
+            const currentSelections = (current.lineageFavoredTerrains ?? []).filter((t) =>
+                FAVORED_TERRAINS.includes(t as typeof FAVORED_TERRAINS[number]),
+            )
+
+            if (currentSelections.includes(terrain)) {
+                return {
+                    ...current,
+                    lineageFavoredTerrains: currentSelections.filter((t) => t !== terrain),
+                }
+            }
+
+            if (currentSelections.length >= getMaxFavoredTerrains(current.level)) {
+                return current
+            }
+
+            return {
+                ...current,
+                lineageFavoredTerrains: [...currentSelections, terrain],
             }
         })
     }
@@ -415,6 +495,50 @@ export function BuilderLineagePanel({
                                     </li>
                                 ))}
                             </ul>
+                        </>
+                    )}
+                </SectionCard>
+            )}
+
+            {hasLayOfTheLand && (
+                <SectionCard title="Favored Terrain">
+                    {maxFavoredTerrains < 1 ? (
+                        <p>Favored terrain selections unlock at level 1.</p>
+                    ) : (
+                        <>
+                            <p>
+                                Choose {maxFavoredTerrains} favored terrain
+                                {maxFavoredTerrains === 1 ? '' : 's'}:
+                            </p>
+                            <p>
+                                Selected: {selectedFavoredTerrains.length} / {maxFavoredTerrains}
+                            </p>
+                            <div className="checkbox-list">
+                                {FAVORED_TERRAINS.map((terrain) => {
+                                    const isChecked = selectedFavoredTerrains.includes(terrain)
+                                    const disableUnchecked =
+                                        !isChecked &&
+                                        selectedFavoredTerrains.length >= maxFavoredTerrains
+
+                                    return (
+                                        <label key={terrain} className="checkbox-item">
+                                            <input
+                                                type="checkbox"
+                                                checked={isChecked}
+                                                disabled={disableUnchecked}
+                                                onChange={() => toggleFavoredTerrain(terrain)}
+                                            />
+                                            <span>{terrain}</span>
+                                        </label>
+                                    )
+                                })}
+                            </div>
+                            <p>
+                                <small>
+                                    Lay of the Land records your favored terrains here. Travel,
+                                    foraging, and check benefits are not automated.
+                                </small>
+                            </p>
                         </>
                     )}
                 </SectionCard>
