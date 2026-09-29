@@ -21,6 +21,9 @@ export const NPC_PARTS: Array<{ id: NpcPart; label: string }> = [
     { id: 'persona', label: 'Background & personality' },
 ]
 
+/** How often a role wears armor and carries weapons when its template does not say (0-1). */
+export const DEFAULT_COMBAT = 0.6
+
 export interface NpcContext {
     template: NpcTemplate
     content: RulesContent

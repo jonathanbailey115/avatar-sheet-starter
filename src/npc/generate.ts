@@ -9,10 +9,11 @@ import { assignAbilities } from './abilities'
 import { equip } from './gear'
 import { BONDS, FLAWS, IDEALS, PERSONALITY, generateName } from './names'
 import { learnTechniques } from './techniques'
+import { DEFAULT_COMBAT } from './types'
 import type { NpcContext, NpcPart, NpcResult, NpcSpec } from './types'
 
 const clampLevel = (level: number) => Math.min(20, Math.max(1, Math.round(level) || 1))
-const combatOf = (ctx: NpcContext) => ctx.template.combat ?? 0.6
+const combatOf = (ctx: NpcContext) => ctx.template.combat ?? DEFAULT_COMBAT
 
 function choose<T>(set: ChoiceSet<T> | undefined, rng: Rng): T[] {
     return set ? pickMany(set.options, set.choose, rng) : []

@@ -278,3 +278,14 @@ describe('the GM-permitted alternate bending ability', () => {
         expect(sheet.bending?.ability).toBe('strength')
     })
 })
+
+describe('once-per-day feats', () => {
+    it('Efficient Bender and Spiritual Projection are tracked as one use per long rest', () => {
+        const character = build('airbending', 'Air Nomads', 3, { selectedFeatureIds: ['feat-efficient-bender', 'feat-spiritual-projection'] })
+        const uses = computeSheet(character, realContent).resources.filter((resource) => resource.kind === 'feature')
+        expect(uses.map((resource) => [resource.name, resource.max, resource.recharge]).sort()).toEqual([
+            ['Efficient Bender', 1, 'Long Rest'],
+            ['Spiritual Projection', 1, 'Long Rest'],
+        ])
+    })
+})

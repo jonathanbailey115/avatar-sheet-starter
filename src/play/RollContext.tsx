@@ -1,3 +1,5 @@
+// One file on purpose (about 310 lines): every roll (checks, saves, attacks, damage, techniques, rests, death saves)
+// goes through the same state, prompt and log code, and splitting it would only spread that shared state across files.
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { MouseEvent, ReactNode } from 'react'
 import { damageFormula } from '../engine/attacks'

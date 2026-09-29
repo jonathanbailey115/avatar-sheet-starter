@@ -1,6 +1,7 @@
 import type { Dispatch, FormEvent, SetStateAction } from 'react'
 import type { BendingType, Nation, NpcTemplate } from '../types/schema'
 import SectionCard from '../components/SectionCard'
+import { DEFAULT_COMBAT } from '../npc/types'
 
 type NpcTemplatesPanelProps = {
     nations: Nation[]
@@ -16,6 +17,75 @@ type NpcTemplatesPanelProps = {
     deleteNpcTemplate: (role: string) => void
 }
 
+/** Read the add or edit form: both use the same field names. */
+function readTemplateForm(form: HTMLFormElement, nations: Nation[], bendingTypes: BendingType[]): NpcTemplate | null {
+    const field = (name: string) => form.elements.namedItem(name) as HTMLInputElement
+    const role = field('role').value.trim()
+    if (!role) return null
+
+    const weights = <K extends string>(prefix: string, keys: K[]) =>
+        Object.fromEntries(keys.map((key) => [key, Number(field(`${prefix}:${key}`).value) || 0])) as Partial<Record<K, number>>
+
+    const percent = field('combat').value.trim()
+    const combat = percent === '' ? undefined : Math.min(1, Math.max(0, Number(percent) / 100))
+
+    return {
+        role,
+        ...(combat === undefined || Number.isNaN(combat) ? {} : { combat }),
+        nationWeights: weights('nation', nations),
+        bendingWeights: weights('bending', bendingTypes),
+    }
+}
+
+function TemplateFields({
+    template,
+    nations,
+    bendingTypes,
+}: {
+    template?: NpcTemplate
+    nations: Nation[]
+    bendingTypes: BendingType[]
+}) {
+    return (
+        <>
+            <label>
+                Role
+                <input name="role" defaultValue={template?.role} />
+            </label>
+
+            <label>
+                Chance to wear armor and carry weapons (%)
+                <input
+                    name="combat"
+                    type="number"
+                    min={0}
+                    max={100}
+                    defaultValue={template?.combat === undefined ? '' : Math.round(template.combat * 100)}
+                    placeholder={`Blank = ${Math.round(DEFAULT_COMBAT * 100)}`}
+                />
+            </label>
+
+            <div className="two-col">
+                {nations.map((nation) => (
+                    <label key={nation}>
+                        {nation} weight
+                        <input name={`nation:${nation}`} type="number" min={0} defaultValue={template?.nationWeights[nation] ?? 0} />
+                    </label>
+                ))}
+            </div>
+
+            <div className="two-col">
+                {bendingTypes.map((type) => (
+                    <label key={type}>
+                        {type} weight
+                        <input name={`bending:${type}`} type="number" min={0} defaultValue={template?.bendingWeights[type] ?? 0} />
+                    </label>
+                ))}
+            </div>
+        </>
+    )
+}
+
 export function NpcTemplatesPanel({
     nations,
     bendingTypes,
@@ -29,127 +99,30 @@ export function NpcTemplatesPanel({
     saveNpcTemplateEdit,
     deleteNpcTemplate,
 }: NpcTemplatesPanelProps) {
+    const submitNew = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
+        const form = event.currentTarget
+        const template = readTemplateForm(form, nations, bendingTypes)
+
+        if (!template) {
+            setCampaignMessage('Template role is required.')
+            return
+        }
+        if (editableNpcTemplates.some((item) => item.role.toLowerCase() === template.role.toLowerCase())) {
+            setCampaignMessage('An NPC template with that role already exists.')
+            return
+        }
+
+        setEditableNpcTemplates((current) => [...current, template])
+        form.reset()
+        setCampaignMessage('NPC template added.')
+    }
+
     return (
         <SectionCard title="NPC templates">
-            <form
-                className="editor-form"
-                onSubmit={(event: FormEvent<HTMLFormElement>) => {
-                    event.preventDefault()
-                    const form = event.currentTarget
-
-                    const role = (
-                        form.elements.namedItem('npc-template-role') as HTMLInputElement
-                    ).value.trim()
-
-                    if (!role) {
-                        setCampaignMessage('Template role is required.')
-                        return
-                    }
-
-                    const alreadyExists = editableNpcTemplates.some(
-                        (template) => template.role.toLowerCase() === role.toLowerCase(),
-                    )
-
-                    if (alreadyExists) {
-                        setCampaignMessage('An NPC template with that role already exists.')
-                        return
-                    }
-
-                    const nationWeights: Partial<Record<Nation, number>> = {
-                        'Air Nomads': Number(
-                            (form.elements.namedItem('npc-nation-air-nomads') as HTMLInputElement).value,
-                        ) || 0,
-                        'Water Tribe': Number(
-                            (form.elements.namedItem('npc-nation-water-tribe') as HTMLInputElement).value,
-                        ) || 0,
-                        'Earth Kingdom': Number(
-                            (form.elements.namedItem('npc-nation-earth-kingdom') as HTMLInputElement).value,
-                        ) || 0,
-                        'Fire Nation': Number(
-                            (form.elements.namedItem('npc-nation-fire-nation') as HTMLInputElement).value,
-                        ) || 0,
-                    }
-
-                    const bendingWeights: Partial<Record<BendingType, number>> = {
-                        Air: Number(
-                            (form.elements.namedItem('npc-bending-air') as HTMLInputElement).value,
-                        ) || 0,
-                        Water: Number(
-                            (form.elements.namedItem('npc-bending-water') as HTMLInputElement).value,
-                        ) || 0,
-                        Earth: Number(
-                            (form.elements.namedItem('npc-bending-earth') as HTMLInputElement).value,
-                        ) || 0,
-                        Fire: Number(
-                            (form.elements.namedItem('npc-bending-fire') as HTMLInputElement).value,
-                        ) || 0,
-                        'Non-Bender': Number(
-                            (form.elements.namedItem('npc-bending-non-bender') as HTMLInputElement).value,
-                        ) || 0,
-                    }
-
-                    setEditableNpcTemplates((current) => [
-                        ...current,
-                        {
-                            role,
-                            nationWeights,
-                            bendingWeights,
-                        },
-                    ])
-
-                    form.reset()
-                    setCampaignMessage('NPC template added.')
-                }}
-            >
+            <form className="editor-form" onSubmit={submitNew}>
                 <h3>Add NPC template</h3>
-
-                <label>
-                    Role
-                    <input name="npc-template-role" />
-                </label>
-
-                <div className="two-col">
-                    <label>
-                        Air Nomads weight
-                        <input name="npc-nation-air-nomads" type="number" min={0} defaultValue={0} />
-                    </label>
-                    <label>
-                        Water Tribe weight
-                        <input name="npc-nation-water-tribe" type="number" min={0} defaultValue={0} />
-                    </label>
-                    <label>
-                        Earth Kingdom weight
-                        <input name="npc-nation-earth-kingdom" type="number" min={0} defaultValue={0} />
-                    </label>
-                    <label>
-                        Fire Nation weight
-                        <input name="npc-nation-fire-nation" type="number" min={0} defaultValue={0} />
-                    </label>
-                </div>
-
-                <div className="two-col">
-                    <label>
-                        Air weight
-                        <input name="npc-bending-air" type="number" min={0} defaultValue={0} />
-                    </label>
-                    <label>
-                        Water weight
-                        <input name="npc-bending-water" type="number" min={0} defaultValue={0} />
-                    </label>
-                    <label>
-                        Earth weight
-                        <input name="npc-bending-earth" type="number" min={0} defaultValue={0} />
-                    </label>
-                    <label>
-                        Fire weight
-                        <input name="npc-bending-fire" type="number" min={0} defaultValue={0} />
-                    </label>
-                    <label>
-                        Non-Bender weight
-                        <input name="npc-bending-non-bender" type="number" min={0} defaultValue={0} />
-                    </label>
-                </div>
-
+                <TemplateFields nations={nations} bendingTypes={bendingTypes} />
                 <div className="actions">
                     <button className="primary-button" type="submit">
                         Add NPC template
@@ -165,162 +138,17 @@ export function NpcTemplatesPanel({
                                 className="editor-form"
                                 onSubmit={(event: FormEvent<HTMLFormElement>) => {
                                     event.preventDefault()
-                                    const form = event.currentTarget
-
-                                    const role = (
-                                        form.elements.namedItem('edit-npc-template-role') as HTMLInputElement
-                                    ).value.trim()
-
-                                    if (!role) {
-                                        setCampaignMessage('Template role is required.')
-                                        return
-                                    }
-
-                                    saveNpcTemplateEdit(template.role, {
-                                        role,
-                                        nationWeights: {
-                                            'Air Nomads': Number(
-                                                (form.elements.namedItem('edit-npc-nation-air-nomads') as HTMLInputElement)
-                                                    .value,
-                                            ) || 0,
-                                            'Water Tribe': Number(
-                                                (form.elements.namedItem('edit-npc-nation-water-tribe') as HTMLInputElement)
-                                                    .value,
-                                            ) || 0,
-                                            'Earth Kingdom': Number(
-                                                (form.elements.namedItem('edit-npc-nation-earth-kingdom') as HTMLInputElement)
-                                                    .value,
-                                            ) || 0,
-                                            'Fire Nation': Number(
-                                                (form.elements.namedItem('edit-npc-nation-fire-nation') as HTMLInputElement)
-                                                    .value,
-                                            ) || 0,
-                                        },
-                                        bendingWeights: {
-                                            Air: Number(
-                                                (form.elements.namedItem('edit-npc-bending-air') as HTMLInputElement).value,
-                                            ) || 0,
-                                            Water: Number(
-                                                (form.elements.namedItem('edit-npc-bending-water') as HTMLInputElement).value,
-                                            ) || 0,
-                                            Earth: Number(
-                                                (form.elements.namedItem('edit-npc-bending-earth') as HTMLInputElement).value,
-                                            ) || 0,
-                                            Fire: Number(
-                                                (form.elements.namedItem('edit-npc-bending-fire') as HTMLInputElement).value,
-                                            ) || 0,
-                                            'Non-Bender': Number(
-                                                (form.elements.namedItem('edit-npc-bending-non-bender') as HTMLInputElement)
-                                                    .value,
-                                            ) || 0,
-                                        },
-                                    })
+                                    const updated = readTemplateForm(event.currentTarget, nations, bendingTypes)
+                                    if (updated) saveNpcTemplateEdit(template.role, updated)
+                                    else setCampaignMessage('Template role is required.')
                                 }}
                             >
-                                <label>
-                                    Role
-                                    <input
-                                        name="edit-npc-template-role"
-                                        defaultValue={template.role}
-                                    />
-                                </label>
-
-                                <div className="two-col">
-                                    <label>
-                                        Air Nomads weight
-                                        <input
-                                            name="edit-npc-nation-air-nomads"
-                                            type="number"
-                                            min={0}
-                                            defaultValue={template.nationWeights['Air Nomads'] ?? 0}
-                                        />
-                                    </label>
-                                    <label>
-                                        Water Tribe weight
-                                        <input
-                                            name="edit-npc-nation-water-tribe"
-                                            type="number"
-                                            min={0}
-                                            defaultValue={template.nationWeights['Water Tribe'] ?? 0}
-                                        />
-                                    </label>
-                                    <label>
-                                        Earth Kingdom weight
-                                        <input
-                                            name="edit-npc-nation-earth-kingdom"
-                                            type="number"
-                                            min={0}
-                                            defaultValue={template.nationWeights['Earth Kingdom'] ?? 0}
-                                        />
-                                    </label>
-                                    <label>
-                                        Fire Nation weight
-                                        <input
-                                            name="edit-npc-nation-fire-nation"
-                                            type="number"
-                                            min={0}
-                                            defaultValue={template.nationWeights['Fire Nation'] ?? 0}
-                                        />
-                                    </label>
-                                </div>
-
-                                <div className="two-col">
-                                    <label>
-                                        Air weight
-                                        <input
-                                            name="edit-npc-bending-air"
-                                            type="number"
-                                            min={0}
-                                            defaultValue={template.bendingWeights.Air ?? 0}
-                                        />
-                                    </label>
-                                    <label>
-                                        Water weight
-                                        <input
-                                            name="edit-npc-bending-water"
-                                            type="number"
-                                            min={0}
-                                            defaultValue={template.bendingWeights.Water ?? 0}
-                                        />
-                                    </label>
-                                    <label>
-                                        Earth weight
-                                        <input
-                                            name="edit-npc-bending-earth"
-                                            type="number"
-                                            min={0}
-                                            defaultValue={template.bendingWeights.Earth ?? 0}
-                                        />
-                                    </label>
-                                    <label>
-                                        Fire weight
-                                        <input
-                                            name="edit-npc-bending-fire"
-                                            type="number"
-                                            min={0}
-                                            defaultValue={template.bendingWeights.Fire ?? 0}
-                                        />
-                                    </label>
-                                    <label>
-                                        Non-Bender weight
-                                        <input
-                                            name="edit-npc-bending-non-bender"
-                                            type="number"
-                                            min={0}
-                                            defaultValue={template.bendingWeights['Non-Bender'] ?? 0}
-                                        />
-                                    </label>
-                                </div>
-
+                                <TemplateFields template={template} nations={nations} bendingTypes={bendingTypes} />
                                 <div className="actions inline-actions">
                                     <button className="primary-button" type="submit">
                                         Save
                                     </button>
-                                    <button
-                                        className="secondary-button"
-                                        type="button"
-                                        onClick={() => setEditingNpcTemplateRole(null)}
-                                    >
+                                    <button className="secondary-button" type="button" onClick={() => setEditingNpcTemplateRole(null)}>
                                         Cancel
                                     </button>
                                 </div>
@@ -328,6 +156,10 @@ export function NpcTemplatesPanel({
                         ) : (
                             <>
                                 <h3>{template.role}</h3>
+                                <p>
+                                    <strong>Armor and weapons:</strong> {Math.round((template.combat ?? DEFAULT_COMBAT) * 100)}% of the time
+                                    {template.combat === undefined && ' (default)'}
+                                </p>
 
                                 <p>
                                     <strong>Nation weights:</strong>
@@ -363,11 +195,7 @@ export function NpcTemplatesPanel({
                                     >
                                         Edit
                                     </button>
-                                    <button
-                                        className="secondary-button"
-                                        type="button"
-                                        onClick={() => deleteNpcTemplate(template.role)}
-                                    >
+                                    <button className="secondary-button" type="button" onClick={() => deleteNpcTemplate(template.role)}>
                                         Delete
                                     </button>
                                 </div>

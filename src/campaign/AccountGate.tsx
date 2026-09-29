@@ -216,7 +216,7 @@ export function AccountGate() {
             {mode === 'forgot' && <ForgotPassword startEmail={forgotEmail} onDone={() => setMode('signin')} />}
 
             <p className="muted">
-                Your account lets you open your campaigns from any device. Your characters are saved on the device you make them on.
+                Your account lets you open your campaigns, and your saved characters and NPCs, from any device.
             </p>
         </SectionCard>
     )

@@ -13,6 +13,9 @@ const GRANTS: Record<string, TechniqueDiscipline> = {
     'Lightning Generation': 'Lightningbending',
 }
 
+/** "Once per day" feats. A day is one long rest, so they come back after one. */
+const DAILY = new Set(['Efficient Bender', 'Spiritual Projection'])
+
 /** Names the owner corrected from the printed text (docs/RULES_QUESTIONS.md M8). */
 const RENAMES: Record<string, string> = { 'Bender Bender': 'Bender Slayer' }
 
@@ -38,5 +41,6 @@ export const featFeatures: Feature[] = classText.feats
             levelRequirement: 1,
             isActiveByDefault: false,
             ...(grants ? { grantsDiscipline: grants } : {}),
+            ...(DAILY.has(name) ? { featureType: 'Limited Use' as const, uses: 1, recharge: 'Long Rest' as const } : {}),
         }
     })
