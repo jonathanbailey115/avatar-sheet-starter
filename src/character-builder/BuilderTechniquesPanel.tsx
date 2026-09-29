@@ -137,7 +137,7 @@ export function BuilderTechniquesPanel({
                                         : learnBlocker(character, technique, selectedClass, editableTechniques, disciplinesOf(character, subclasses, features))
 
                                     return (
-                                        <div key={technique.id} className="checkbox-item">
+                                        <div key={technique.id} className="technique-item">
                                             <span>
                                                 <strong>
                                                     {technique.name}
