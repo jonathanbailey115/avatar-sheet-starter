@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { getBendingElement } from '../engine/bending'
 import {
     ABILITY_ABBREVIATIONS,
     SKILLS,
@@ -16,6 +17,7 @@ import type {
     Feature,
     Lineage,
     SkillName,
+    Technique,
 } from '../types/schema'
 
 type BuilderPreviewPanelProps = {
@@ -25,6 +27,7 @@ type BuilderPreviewPanelProps = {
     editableBackgrounds: Background[]
     editableLineages: Lineage[]
     editableFeatures: Feature[]
+    editableTechniques: Technique[]
 }
 
 type PreviewDetailTab = 'features' | 'techniques' | 'notes'
@@ -54,6 +57,7 @@ export function BuilderPreviewPanel({
     editableBackgrounds,
     editableLineages,
     editableFeatures,
+    editableTechniques,
 }: BuilderPreviewPanelProps) {
     const [activeDetailTab, setActiveDetailTab] = useState<PreviewDetailTab>('features')
 
@@ -173,13 +177,24 @@ export function BuilderPreviewPanel({
         intelligenceModifier +
         (character.skillProficiencies.includes('Investigation') ? proficiencyBonus : 0)
 
+    const bendingElement = getBendingElement(character, editableClasses)
+    const bendingLabel = bendingElement
+        ? `${bendingElement}bender`
+        : selectedClass
+          ? 'Non-bender'
+          : 'No bending'
+
+    const knownTechniques = character.knownTechniques.flatMap((known) => {
+        const technique = editableTechniques.find((item) => item.id === known.techniqueId)
+        return technique ? [{ technique, level: known.level }] : []
+    })
+
     const identityChips = [
         selectedClass?.name ?? 'No class',
         selectedSubclass?.name ?? 'No subclass',
         selectedBackground?.name ?? 'No background',
         selectedLineage?.name ?? 'No lineage',
-        character.bendingType,
-        character.style || 'No style',
+        bendingLabel,
     ]
 
     return (
@@ -199,10 +214,6 @@ export function BuilderPreviewPanel({
                             <article className="preview-vital-chip">
                                 <span>HP</span>
                                 <strong>{character.hp}</strong>
-                            </article>
-                            <article className="preview-vital-chip">
-                                <span>Chi</span>
-                                <strong>{character.chi}</strong>
                             </article>
                             <article className="preview-vital-chip">
                                 <span>Prof</span>
@@ -443,12 +454,12 @@ export function BuilderPreviewPanel({
                             {activeDetailTab === 'techniques' && (
                                 <div className="preview-detail-body preview-detail-body-scroll">
                                     <ul className="preview-list preview-list-detailed preview-list-elevated">
-                                        {character.techniques.length > 0 ? (
-                                            character.techniques.map((technique) => (
+                                        {knownTechniques.length > 0 ? (
+                                            knownTechniques.map(({ technique, level }) => (
                                                 <li key={technique.id}>
                                                     <div className="preview-list-heading">
                                                         <strong>{technique.name}</strong>
-                                                        <span>Tier {technique.tier}</span>
+                                                        <span>{level}</span>
                                                     </div>
                                                     <p>{technique.description}</p>
                                                 </li>

@@ -3,7 +3,6 @@ import SectionCard from '../components/SectionCard'
 type CampaignSummaryPanelProps = {
     nations: string[]
     editableLineages: Array<{ id: string }>
-    editableStyles: Array<{ id: string }>
     editableTechniques: Array<{ id: string }>
     editableNpcTemplates: Array<{ role: string }>
     campaignMessage: string
@@ -14,7 +13,6 @@ type CampaignSummaryPanelProps = {
 export function CampaignSummaryPanel({
     nations,
     editableLineages,
-    editableStyles,
     editableTechniques,
     editableNpcTemplates,
     campaignMessage,
@@ -26,7 +24,6 @@ export function CampaignSummaryPanel({
             <ul className="stats">
                 <li><strong>Nations:</strong> {nations.length}</li>
                 <li><strong>Lineages:</strong> {editableLineages.length}</li>
-                <li><strong>Styles:</strong> {editableStyles.length}</li>
                 <li><strong>Techniques:</strong> {editableTechniques.length}</li>
                 <li><strong>NPC templates:</strong> {editableNpcTemplates.length}</li>
             </ul>

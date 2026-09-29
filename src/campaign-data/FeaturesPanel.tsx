@@ -8,7 +8,6 @@ type FeaturesPanelProps = {
     setEditableFeatures: Dispatch<SetStateAction<Feature[]>>
     setEditingFeatureId: Dispatch<SetStateAction<string | null>>
     setEditingLineageId: Dispatch<SetStateAction<string | null>>
-    setEditingStyleId: Dispatch<SetStateAction<string | null>>
     setEditingTechniqueId: Dispatch<SetStateAction<string | null>>
     setEditingNpcTemplateRole: Dispatch<SetStateAction<string | null>>
     saveFeatureEdit: (
@@ -58,7 +57,6 @@ export function FeaturesPanel({
     setEditableFeatures,
     setEditingFeatureId,
     setEditingLineageId,
-    setEditingStyleId,
     setEditingTechniqueId,
     setEditingNpcTemplateRole,
     saveFeatureEdit,
@@ -391,7 +389,6 @@ export function FeaturesPanel({
                                         type="button"
                                         onClick={() => {
                                             setEditingLineageId(null)
-                                            setEditingStyleId(null)
                                             setEditingTechniqueId(null)
                                             setEditingFeatureId(feature.id)
                                             setEditingNpcTemplateRole(null)

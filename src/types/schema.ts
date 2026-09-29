@@ -1,7 +1,12 @@
-export type Nation = 'Air Nomads' | 'Water Tribe' | 'Earth Kingdom' | 'Fire Nation' | 'Mixed'
+export type Nation = 'Air Nomads' | 'Water Tribe' | 'Earth Kingdom' | 'Fire Nation'
 export type CharacterRole = 'Player Character' | 'NPC'
-export type BendingType = 'Air' | 'Water' | 'Earth' | 'Fire' | 'Non-Bender'
-export type TechniqueTier = 1 | 2 | 3 | 4
+export type Element = 'Air' | 'Water' | 'Earth' | 'Fire'
+/** Used for NPC template weights. A character's bending is derived from its class. */
+export type BendingType = Element | 'Non-Bender'
+export type TechniqueLevel = 'Practiced' | 'Trained' | 'Mastered'
+
+export const TECHNIQUE_LEVELS: TechniqueLevel[] = ['Practiced', 'Trained', 'Mastered']
+export const CHARACTER_SCHEMA_VERSION = 2
 
 export interface Lineage {
     id: string
@@ -22,20 +27,18 @@ export interface Lineage {
     featureIds?: string[]
 }
 
-export interface Style {
-    id: string
-    name: string
-    bendingType: BendingType
-    nation: Nation | 'Any'
-    description: string
-}
-
 export interface Technique {
     id: string
     name: string
-    tier: TechniqueTier
-    bendingType: BendingType
+    element: Element | 'Universal'
     description: string
+    rare?: boolean
+}
+
+/** A technique a character knows, at the level they know it. */
+export interface KnownTechnique {
+    techniqueId: string
+    level: TechniqueLevel
 }
 
 export interface Feature {
@@ -84,23 +87,21 @@ export interface ChoiceSet<T> {
 }
 
 export interface Character {
+    schemaVersion: number
     id: string
     role: CharacterRole
     name: string
     nation: Nation
     lineageId: string
-    bendingType: BendingType
-    style: string
     level: number
     hp: number
-    chi: number
     backgroundId?: string
     backgroundNotes: string
     personality: string
     ideals: string
     bonds: string
     flaws: string
-    techniques: Technique[]
+    knownTechniques: KnownTechnique[]
     notes: string
     strength: number
     dexterity: number
@@ -124,6 +125,8 @@ export interface Character {
     manualSkills?: SkillName[]
     manualTools?: string[]
     manualLanguages?: string[]
+    /** Messages from migrations that the player should see once (e.g. a removed nation). */
+    migrationNotes: string[]
 
     armorName: string
     weaponNotes: string
@@ -150,6 +153,8 @@ export interface CharacterClass {
     }
     featureGrants: ClassFeatureGrant[]
     subclassName?: string
+    /** Set for bending classes; bending is derived from the class. */
+    element?: Element
 }
 
 export interface SubclassFeatureGrant {
@@ -187,7 +192,6 @@ export const nations: Nation[] = [
     'Water Tribe',
     'Earth Kingdom',
     'Fire Nation',
-    'Mixed',
 ]
 
 export const bendingTypes: BendingType[] = [

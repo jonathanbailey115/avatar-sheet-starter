@@ -1,0 +1,87 @@
+import { z } from 'zod'
+import type { Character } from '../types/schema'
+
+export const abilityName = z.enum([
+    'strength',
+    'dexterity',
+    'constitution',
+    'intelligence',
+    'wisdom',
+    'charisma',
+])
+
+export const skillName = z.enum([
+    'Acrobatics',
+    'Animal Handling',
+    'Arcana',
+    'Athletics',
+    'Deception',
+    'History',
+    'Insight',
+    'Intimidation',
+    'Investigation',
+    'Medicine',
+    'Nature',
+    'Perception',
+    'Performance',
+    'Persuasion',
+    'Religion',
+    'Sleight of Hand',
+    'Stealth',
+    'Survival',
+])
+
+const strings = z.array(z.string())
+const score = z.number().int().min(1).max(30)
+
+export const characterSchema: z.ZodType<Character, z.ZodTypeDef, unknown> = z.object({
+    schemaVersion: z.number().int(),
+    id: z.string().min(1),
+    role: z.enum(['Player Character', 'NPC']),
+    name: z.string(),
+    nation: z.enum(['Air Nomads', 'Water Tribe', 'Earth Kingdom', 'Fire Nation']),
+    lineageId: z.string(),
+    level: z.number().int().min(1).max(20),
+    hp: z.number(),
+    backgroundId: z.string().optional(),
+    backgroundNotes: z.string(),
+    personality: z.string(),
+    ideals: z.string(),
+    bonds: z.string(),
+    flaws: z.string(),
+    knownTechniques: z.array(
+        z.object({
+            techniqueId: z.string(),
+            level: z.enum(['Practiced', 'Trained', 'Mastered']),
+        }),
+    ),
+    notes: z.string(),
+    strength: score,
+    dexterity: score,
+    constitution: score,
+    intelligence: score,
+    wisdom: score,
+    charisma: score,
+    savingThrowProficiencies: z.array(abilityName),
+    skillProficiencies: z.array(skillName),
+    classSkillChoices: z.array(skillName),
+    toolProficiencies: strings,
+    languages: strings,
+    selectedFeatureIds: strings,
+    classId: z.string(),
+    subclassId: z.string().optional(),
+    lineageSkillChoices: z.array(skillName).optional(),
+    lineageSavingThrowChoices: z.array(abilityName).optional(),
+    lineageToolChoices: strings.optional(),
+    lineageFavoredTerrains: strings.optional(),
+    manualSavingThrows: z.array(abilityName).optional(),
+    manualSkills: z.array(skillName).optional(),
+    manualTools: strings.optional(),
+    manualLanguages: strings.optional(),
+    migrationNotes: strings,
+    armorName: z.string(),
+    weaponNotes: z.string(),
+    inventoryItems: strings,
+    currency: z.string(),
+    equipmentNotes: z.string(),
+})

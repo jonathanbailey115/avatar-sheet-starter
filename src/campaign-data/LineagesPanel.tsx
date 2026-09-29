@@ -15,7 +15,6 @@ type LineagesPanelProps = {
     editingLineageId: string | null
     setEditableLineages: React.Dispatch<React.SetStateAction<Lineage[]>>
     setEditingLineageId: React.Dispatch<React.SetStateAction<string | null>>
-    setEditingStyleId: React.Dispatch<React.SetStateAction<string | null>>
     setEditingTechniqueId: React.Dispatch<React.SetStateAction<string | null>>
     setEditingNpcTemplateRole: React.Dispatch<React.SetStateAction<string | null>>
     saveLineageEdit: (
@@ -35,7 +34,6 @@ export function LineagesPanel({
     editingLineageId,
     setEditableLineages,
     setEditingLineageId,
-    setEditingStyleId,
     setEditingTechniqueId,
     setEditingNpcTemplateRole,
     saveLineageEdit,
@@ -177,7 +175,6 @@ export function LineagesPanel({
                                         className="secondary-button"
                                         type="button"
                                         onClick={() => {
-                                            setEditingStyleId(null)
                                             setEditingTechniqueId(null)
                                             setEditingLineageId(lineage.id)
                                             setEditingNpcTemplateRole(null)

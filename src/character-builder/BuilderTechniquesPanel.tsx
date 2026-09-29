@@ -1,153 +1,150 @@
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
-import type { BendingType, Character, Style, Technique } from '../types/schema'
+import { getBendingElement } from '../engine/bending'
+import { TECHNIQUE_LEVELS } from '../types/schema'
+import type { Character, CharacterClass, Technique, TechniqueLevel } from '../types/schema'
 
 type BuilderTechniquesPanelProps = {
     character: Character
     setCharacter: Dispatch<SetStateAction<Character>>
-    filteredStyles: Style[]
-    filteredTechniques: Technique[]
-    handleBendingTypeChange: (bendingType: BendingType) => void
-    handleTechniqueToggle: (technique: Technique) => void
+    editableClasses: CharacterClass[]
+    editableTechniques: Technique[]
 }
-
-const bendingOptions: BendingType[] = [
-    'Air',
-    'Water',
-    'Earth',
-    'Fire',
-    'Non-Bender',
-]
 
 export function BuilderTechniquesPanel({
     character,
     setCharacter,
-    filteredStyles,
-    filteredTechniques,
-    handleBendingTypeChange,
-    handleTechniqueToggle,
+    editableClasses,
+    editableTechniques,
 }: BuilderTechniquesPanelProps) {
-    const selectedStyle =
-        filteredStyles.find((style) => style.name === character.style) ?? null
+    const selectedClass = editableClasses.find((item) => item.id === character.classId) ?? null
+    const element = getBendingElement(character, editableClasses)
 
-    const selectedTechniques = character.techniques.filter(
-        (technique) => technique.bendingType === character.bendingType,
+    const available = editableTechniques.filter(
+        (technique) => technique.element === 'Universal' || technique.element === element,
     )
+
+    const knownLevel = (techniqueId: string): TechniqueLevel | null =>
+        character.knownTechniques.find((known) => known.techniqueId === techniqueId)?.level ?? null
+
+    const learn = (techniqueId: string) =>
+        setCharacter((current) => ({
+            ...current,
+            knownTechniques: [...current.knownTechniques, { techniqueId, level: 'Practiced' }],
+        }))
+
+    const forget = (techniqueId: string) =>
+        setCharacter((current) => ({
+            ...current,
+            knownTechniques: current.knownTechniques.filter(
+                (known) => known.techniqueId !== techniqueId,
+            ),
+        }))
+
+    const setLevel = (techniqueId: string, level: TechniqueLevel) =>
+        setCharacter((current) => ({
+            ...current,
+            knownTechniques: current.knownTechniques.map((known) =>
+                known.techniqueId === techniqueId ? { ...known, level } : known,
+            ),
+        }))
 
     return (
         <div className="grid">
-            <SectionCard title="Technique Setup">
-                <p>
-                    Choose the character’s bending discipline or non-bender path,
-                    then select an appropriate combat style.
-                </p>
-
-                <label>
-                    Bending Type
-                    <select
-                        value={character.bendingType}
-                        onChange={(event) =>
-                            handleBendingTypeChange(event.target.value as BendingType)
-                        }
-                    >
-                        {bendingOptions.map((option) => (
-                            <option key={option} value={option}>
-                                {option}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-
-                <label>
-                    Style
-                    <select
-                        value={character.style}
-                        onChange={(event) =>
-                            setCharacter((current) => ({
-                                ...current,
-                                style: event.target.value,
-                            }))
-                        }
-                    >
-                        {filteredStyles.length === 0 ? (
-                            <option value="">No available styles</option>
-                        ) : (
-                            filteredStyles.map((style) => (
-                                <option key={style.id} value={style.name}>
-                                    {style.name}
-                                </option>
-                            ))
-                        )}
-                    </select>
-                </label>
-
-                {selectedStyle ? (
-                    <>
-                        <p><strong>{selectedStyle.name}</strong></p>
-                        <p>{selectedStyle.description}</p>
-                    </>
+            <SectionCard title="Bending">
+                {!selectedClass ? (
+                    <p>Choose a class on the Class tab. Your bending comes from your class.</p>
+                ) : element ? (
+                    <p>
+                        <strong>{element}bending</strong> (from {selectedClass.name}). Techniques
+                        come from the {element}bending list and the Universal list.
+                    </p>
                 ) : (
-                    <p>No style is currently selected for this bending type.</p>
+                    <p>
+                        <strong>Non-bender</strong> ({selectedClass.name}). Only Universal
+                        techniques apply.
+                    </p>
                 )}
             </SectionCard>
 
             <SectionCard title="Technique Library">
-                {filteredTechniques.length === 0 ? (
-                    <p>No techniques are available for this bending type.</p>
+                {available.length === 0 ? (
+                    <p>
+                        No techniques are available yet. The gmbinder technique list arrives with the
+                        rules engine, and your GM can add custom techniques under Campaign Data.
+                    </p>
                 ) : (
                     <div className="checkbox-list">
-                        {filteredTechniques.map((technique) => {
-                            const checked = character.techniques.some(
-                                (item) => item.id === technique.id,
-                            )
+                        {available.map((technique) => {
+                            const level = knownLevel(technique.id)
 
                             return (
-                                <label key={technique.id} className="checkbox-item">
-                                    <input
-                                        type="checkbox"
-                                        checked={checked}
-                                        onChange={() => handleTechniqueToggle(technique)}
-                                    />
+                                <div key={technique.id} className="checkbox-item">
                                     <span>
-                                        <strong>{technique.name}</strong> — Tier {technique.tier}
+                                        <strong>{technique.name}</strong> — {technique.element}
                                         <br />
                                         <small>{technique.description}</small>
                                     </span>
-                                </label>
+
+                                    {level ? (
+                                        <span className="actions inline-actions">
+                                            <select
+                                                value={level}
+                                                onChange={(event) =>
+                                                    setLevel(
+                                                        technique.id,
+                                                        event.target.value as TechniqueLevel,
+                                                    )
+                                                }
+                                            >
+                                                {TECHNIQUE_LEVELS.map((option) => (
+                                                    <option key={option} value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <button
+                                                className="secondary-button"
+                                                type="button"
+                                                onClick={() => forget(technique.id)}
+                                            >
+                                                Forget
+                                            </button>
+                                        </span>
+                                    ) : (
+                                        <button
+                                            className="primary-button"
+                                            type="button"
+                                            onClick={() => learn(technique.id)}
+                                        >
+                                            Learn
+                                        </button>
+                                    )}
+                                </div>
                             )
                         })}
                     </div>
                 )}
             </SectionCard>
 
-            <SectionCard title="Selected Techniques">
-                {selectedTechniques.length === 0 ? (
-                    <p>No techniques selected yet for this bending type.</p>
+            <SectionCard title="Known Techniques">
+                {character.knownTechniques.length === 0 ? (
+                    <p>No techniques learned yet.</p>
                 ) : (
-                    <div className="npc-list">
-                        {selectedTechniques.map((technique) => (
-                            <article key={technique.id} className="npc-item">
-                                <h3>{technique.name}</h3>
-                                <p>Tier {technique.tier}</p>
-                                <p>{technique.description}</p>
-                            </article>
-                        ))}
-                    </div>
+                    <ul className="stats">
+                        {character.knownTechniques.map((known) => {
+                            const technique = editableTechniques.find(
+                                (item) => item.id === known.techniqueId,
+                            )
+                            return (
+                                <li key={known.techniqueId}>
+                                    <strong>{technique?.name ?? known.techniqueId}</strong> —{' '}
+                                    {known.level}
+                                </li>
+                            )
+                        })}
+                    </ul>
                 )}
-            </SectionCard>
-
-            <SectionCard title="Technique Summary">
-                <ul className="stats">
-                    <li>
-                        <strong>Bending Type:</strong> {character.bendingType}
-                    </li>
-                    <li>
-                        <strong>Style:</strong> {character.style || 'None selected'}
-                    </li>
-                    <li>
-                        <strong>Total Learned Techniques:</strong> {selectedTechniques.length}
-                    </li>
-                </ul>
             </SectionCard>
         </div>
     )

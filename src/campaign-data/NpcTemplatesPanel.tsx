@@ -10,7 +10,6 @@ type NpcTemplatesPanelProps = {
     setEditableNpcTemplates: Dispatch<SetStateAction<NpcTemplate[]>>
     setEditingNpcTemplateRole: Dispatch<SetStateAction<string | null>>
     setEditingLineageId: Dispatch<SetStateAction<string | null>>
-    setEditingStyleId: Dispatch<SetStateAction<string | null>>
     setEditingTechniqueId: Dispatch<SetStateAction<string | null>>
     setCampaignMessage: Dispatch<SetStateAction<string>>
     saveNpcTemplateEdit: (originalRole: string, updatedTemplate: NpcTemplate) => void
@@ -25,7 +24,6 @@ export function NpcTemplatesPanel({
     setEditableNpcTemplates,
     setEditingNpcTemplateRole,
     setEditingLineageId,
-    setEditingStyleId,
     setEditingTechniqueId,
     setCampaignMessage,
     saveNpcTemplateEdit,
@@ -69,9 +67,6 @@ export function NpcTemplatesPanel({
                         ) || 0,
                         'Fire Nation': Number(
                             (form.elements.namedItem('npc-nation-fire-nation') as HTMLInputElement).value,
-                        ) || 0,
-                        Mixed: Number(
-                            (form.elements.namedItem('npc-nation-mixed') as HTMLInputElement).value,
                         ) || 0,
                     }
 
@@ -129,10 +124,6 @@ export function NpcTemplatesPanel({
                     <label>
                         Fire Nation weight
                         <input name="npc-nation-fire-nation" type="number" min={0} defaultValue={0} />
-                    </label>
-                    <label>
-                        Mixed weight
-                        <input name="npc-nation-mixed" type="number" min={0} defaultValue={0} />
                     </label>
                 </div>
 
@@ -204,9 +195,6 @@ export function NpcTemplatesPanel({
                                                 (form.elements.namedItem('edit-npc-nation-fire-nation') as HTMLInputElement)
                                                     .value,
                                             ) || 0,
-                                            Mixed: Number(
-                                                (form.elements.namedItem('edit-npc-nation-mixed') as HTMLInputElement).value,
-                                            ) || 0,
                                         },
                                         bendingWeights: {
                                             Air: Number(
@@ -272,15 +260,6 @@ export function NpcTemplatesPanel({
                                             type="number"
                                             min={0}
                                             defaultValue={template.nationWeights['Fire Nation'] ?? 0}
-                                        />
-                                    </label>
-                                    <label>
-                                        Mixed weight
-                                        <input
-                                            name="edit-npc-nation-mixed"
-                                            type="number"
-                                            min={0}
-                                            defaultValue={template.nationWeights.Mixed ?? 0}
                                         />
                                     </label>
                                 </div>
@@ -378,7 +357,6 @@ export function NpcTemplatesPanel({
                                         type="button"
                                         onClick={() => {
                                             setEditingLineageId(null)
-                                            setEditingStyleId(null)
                                             setEditingTechniqueId(null)
                                             setEditingNpcTemplateRole(template.role)
                                         }}
