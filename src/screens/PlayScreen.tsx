@@ -1,14 +1,19 @@
 import { useMemo } from 'react'
 import { formatModifier } from '../engine/abilities'
 import { computeSheet } from '../engine/sheet'
-import type { StatLine } from '../engine/sheet'
+import type { Sheet, StatLine } from '../engine/sheet'
+import type { RulesContent } from '../lib/normalize'
 import { characterDisplayName } from '../lib/character'
+import { AttackPanel } from '../play/AttackPanel'
 import { DetailsPanel } from '../play/DetailsPanel'
 import { HitPointSetup } from '../play/HitPointSetup'
 import { HpPanel } from '../play/HpPanel'
 import { RestPanel } from '../play/RestPanel'
 import { ResourcesPanel } from '../play/ResourcesPanel'
 import { RollBadge } from '../play/RollBadge'
+import { RollProvider, useRoll } from '../play/RollContext'
+import { RollBar } from '../play/RollBar'
+import { RollLog } from '../play/RollLog'
 import { StatsPanel } from '../play/StatsPanel'
 import { useActiveCharacter } from '../store/active'
 import { useRulesContent } from '../store/rules'
@@ -18,33 +23,16 @@ function explain(line: StatLine): string {
     return line.breakdown.map((part) => `${part.label} ${formatModifier(part.value)}`).join(', ')
 }
 
-export function PlayScreen({
-    onEdit,
-    onOpenLibrary,
-}: {
+type PlaySheetProps = {
+    character: Character
+    sheet: Sheet
+    content: RulesContent
+    change: (update: (current: Character) => Character) => void
     onEdit: () => void
-    onOpenLibrary: () => void
-}) {
-    const { character, setCharacter } = useActiveCharacter()
-    const content = useRulesContent()
+}
 
-    const sheet = useMemo(
-        () => (character ? computeSheet(character, content) : null),
-        [character, content],
-    )
-
-    if (!character || !sheet) {
-        return (
-            <section className="tab-panel">
-                <p>No character is open.</p>
-                <button className="primary-button" type="button" onClick={onOpenLibrary}>
-                    Go to My Characters
-                </button>
-            </section>
-        )
-    }
-
-    const change = (update: (current: Character) => Character) => setCharacter(update)
+function PlaySheet({ character, sheet, content, change, onEdit }: PlaySheetProps) {
+    const { rollCheck } = useRoll()
 
     const characterClass = content.classes.find((item) => item.id === character.classId)
     const lineage = content.lineages.find((item) => item.id === character.lineageId)
@@ -71,18 +59,25 @@ export function PlayScreen({
                 </p>
             )}
 
+            <RollBar characterId={character.id} />
+
             <div className="vitals-bar">
                 <article className="vital" title={explain(sheet.armorClass)}>
                     <span>Armor Class</span>
                     <strong>{sheet.armorClass.total}</strong>
                     <small>{sheet.armor ? sheet.armor.name : 'Unarmored'}</small>
                 </article>
-                <article className="vital" title={explain(sheet.initiative)}>
+                <button
+                    type="button"
+                    className="vital vital-roll"
+                    title={`${explain(sheet.initiative)}. Click to roll.`}
+                    onClick={(event) => rollCheck('Initiative', 'initiative', sheet.initiative, event)}
+                >
                     <span>Initiative</span>
                     <strong>
                         {formatModifier(sheet.initiative.total)} <RollBadge roll={sheet.initiative.roll} />
                     </strong>
-                </article>
+                </button>
                 <article className="vital">
                     <span>Proficiency</span>
                     <strong>{formatModifier(sheet.proficiencyBonus)}</strong>
@@ -130,9 +125,10 @@ export function PlayScreen({
 
                 <div className="play-col">
                     <HpPanel character={character} sheet={sheet} onChange={change} />
-                    <HitPointSetup character={character} sheet={sheet} onChange={change} />
-                    <RestPanel character={character} sheet={sheet} content={content} onChange={change} />
+                    <AttackPanel sheet={sheet} />
                     <ResourcesPanel character={character} sheet={sheet} onChange={change} />
+                    <RestPanel character={character} sheet={sheet} content={content} onChange={change} />
+                    <HitPointSetup character={character} sheet={sheet} onChange={change} />
                 </div>
 
                 <div className="play-col">
@@ -145,8 +141,48 @@ export function PlayScreen({
                             weapons: lineage?.weaponProficiencies ?? [],
                         }}
                     />
+                    <RollLog />
                 </div>
             </div>
         </section>
+    )
+}
+
+export function PlayScreen({
+    onEdit,
+    onOpenLibrary,
+}: {
+    onEdit: () => void
+    onOpenLibrary: () => void
+}) {
+    const { character, setCharacter } = useActiveCharacter()
+    const content = useRulesContent()
+
+    const sheet = useMemo(
+        () => (character ? computeSheet(character, content) : null),
+        [character, content],
+    )
+
+    if (!character || !sheet) {
+        return (
+            <section className="tab-panel">
+                <p>No character is open.</p>
+                <button className="primary-button" type="button" onClick={onOpenLibrary}>
+                    Go to My Characters
+                </button>
+            </section>
+        )
+    }
+
+    return (
+        <RollProvider character={character} sheet={sheet} onChange={setCharacter}>
+            <PlaySheet
+                character={character}
+                sheet={sheet}
+                content={content}
+                change={setCharacter}
+                onEdit={onEdit}
+            />
+        </RollProvider>
     )
 }

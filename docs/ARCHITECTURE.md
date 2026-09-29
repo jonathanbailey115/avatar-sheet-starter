@@ -24,6 +24,14 @@ Effects (`engine/effects.ts`) are how a rule reaches the sheet. A feature in `da
 
 Resources (`engine/resources.ts`) come from three places: the class's technique slot table, the class's `resources` (pools that scale by level), and features that declare `uses` and `recharge`. Spent counts live on the character as `resourcesUsed[id]`.
 
+## Rolling
+
+`engine/rolls.ts` is pure: `rollD20` (advantage, disadvantage, crit range), `rollExpression` ("2d6+3", doubled dice on a critical), `deathSaveOutcome`, and the `RollEntry` type. Randomness is injected (`Rng`), so tests are deterministic; play uses `crypto.getRandomValues`.
+
+`engine/attacks.ts` builds the attack list from the sheet: equipped weapons (`data/weapons.ts`), the class's basic bending attack, and an unarmed strike, plus Bending Save DC and Attack Modifier.
+
+In the UI, `play/RollContext.tsx` turns a `StatLine` into a roll: it merges automatic advantage/disadvantage sources, the "next roll" toggle and Shift/Alt clicks, asks about situational rules, rolls, and writes a `RollEntry` to `store/rollLog.ts`. Phase 5 will send those same entries to the campaign log.
+
 ## Persistence
 
 | localStorage key        | Contents |
@@ -31,6 +39,7 @@ Resources (`engine/resources.ts`) come from three places: the class's technique 
 | `avatar-dnd:library`    | Player characters, active id, quarantined records |
 | `avatar-dnd:npcs`       | Saved NPCs and quarantined records |
 | `avatar-dnd:content`    | Only the user's *edits* to built-in rules content |
+| `avatar-dnd:rolls`      | The last 200 rolls |
 
 - **Characters carry their own `schemaVersion`.** On load every record goes through `migrateCharacter` (lib/migrations.ts), zod validation, then `normalizeCharacter`. A record that fails is moved to `quarantine` and can be downloaded. Nothing is silently deleted.
 - **Content is stored as edits** (upserts + removed ids) over the built-in seed, so shipping new rules in an app update reaches existing users while their own changes are kept.

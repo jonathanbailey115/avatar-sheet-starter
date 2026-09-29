@@ -2,16 +2,19 @@ import { useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
 import { SHIELD_AC_BONUS, armorTable } from '../data/armor'
-import type { Character } from '../types/schema'
+import type { Character, Lineage } from '../types/schema'
+import { WeaponsCard } from './WeaponsCard'
 
 type BuilderEquipmentPanelProps = {
     character: Character
     setCharacter: Dispatch<SetStateAction<Character>>
+    lineage: Lineage | null
 }
 
 export function BuilderEquipmentPanel({
     character,
     setCharacter,
+    lineage,
 }: BuilderEquipmentPanelProps) {
     const [newItem, setNewItem] = useState('')
 
@@ -100,7 +103,7 @@ export function BuilderEquipmentPanel({
                 </label>
 
                 <label>
-                    Weapons and combat gear
+                    Weapon notes
                     <textarea
                         rows={4}
                         value={character.weaponNotes}
@@ -114,6 +117,8 @@ export function BuilderEquipmentPanel({
                     />
                 </label>
             </SectionCard>
+
+            <WeaponsCard character={character} setCharacter={setCharacter} lineage={lineage} />
 
             <SectionCard title="Inventory">
                 <div className="actions inline-actions">

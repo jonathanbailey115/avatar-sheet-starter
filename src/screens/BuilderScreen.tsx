@@ -171,7 +171,11 @@ export function BuilderScreen({
             )}
 
             {tab === 'equipment' && (
-                <BuilderEquipmentPanel character={character} setCharacter={setCharacter} />
+                <BuilderEquipmentPanel
+                    character={character}
+                    setCharacter={setCharacter}
+                    lineage={lineages.find((item) => item.id === character.lineageId) ?? null}
+                />
             )}
 
         </section>

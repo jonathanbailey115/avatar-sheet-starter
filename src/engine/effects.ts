@@ -94,6 +94,8 @@ export function armorEffects(
         const targets: EffectTarget[] = [
             'save:strength',
             'save:dexterity',
+            'check:strength',
+            'check:dexterity',
             'attack',
             ...STRENGTH_DEXTERITY_SKILLS.map((skill): EffectTarget => `skill:${skill}`),
         ]

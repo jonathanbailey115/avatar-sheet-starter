@@ -10,6 +10,7 @@ import {
 } from '../engine/hitPoints'
 import type { Sheet } from '../engine/sheet'
 import type { Character } from '../types/schema'
+import { useRoll } from './RollContext'
 
 type HpPanelProps = {
     character: Character
@@ -35,6 +36,7 @@ const LIFE_LABEL = {
 export function HpPanel({ character, sheet, onChange }: HpPanelProps) {
     const [amount, setAmount] = useState('')
     const [critical, setCritical] = useState(false)
+    const { rollDeathSave } = useRoll()
 
     const value = Math.max(0, Math.floor(Number(amount) || 0))
     const { maxHp, currentHp, lifeState } = sheet
@@ -145,6 +147,9 @@ export function HpPanel({ character, sheet, onChange }: HpPanelProps) {
 
                     {lifeState === 'dying' && (
                         <div className="actions inline-actions">
+                            <button className="btn-roll" type="button" onClick={rollDeathSave}>
+                                Roll death save
+                            </button>
                             <button
                                 className="btn-heal"
                                 type="button"

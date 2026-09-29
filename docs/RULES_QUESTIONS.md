@@ -71,6 +71,7 @@ Still open: A11-A13 (defaults assumed: no Mixed nation with optional GM-approved
 | B15 | **Meditation Wisdom cap:** "can not be increased to no more than 6" then "no more than 7" at 16 (GB L2188, L2190) while the bonus is +1/+2 to a *modifier*. | GB L2187-2190 | Cap modifier at +6 (+7 at 16th). |
 | B16 | **Lay of the Land wording** ("proficiency bonus doubled if you are proficient") fine, but "Intelligence or Constitution Check related to your favored terrain" has no rule for *which checks are terrain-related*. | GB L448 | Player toggles "terrain applies" per roll. |
 | B17 | **"Gust" is an Airbending class feature (GB L2234), not a technique.** The seed treats it as a technique. | GB L2234 vs seed | See D6. |
+| B18 | **Earth Kingdom starting equipment offers a halberd (a martial weapon), but the Earth weapon proficiency list has no halberds or glaives** (GB L424, L430). A character who takes the starting halberd is not proficient with it. The same list has no proficiency for "any martial melee weapon", the other starting choice (GB L430). | GB L424, L430 | The sheet follows the proficiency list exactly. Tell me if Earth Kingdom should also be proficient with halberds, or with whatever martial weapon they pick. |
 
 ---
 
@@ -197,3 +198,20 @@ These were needed to build the play sheet. Each is labelled in the UI where it a
 | I9 | **Exhaustion** uses the 5e track (1: disadvantage on checks and initiative; 3: also saves and attacks). Halved speed/HP at higher levels is not modelled. gmbinder adds exhaustion to several Bloodbender abilities but defines no effects. | 5e SRD |
 | I10 | **Nothing on the play sheet rolls yet.** Rolling arrives in Phase 3. Hit dice on a short rest are the only dice rolled today. | roadmap |
 | I11 | **Earthbending class is a shell:** element, hit die from lineage, and the bender technique-slot table only. Grounded, Move Earth, Neutral Jing, Tradition features come in Phase 4. | roadmap |
+
+---
+
+## J. Phase 3 assumptions (please confirm or correct)
+
+| # | Assumption | Basis |
+|---|------------|-------|
+| J1 | **Weapon table** = the gmbinder Items section (throwing dart, knives, stars, boomerang, throwing axe) plus the 5e SRD weapon list, marked "Baseline 5e". Nets and improvised weapons are not included. War fans (Air Nomad proficiency) have no stats in gmbinder, so they are missing. | GB L4567-4580; 5e SRD |
+| J2 | **Weapon proficiency** is read from the lineage list ("Simple Weapons", or a named group such as "Longswords" or "Axes"). A lineage with no list means not proficient. See B18. | GB L375, L424, L507, L554 |
+| J3 | **Attack ability:** melee uses Strength, ranged uses Dexterity, Finesse uses whichever is higher. Thrown melee weapons (spear, handaxe) use Strength. | 5e SRD |
+| J4 | **Attack roll** = d20 + ability + proficiency (if proficient) + weapon bonus; **damage** = weapon dice + ability + weapon bonus. Bending attacks use the Bending Attack Modifier (proficiency + bending ability) and are always proficient. Unarmed strike is 1 + Strength. | CLAUDE.md; GB L1113-1116 etc.; 5e |
+| J5 | **Critical hits:** a natural 20, or the lowest number a feature sets (Superior Critical: weapon attacks on 18-20). Damage dice are rolled twice, modifiers once. Superior Critical does not apply to bending or unarmed strikes. Automatic hit/miss is not decided: no target AC is tracked, so you read your total against the target, and only crits are automatic. | GB L735; 5e |
+| J6 | **Death saves:** d20, 10+ succeeds, under 10 fails, natural 1 is two failures, natural 20 gets you up with 1 HP. Only the "next roll" toggle can give them advantage or disadvantage; feature effects on death saves are not applied. | 5e SRD |
+| J7 | **Advantage and disadvantage** from any number of sources cancel to a normal roll. The "Advantage/Disadvantage" toggle, Shift-click and Alt-click add one more source for a single roll. | 5e SRD |
+| J8 | **Situational rules** (like Earthbending's Neutral Jing, "vs a creature that takes its turn before you") are not applied automatically. Clicking a roll asks which ones apply. | GB L1564 |
+| J9 | **Ability checks** get exhaustion disadvantage, and Str/Dex checks get the armor-proficiency disadvantage. | 5e SRD |
+| J10 | **Not automated yet:** Extra Attack (shown as feature text), the Weaponsmaster Technique Bonus, Adapted Fighting, and everything technique-based (Phase 4). Airbender's option to use Dexterity, and Tech-Engineer's option to use Wisdom, need a chooser. Current rules use Wisdom and Intelligence. | GB L787, L2171 |

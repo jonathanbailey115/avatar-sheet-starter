@@ -46,6 +46,8 @@ export interface Sheet {
     hitDiceRemaining: number
     abilities: Array<{ key: AbilityName; score: number; modifier: number }>
     saves: Record<AbilityName, StatLine & { proficient: boolean }>
+    /** Plain ability checks (no skill). */
+    checks: Record<AbilityName, StatLine>
     skills: Record<SkillName, StatLine & { proficient: boolean; ability: AbilityName }>
     passives: { perception: number; insight: number; investigation: number }
     initiative: StatLine
@@ -103,6 +105,10 @@ export function computeSheet(character: Character, content: RulesContent): Sheet
         }),
     ) as Sheet['saves']
 
+    const checks = Object.fromEntries(
+        ABILITIES.map((ability) => [ability, abilityLine(ability, false, ['skills', `check:${ability}`])]),
+    ) as Sheet['checks']
+
     const skills = Object.fromEntries(
         SKILLS.map((skill) => {
             const ability = SKILL_ABILITIES[skill]
@@ -151,6 +157,7 @@ export function computeSheet(character: Character, content: RulesContent): Sheet
         hitDiceRemaining: hitDiceRemaining(character),
         abilities: ABILITIES.map((key) => ({ key, score: abilityScores[key], modifier: modifierOf(key) })),
         saves,
+        checks,
         skills,
         passives: {
             perception: passive(skills.Perception),

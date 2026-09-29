@@ -43,7 +43,7 @@ export function rollD20(options: {
     }
 
     return {
-        dice: second === null ? [first] : [first, second],
+        dice: [natural, ...discarded],
         natural,
         discarded,
         mode,

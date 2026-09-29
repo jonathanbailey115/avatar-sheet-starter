@@ -58,6 +58,7 @@ export type EffectTarget =
     | 'skills'
     | `save:${AbilityName}`
     | `skill:${SkillName}`
+    | `check:${AbilityName}`
 
 export type BonusValue = number | 'proficiency' | { ability: AbilityName }
 

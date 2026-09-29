@@ -18,6 +18,7 @@ describe('rollD20', () => {
     it('normal: one die plus the modifier', () => {
         const result = rollD20({ modifier: 5, rng: faces(20, 12) })
         expect(result).toMatchObject({ natural: 12, total: 17, dice: [12], discarded: [] })
+        expect(rollD20({ modifier: 0, mode: 'advantage', rng: faces(20, 4, 15) }).dice).toEqual([15, 4])
     })
 
     it('advantage keeps the higher die and shows the dropped one', () => {

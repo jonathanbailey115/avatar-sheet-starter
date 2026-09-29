@@ -4,6 +4,7 @@ import { longRest, shortRest } from '../engine/rests'
 import type { Sheet } from '../engine/sheet'
 import type { RulesContent } from '../lib/normalize'
 import type { Character } from '../types/schema'
+import { useRoll } from './RollContext'
 
 type RestPanelProps = {
     character: Character
@@ -16,6 +17,7 @@ export function RestPanel({ character, sheet, content, onChange }: RestPanelProp
     const [open, setOpen] = useState(false)
     const [spend, setSpend] = useState(0)
     const [message, setMessage] = useState('')
+    const { logEntry } = useRoll()
 
     const dead = sheet.lifeState === 'dead'
     const canSpend = sheet.hitDie !== null && sheet.hitDiceRemaining > 0
@@ -26,6 +28,19 @@ export function RestPanel({ character, sheet, content, onChange }: RestPanelProp
         onChange(() => result.character)
 
         const con = Math.floor((character.constitution - 10) / 2)
+        if (result.rolls.length > 0 && sheet.hitDie) {
+            logEntry({
+                kind: 'hit-die',
+                label: 'Short rest hit dice',
+                formula: `${result.rolls.length}d${sheet.hitDie}${con === 0 ? '' : con > 0 ? `+${con * result.rolls.length}` : con * result.rolls.length}`,
+                dice: result.rolls,
+                discarded: [],
+                modifier: con * result.rolls.length,
+                total: result.healed,
+                mode: 'normal',
+                notes: ['Each die heals its roll plus Constitution, never below 0.'],
+            })
+        }
         setMessage(
             result.rolls.length > 0
                 ? `Short rest: spent ${result.rolls.length} hit dice (rolled ${result.rolls.join(', ')}, ${con >= 0 ? '+' : ''}${con} each) and healed ${result.healed}.`
