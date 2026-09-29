@@ -1,0 +1,37 @@
+import type { Feature, TechniqueDiscipline } from '../types/schema'
+import { slug } from './classFeature'
+import { classText } from './classText.generated'
+
+/**
+ * The feats gmbinder changes or adds (Feats). The source also says the feats it does not list are
+ * kept from 5e unchanged, but it does not print them, so they are not included (docs/RULES_QUESTIONS.md).
+ * Wording is extracted from the source. Feats are optional: a player adds them in the builder.
+ */
+
+/** Feats that unlock a sub-bending's techniques. */
+const GRANTS: Record<string, TechniqueDiscipline> = {
+    'Lightning Generation': 'Lightningbending',
+}
+
+/** "Precise Bender (Spell Sniper)" -> name "Precise Bender", 5e origin "Spell Sniper". */
+function splitAlias(heading: string): { name: string; alias: string | null } {
+    const match = /^(.*?)\s*\((.+)\)\s*$/.exec(heading)
+    return match ? { name: match[1].trim(), alias: match[2].trim() } : { name: heading.trim(), alias: null }
+}
+
+export const featFeatures: Feature[] = classText.feats
+    .filter((entry) => entry.name !== 'Introduction')
+    .map((entry) => {
+        const { name, alias } = splitAlias(entry.name)
+        const grants = GRANTS[name]
+        return {
+            id: `feat-${slug(name)}`,
+            name,
+            description: alias ? `${entry.text}\n(The 5e feat this replaces: ${alias}.)` : entry.text,
+            source: 'Feat' as const,
+            featureType: 'Passive' as const,
+            levelRequirement: 1,
+            isActiveByDefault: false,
+            ...(grants ? { grantsDiscipline: grants } : {}),
+        }
+    })

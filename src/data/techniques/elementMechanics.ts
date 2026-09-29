@@ -148,6 +148,22 @@ export const fireMechanics: Record<string, TechniqueMechanics> = {
     'fire-twin-fireball-blast': { resolution: 'save', save: { ability: 'dexterity' }, damage: dmg('10d10', 'fire', 'negates') },
     'fire-blinding-light': { resolution: 'save', save: { ability: 'constitution' } },
     'fire-concussive-blow': { resolution: 'save', save: affinity },
+    'fire-stunning-strike': { resolution: 'save', save: { ability: 'constitution' }, damage: dmg('5d8', 'lightning', 'half') },
+    'fire-arc-lightning': {
+        resolution: 'save',
+        save: affinity,
+        damage: dmg('10d8', 'lightning', 'half', { label: 'First target' }),
+        mechanicsNote: 'Each chained bolt (3, or 4 at Trained) deals 3d8 lightning, half on a save. You gain 1 exhaustion until Mastered.',
+    },
+    'fire-lightning-blast': {
+        resolution: 'save',
+        save: affinity,
+        damage: [
+            { label: 'Struck creature', base: '6d10', perLevel: '1d10', type: 'lightning', onSave: 'half' },
+            { label: 'Within 10 ft of it', base: '3d10', perLevel: '1d10', type: 'thunder', onSave: 'half' },
+        ],
+        mechanicsNote: 'Double damage against objects and structures. You gain 1 exhaustion.',
+    },
     'fire-explosive-blast': { resolution: 'save', save: affinity, damage: exact('10d10', '13d10', '13d10', 'thunder', 'negates') },
 }
 

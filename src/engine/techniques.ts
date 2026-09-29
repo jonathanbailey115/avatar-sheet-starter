@@ -4,6 +4,7 @@ import type {
     CharacterClass,
     CharacterSubclass,
     Element,
+    Feature,
     Technique,
     TechniqueDamage,
     TechniqueDiscipline,
@@ -93,11 +94,16 @@ export function textAtLevel(technique: Technique, level: TechniqueLevel): string
 
 /** Sub-bendings the character's subclass lets them use. */
 export function disciplinesOf(
-    character: Pick<Character, 'subclassId' | 'level'>,
+    character: Pick<Character, 'subclassId' | 'level'> & Partial<Pick<Character, 'selectedFeatureIds'>>,
     subclasses: CharacterSubclass[],
+    features: Feature[] = [],
 ): TechniqueDiscipline[] {
     const subclass = subclasses.find((item) => item.id === character.subclassId)
-    return subclass && subclass.unlockLevel <= character.level ? (subclass.disciplines ?? []) : []
+    const fromSubclass = subclass && subclass.unlockLevel <= character.level ? (subclass.disciplines ?? []) : []
+    const fromFeats = features
+        .filter((feature) => feature.grantsDiscipline && (character.selectedFeatureIds ?? []).includes(feature.id))
+        .map((feature) => feature.grantsDiscipline as TechniqueDiscipline)
+    return [...new Set([...fromSubclass, ...fromFeats])]
 }
 
 export interface Prerequisite {

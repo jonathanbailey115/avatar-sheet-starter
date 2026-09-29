@@ -204,3 +204,43 @@ describe('campaign data round trip', () => {
         expect(parsed.data.features).toEqual(realContent.features)
     })
 })
+
+describe('feats', () => {
+    const feats = realContent.features.filter((feature) => feature.source === 'Feat')
+
+    it('brings in the 24 feats gmbinder changes or adds, as optional features', () => {
+        expect(feats).toHaveLength(24)
+        expect(feats.every((feat) => !feat.isActiveByDefault && feat.levelRequirement === 1)).toBe(true)
+        expect(new Set(feats.map((feat) => feat.id)).size).toBe(feats.length)
+    })
+
+    it('uses the setting names, keeping the 5e name in the text', () => {
+        const precise = feats.find((feat) => feat.name === 'Precise Bender')
+        expect(precise?.description).toMatch(/Spell Sniper/)
+        expect(feats.some((feat) => /\(/.test(feat.name))).toBe(false)
+    })
+
+    it('a chosen feat appears on the sheet', () => {
+        const character = build('firebending', 'Fire Nation', 3, { selectedFeatureIds: ['feat-lightning-generation'] })
+        expect(computeSheet(character, realContent).features.map((granted) => granted.feature.name)).toContain('Lightning Generation')
+    })
+})
+
+describe('Lightningbending', () => {
+    const lightning = realContent.techniques.filter((technique) => technique.discipline === 'Lightningbending')
+    const fire = realContent.classes.find((item) => item.id === 'firebending')
+
+    it('has three techniques, all Fire, that only the Lightning Generation feat unlocks', () => {
+        expect(lightning.map((technique) => technique.name).sort()).toEqual(['Arc Lightning', 'Lightning Blast', 'Stunning Strike'])
+        expect(lightning.every((technique) => technique.element === 'Fire')).toBe(true)
+
+        const without = build('firebending', 'Fire Nation', 9)
+        const withFeat = build('firebending', 'Fire Nation', 9, { selectedFeatureIds: ['feat-lightning-generation'] })
+        const blocker = (character: Character) => {
+            const technique = { ...lightning.find((item) => item.name === 'Stunning Strike')!, rare: false }
+            return learnBlocker(character, technique, fire, realContent.techniques, disciplinesOf(character, realContent.subclasses, realContent.features))
+        }
+        expect(blocker(without)).toMatch(/Lightningbending/)
+        expect(blocker(withFeat)).toBeNull()
+    })
+})

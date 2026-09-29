@@ -28,6 +28,7 @@ export function BuilderTechniquesPanel({
 }: BuilderTechniquesPanelProps) {
     const [query, setQuery] = useState('')
     const subclasses = useCollection('subclasses')
+    const features = useCollection('features')
     const selectedClass = editableClasses.find((item) => item.id === character.classId)
     const element = getBendingElement(character, editableClasses)
     const limits = limitStatus(character, selectedClass, editableTechniques)
@@ -133,7 +134,7 @@ export function BuilderTechniquesPanel({
                                     const level = levelOf(technique.id)
                                     const blocker = level
                                         ? null
-                                        : learnBlocker(character, technique, selectedClass, editableTechniques, disciplinesOf(character, subclasses))
+                                        : learnBlocker(character, technique, selectedClass, editableTechniques, disciplinesOf(character, subclasses, features))
 
                                     return (
                                         <div key={technique.id} className="checkbox-item">

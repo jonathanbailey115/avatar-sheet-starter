@@ -166,4 +166,54 @@ export const features: Feature[] = [
             { kind: 'bonus', target: 'skill:Nature', value: 'proficiency', situation: 'related to your favored terrain' },
         ],
     },
+    {
+        id: 'lineage-water-tribe-community',
+        name: 'Community',
+        description:
+            'You find strength in family and community. If a creature of Water Tribe lineage is fighting alongside you during combat, one of your damage die is always the maximum value.',
+        source: 'Lineage',
+        featureType: 'Passive',
+        levelRequirement: 1,
+        isActiveByDefault: true,
+    },
+    {
+        id: 'lineage-fire-nation-lessons-of-the-schools',
+        name: 'Lessons of the Schools',
+        description:
+            'Fire Nation schools have taught you well from the start. At level 1, choose two of your skill proficiencies, or one of your skill proficiencies and your proficiency with the tool of your choice. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies. At 6th level, you can choose two more of your proficiencies (in skills or with thieves’ tools) to gain this benefit.',
+        source: 'Lineage',
+        featureType: 'Passive',
+        levelRequirement: 1,
+        isActiveByDefault: true,
+    },
+    {
+        id: 'lineage-fire-nation-dragons-fury',
+        name: 'Dragon’s Fury',
+        description:
+            'Each time you make two attacks or use a technique on a creature, you can force them to move 5ft away from you.',
+        source: 'Lineage',
+        featureType: 'Passive',
+        levelRequirement: 1,
+        isActiveByDefault: true,
+    },
+    {
+        id: 'lineage-air-nomads-negative-jing',
+        name: 'Negative Jing',
+        description:
+            'Air Nomad tradition implores you to practice pacifism at all times. Growing up with or studying this belief has taught you to instead flow with opposition rather than resist it. You can take a bonus action on each of your turns in combat. This action can be used only to take the Dash or Disengage.',
+        source: 'Lineage',
+        featureType: 'Bonus Action',
+        levelRequirement: 1,
+        isActiveByDefault: true,
+    },
+    {
+        id: 'lineage-air-nomads-twinkletoes',
+        name: 'Twinkletoes',
+        description:
+            'You can nimbly dodge out of the way of attacks. When an attack or technique hits you: If it is a technique, you can switch the required Saving Throw into a Dexterity Saving Throw with the DC being their Bending Save DC. On a success you take no damage and on a fail you take half damage. If it is an attack, you can make an Acrobatics Check vs the attack roll to reduce the damage by half.',
+        source: 'Lineage',
+        featureType: 'Reaction',
+        levelRequirement: 1,
+        isActiveByDefault: true,
+    },
 ]

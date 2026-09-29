@@ -33,7 +33,7 @@ export interface Lineage {
 export type TechniqueElement = Element | 'Universal' | 'Fighting'
 
 /** Sub-bendings gmbinder lists inside an element's technique list. */
-export type TechniqueDiscipline = 'Bloodbending' | 'Combustionbending'
+export type TechniqueDiscipline = 'Bloodbending' | 'Combustionbending' | 'Lightningbending'
 
 /** A save the target makes against the caster's Bending Save DC. */
 export interface TechniqueSave {
@@ -182,6 +182,8 @@ export interface Feature {
     uses?: number
     recharge?: Recharge | null
     effects?: FeatureEffect[]
+    /** Taking this feature lets the character learn this sub-bending's techniques (for example a feat). */
+    grantsDiscipline?: TechniqueDiscipline
 }
 
 export type AbilityName =

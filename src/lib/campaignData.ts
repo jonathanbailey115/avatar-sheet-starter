@@ -46,7 +46,7 @@ const techniqueSchema: z.ZodType<Technique, z.ZodTypeDef, unknown> = z.object({
     element: z.union([element, z.literal('Universal'), z.literal('Fighting')]),
     description: z.string(),
     rare: z.boolean().optional(),
-    discipline: z.enum(['Bloodbending', 'Combustionbending']).optional(),
+    discipline: z.enum(['Bloodbending', 'Combustionbending', 'Lightningbending']).optional(),
     prerequisite: z.string().optional(),
     castingTime: z.string().optional(),
     range: z.string().optional(),
@@ -93,6 +93,7 @@ const featureSchema: z.ZodType<Feature, z.ZodTypeDef, unknown> = z.object({
     uses: z.number().optional(),
     recharge: z.enum(['Short Rest', 'Long Rest', 'Manual']).nullable().optional(),
     effects: z.array(featureEffect).optional(),
+    grantsDiscipline: z.enum(['Bloodbending', 'Combustionbending', 'Lightningbending']).optional(),
 })
 
 const weight = z.number().min(0).optional()

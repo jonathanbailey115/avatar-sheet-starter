@@ -156,16 +156,18 @@ write(
     }),
 )
 
-// Firebending: the base list plus Combustionbending. Lightningbending (feat-gated) is skipped for now.
+// Firebending: the base list, Combustionbending (a Principle) and Lightningbending (a feat).
 const fireStart = find((l) => l.includes('Firebending Techniques</div>'))
 const airStart = find((l) => l.includes('Airbending Techniques</div>'), fireStart)
 write(
     'fire.generated.ts',
     'fireTechniques',
-    'Firebending techniques, including Combustionbending. Lightningbending is not included yet.',
+    'Firebending techniques, including Combustionbending and Lightningbending (tagged with a discipline).',
     parseSpellSection(fireStart, airStart, 'fire', {
         Firebending: { element: 'Fire' },
         Combustionbending: { element: 'Fire', discipline: 'Combustionbending' },
+        // Unlocked by the Lightning Generation feat (docs/RULES_QUESTIONS.md L7).
+        Lightningbending: { element: 'Fire', discipline: 'Lightningbending' },
     }),
 )
 

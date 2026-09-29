@@ -17,7 +17,7 @@ export function learnTechniques(character: Character, content: RulesContent, rng
     const characterClass = content.classes.find((item) => item.id === character.classId)
     let current: Character = { ...character, knownTechniques: [] }
     if (!characterClass) return current
-    const disciplines = disciplinesOf(character, content.subclasses)
+    const disciplines = disciplinesOf(character, content.subclasses, content.features)
 
     for (let guard = 0; guard < 60; guard += 1) {
         const open = limitStatus(current, characterClass, content.techniques).filter((status) => status.used < status.max)

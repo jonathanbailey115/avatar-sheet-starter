@@ -547,5 +547,107 @@ export const classText: Record<string, ClassTextEntry[]> = {
             "name": "Upgraded Electric Batons",
             "text": "You craft batons that can shock creatures that touch the end of them. The batons deal 4d8 bludgeoning damage when you hit a creature with their blunt side and 5d8 lightning damage when you hit a creature with the ends. If you hit a creature with the ends, the creature is stunned until their next turn. Each baton has 3 uses and must be recharged after it is completely used. If you expend 5 capacitors to create the electric batons, the lightning damage increases by 2d8 and you get 1 extra use per baton. Each baton weighs 2.5 lbs for a total of 5 lbs."
         }
+    ],
+    "feats": [
+        {
+            "name": "Introduction",
+            "text": "For the feats to better fit the setting, some feats have been taken out. The list of feats taken out are:\n* Aberrant Dragonmark\n* Adept of the Black Robes\n* Adept of the Red Robes\n* Adept of the White Robes\n* Divinely Favoured\n* Dragon Fear\n* Dragon Hide\n* Drow High Magic\n* Dual Wielder\n* Dwarven Fortitude\n* Elemental Adept\n* Elven Accuracy\n* Fade Away\n* Fey Teleportation\n* Flames of Phlegethos\n* Gift of the Chromatic Dragon\n* Gift of the Gem Dragon\n* Gift of the Metallic Dragon\n* Infernal Constitution\n* Initiate of High Sorcery\n* Linguist\n* Martial Adept\n* Metamagic Adept\n* Orcish Fury\n* Ritual Caster\n* Sentinel\n* Shadow Touched\n* Strixhaven Initiate\n* Strixhaven Mascot\n* Bountiful Luck\nHowever, to better fit the setting some feats have been changed, some new homebrew feats have been added and the rest were kept the same. Those are:"
+        },
+        {
+            "name": "Bender Bender (Mage Slayer)",
+            "text": "You have practiced techniques in melee combat against benders, gaining the following benefits:\n* When a bender within 5 feet of you uses a technique, you can use your reaction to make a melee weapon attack against that creature.\n* When you damage a creature that is concentrating on a technique, that creature has disadvantage on the saving throw it makes to maintain its concentration.\n* You have advantage on saving throws against techniques used by creatures within 5 feet of you."
+        },
+        {
+            "name": "Bending Master",
+            "text": "_Prerequisite: You must be a bender with at least 4 Mastered Techniques_\nThrough rigorous training you have Mastered your bending style:\n* Increase your element's respective bending modifier by 1.\n* You are now considered a bending Master and can assist others to increase their technique levels to Master. You can Master any technique that you already have at Trained level by using the Training Move.\n* You can master 7 techniques rather than 6."
+        },
+        {
+            "name": "Educated Bender",
+            "text": "_Prerequisite: You must be a bender_\n* Increase your Intelligence or Wisdom score by 1, to a maximum of 20.\n* You can choose 3 more techniques from your respective bending list."
+        },
+        {
+            "name": "Efficient Bender",
+            "text": "_Prerequisite: You must be a bender_\n* Increase your Intelligence or Wisdom score by 1, to a maximum of 20.\n* Once per day, you can use any technique that you know without expending a Technique Slot."
+        },
+        {
+            "name": "Engineering Initiate (Artificer İnitiate)",
+            "text": "You’ve learned some of the Engineer’s inventiveness:\n* You can craft one Creative Mind Contraption that you have the required level for without requiring any components.\n* You gain proficiency with Tinkerer’s Tools"
+        },
+        {
+            "name": "Fortuneteller (Telepathic)",
+            "text": "You delve into the world of reading fate and the cosmos\n* Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20.\n* Choose 2 of the following: Persuasion, Insight and Deception. You gain proficiency in the chosen 2. If you already have proficiency, you gain expertise.\n* You can accurately tell the time of year and what fates might be in store for yourself and others by looking at the stars. You can read a persons energy to give them insight on what may happen to them in the near future."
+        },
+        {
+            "name": "Improved Seismic Sense",
+            "text": "_Prerequisite: You must have the Seismic Sense feat._\nThrough training you have improved your Seismic Sense perception, you gain the following benefits:\n- Creatures don’t get any bonus against you while they’re flanking you.\n- Creatures don’t get any bonus against you while you are prone.\n- Your Seismic Sense tremorsense distance is now equal to your Grounded bending range."
+        },
+        {
+            "name": "Lightning Fast",
+            "text": "_Prerequisite: Must have the Lightning Generation feat._\nQuickness in the generation of lightning may prove to give you the edge in battle, you gain the following benefits:\n- Increase your Strength score by 1, to a maximum of 20.\nLightning Bending attacks no longer take an action to use. When you take the Attack action, each attack made with Lightning Bending now only takes 1 attack.\n- Each Lightning Bending technique no longer takes a whole turn to use. You can use Lightning Bending techniques as an action."
+        },
+        {
+            "name": "Lightning Generation",
+            "text": "_Prerequisite: Must be a Firebender_\nYou learn the dangerous practice of lightning generation. You gain the following benefits:\n- Increase your Strength score by 1, to a maximum of 20.\n- You can now use Lightning Bending attacks and Techniques. Each attack is considered an action and deals 1d12 + your Bending Attack Modifier lightning damage."
+        },
+        {
+            "name": "Lightning Redirection",
+            "text": "_Prerequisite: Must have the Lightning Generation feat._\nYou learn the most dangerous practice of Lighningbending, you gain the following benefits:\n- Increase your Strength score by 1, to a maximum of 20.\n- As a reaction, you can redirect Lightning Bending attacks and Techniques made against you to a direction of your choosing. Whenever you want to do so, make an Elemental Affinity Saving Throw. The DC is either the Attack Roll or the Bending Save DC of the creature. If it's an attack, on a success you redirect the attack with the same attack and damage roll in a different direction. If it's a technique, you redirect it in another direction with the same damage roll. In both cases you take half damage damage."
+        },
+        {
+            "name": "Master of Weaponry",
+            "text": "_Prerequisite: You must have 1 Mastered Fighting Technique_\nYou have proven yourself to be a master weaponsmaster, you gain the following benefits:\n* Increase your Strength, Dexterity or Intelligence score by 1 point, to a maximum of 20.\n* You can Master 1 more fighting technique. For only the technique to be Mastered, you can make Training Checks to master it."
+        },
+        {
+            "name": "National Teachings",
+            "text": "The teachings of the Fire Nation have captivated you, you gain the following benefits:\n* Increase your Intelligence, Strength or Dexterity score by 1, to a maximum of 20.\n* You know about the way of life, political system and surface level traditions of the Fire Nation.\n* Choose a lineage: Water Tribe, Earth Kingdom, Air Nomads or Fire Nation. Your critical window for your chosen nation increases to 19-20.\n* You know the weaknesses in the structures of the chosen lineage and deal double  damage against them. You also know the social structure of the lineage in detail.\n* **If your lineage is Fire Nation**: You deal double damage to every structure from the other lineages. This doesn’t stack with other abilities or techniques that deal double damage to structures as well."
+        },
+        {
+            "name": "Nomadic Teachings",
+            "text": "The teachings of the Air Nomads have enlightened you, you gain the following benefits:\n* Increase your Intelligence or Wisdom score by 1, to a maximum of 20.\n* You know the lifestyle of airbenders. Their diets, traditions and social system. You know the locations of the Airbending Temples and the significance of each respective temple.\n* If you shave your head you can feel the flow of air around you better. When you are bald, you can double your proficiency bonus on any Saving Throw against techniques that are used towards you from behind.\n* **If your lineage is Air Nomad**: While you are meditating, you can spirit walk into the spirit realm with other creature that meditate with you. You can choose a location you know or go to a random location in the spirit world. The bodies of those who spirit walk remain unconscious as long as they spirit walk."
+        },
+        {
+            "name": "Precise Bender (Spell Sniper)",
+            "text": "_Prerequisite: You must be a bender_\nYou have learned techniques to enhance your attacks with certain kinds of techniques, gaining the following benefits:\n* When you use a technique that requires you to make an attack roll, the range of the technique is doubled.\n* Your technique that can be used at a range ignores half cover and 3/4 cover."
+        },
+        {
+            "name": "Seismic Sense",
+            "text": "_Prerequisite: Must be an Earthbender_\nYour connection to the Earth has grown stronger and you adopt the principles of the mighty Badgermoles:\n- Increase your Constitution or Wisdom score by 1, to a maximum of 20.\n- As long as a part of your body touches a piece of earth or metal, you can see through the Earth. You gain a Tremorsense equal to half of your Grounded range (rounded up). Images you see through your tremorsense are clearer and sharper the higher your Passive Perception.\n- As a bonus action, you can slam the earth or metal with your foot or hand to give yourself advantage on a Perception Check you make with your tremorsense."
+        },
+        {
+            "name": "Soldier (War Caster)",
+            "text": "_Prerequisite: You must be a bender_\nYou have practiced bending in the midst of combat, learning techniques that grant you the following benefits:\n* You have advantage on Constitution saving throws that you make to maintain your concentration on a spell when you take damage.\n* You can perform techniques even when you have weapons or a shield in one or both hands.\n* When a hostile creature's movement provokes an opportunity attack from you, you can use your reaction to use any technique on the creature, rather than making an opportunity attack. The technique must have a casting time of 1 action and must target only that creature."
+        },
+        {
+            "name": "Sovereign Teachings",
+            "text": "The resilience of Earth Kingdom citizens has shocked you, you gain the following benefits:\n* Increase your Constitution or Strength score by 1, to a maximum of 20.\n* You know about the way of life, political system and surface level traditions of the Earth Kingdom.\n* Once per day, whenever you are knocked prone you can make a Constitution Check of DC 15 to resist being knocked prone.\n* **If your lineage is Earth Kingdom**: Once per day, you can decrease the damage of any attack or technique by 1d10 + your Constitution Modifier."
+        },
+        {
+            "name": "Spirit Cleanser",
+            "text": "_Prerequisite: You must be a Waterbender_\nYou learn the practice of Spiritbending:\n- Increase your Charisma or Wisdom score by 1, to a maximum of 20.\n- You know about the Northern Water Tribe practice of Spiritbending.\n- As an action, by concentrating for 5 minutes you can cleanse the corrupted spirit of a creature or spirit. When you attempt to cleanse the spirit of an unwilling creature or spirit, they must make a Charisma Saving Throw (if they’re a waterbender) or a Constitution Saving Throw (if they aren’t) vs your Bending Save DC. On a fail, they are restrained. At the start of each of their turns they can attempt to break free. If the creature or spirit doesn’t break free, their spirit is cleansed. You must have a medium water source to cleanse their spirit."
+        },
+        {
+            "name": "Spirit Destroyer",
+            "text": "_Prerequisite: You must have the Spirit Cleanser feat._\nAlthough a healing practice, you learn to manipulate Spiritbending to corrupt others. You gain the following abilities:\n- Increase your Charisma or Wisdom score by 1, to a maximum of 20.\n- As an action, by concentrating for 5 minutes you can destroy the spirit of any creature. When you attempt to destroy the spirit of an unwilling creature or spirit, they must make a Charisma Saving Throw (if they’re a waterbender) or a Constitution Saving Throw (if they aren’t) vs your Bending Save DC. On a fail, they are restrained. At the start of each of their turns they can attempt to break free. If the creature or spirit can not break free at the end of 5 minutes, their spirit is destroyed and they immediately die. Their spirit doesn’t cross into the Spirit World. You must have a medium water source to cleanse their spirit."
+        },
+        {
+            "name": "Spiritual Projection",
+            "text": "_Prerequisite: You must be an Airbender_\nYou learn to project your spirit into places around the globe:\n- Increase your Wisdom score by 1, to a maximum of 20.\n- When you meditate, you can choose to project your spirit to a location you have been or know for certain (i.e where Ba Sing Sae is located). When you want to project yourself, make a Wisdom Check with a DC determined by the GM according to the distance you want to project yourself to. If you don’t have the bonus provided by Meditation from the previous day, you can’t add the Meditation bonus to the roll.\n- You can speak with and hear other creatures however you can not interact with any physical object. Your body is ethereal at the location you project yourself and has the same statistics as you, with the exception of it having 1 HP. You can move up to 1000 ft away from the initial point you project yourself.\n- You can project your spirit once per day."
+        },
+        {
+            "name": "Spirit World Enthusiast (Fey Touched)",
+            "text": "The beauty of the spirit world has pushed you to learn more about it:\n* Increase your Intelligence or Wisdom score by 1, to a maximum of 20.\n*  You know how the spirit world operates and its relationship relative to the material world and you know the names or given names of powerful evil and good spirits.\n* You know of important locations in the spirit world and the material world alongside their significant meaning behind them such as: The Spirit Portals, Realm of Koh, The Fog of Lost Souls, Forgetful Valley, Spirit Oasis."
+        },
+        {
+            "name": "Truthseer",
+            "text": "_Prerequisite: Must have the Seismic Sense feat._\nYou Seismic Sense has improved and you gain the following benefits:\n- Increase your Constitution or Wisdom score by 1, to a maximum of 20.\n- You gain proficiency for Insight and Perception. If you are already proficient, you gain expertise. Using Seismic Sense, you have advantage on Insight and Perception checks within half of your Grounded bending range (rounded up)."
+        },
+        {
+            "name": "Tribal Teachings",
+            "text": "The culture of the Water Tribes have humbled you, you gain the following benefits:\n* Increase your Intelligence, Constitution or Charisma score by 1, to a maximum of 20.\n* You know about the way of life, political system and surface level traditions of one of the Water Tribes of your choice. You can always catch fish when you go fishing.\n* If you fight alongside a member of your lineage, once per turn you can reroll an attack you make; however you must use the new roll. For techniques you can reroll a 1 on your damage.\n* **If your lineage is Water Tribe**: You can reroll twice."
+        },
+        {
+            "name": "Weaponsmaster Initiate (Fighting Initiate)",
+            "text": "_Prerequisite: Proficiency with a Martial Weapon_\nYou decide to improve upon your martial training and better yourself with a technique:\n* You learn a **Basic Fighting Technique** from the Weaponsmaster fighting technique list. You can train yourself further to become trained in it, however you can not master the technique.\n* Whenever you reach a level that grants the Ability Score Improvement feature, you can replace the fighting technique with another one from the fighter class that you don't have."
+        }
     ]
 }
