@@ -1,3 +1,4 @@
+import { ConfirmButton } from '../components/ConfirmButton'
 import type { CampaignMember, MemberStatus } from './types'
 
 type PartyBoardProps = {
@@ -66,15 +67,13 @@ export function PartyBoard({ members, statuses, myUserId, isGm, onKick }: PartyB
                         )}
 
                         {isGm && member.userId !== myUserId && (
-                            <button
+                            <ConfirmButton
                                 className="link-button"
-                                type="button"
-                                onClick={() => {
-                                    if (window.confirm(`Remove ${member.displayName} from the campaign?`)) onKick(member.userId)
-                                }}
+                                question={`Remove ${member.displayName}?`}
+                                onConfirm={() => onKick(member.userId)}
                             >
                                 Remove from campaign
-                            </button>
+                            </ConfirmButton>
                         )}
                     </article>
                 )

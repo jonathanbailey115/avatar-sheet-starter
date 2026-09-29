@@ -1,3 +1,4 @@
+import { ConfirmButton } from '../components/ConfirmButton'
 import { useState } from 'react'
 import { applyCast, describePlan, planCast } from '../engine/casting'
 import { castLevels, damageOptions, saveSummary, textAtLevel } from '../engine/techniques'
@@ -192,17 +193,13 @@ export function TechniqueCard({ character, sheet, technique, known, onChange }: 
                                     </button>
                                 </>
                             )}
-                            <button
+                            <ConfirmButton
                                 className="link-button"
-                                type="button"
-                                onClick={() => {
-                                    if (window.confirm('Stop training? You lose the progress you made.')) {
-                                        setKnown(stopTraining)
-                                    }
-                                }}
+                                question="Stop training? You lose your progress."
+                                onConfirm={() => setKnown(stopTraining)}
                             >
                                 Stop training
-                            </button>
+                            </ConfirmButton>
                         </>
                     )}
                 </div>

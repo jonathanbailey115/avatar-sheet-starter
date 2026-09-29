@@ -1,3 +1,4 @@
+import { ConfirmButton } from '../components/ConfirmButton'
 import { useState } from 'react'
 import SectionCard from '../components/SectionCard'
 import { buildStatBlock } from '../npc/statBlock'
@@ -45,15 +46,13 @@ export function CampaignNpcs({ campaignId, npcs, isGm }: { campaignId: string; n
                                         />
                                         Show to players
                                     </label>
-                                    <button
+                                    <ConfirmButton
                                         className="secondary-button"
-                                        type="button"
-                                        onClick={() => {
-                                            if (window.confirm(`Remove ${npc.character.name || 'this NPC'} from the campaign?`)) change(() => getBackend().deleteNpc(campaignId, npc.id))
-                                        }}
+                                        question="Remove from the campaign?"
+                                        onConfirm={() => change(() => getBackend().deleteNpc(campaignId, npc.id))}
                                     >
                                         Remove
-                                    </button>
+                                    </ConfirmButton>
                                 </>
                             )}
                         </div>

@@ -1,3 +1,4 @@
+import { ConfirmButton } from '../components/ConfirmButton'
 import { useMemo, useState } from 'react'
 import SectionCard from '../components/SectionCard'
 import { downloadText, safeFileName, serializeCharacter } from '../lib/characterIO'
@@ -143,17 +144,16 @@ export function NpcScreen() {
                                         >
                                             View
                                         </button>
-                                        <button
+                                        <ConfirmButton
                                             className="secondary-button"
-                                            type="button"
-                                            onClick={() => {
-                                                if (!window.confirm(`Delete ${npc.name || 'this NPC'}?`)) return
+                                            question="Delete this NPC?"
+                                            onConfirm={() => {
                                                 deleteNpc(npc.id)
                                                 if (selectedId === npc.id) setSelectedId(null)
                                             }}
                                         >
                                             Delete
-                                        </button>
+                                        </ConfirmButton>
                                     </div>
                                 </article>
                             ))}

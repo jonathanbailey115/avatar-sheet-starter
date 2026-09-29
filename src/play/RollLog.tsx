@@ -1,3 +1,4 @@
+import { ConfirmButton } from '../components/ConfirmButton'
 import SectionCard from '../components/SectionCard'
 import { useRollLog } from '../store/rollLog'
 import { RollResult } from './RollResult'
@@ -9,16 +10,9 @@ export function RollLog() {
     return (
         <SectionCard title="Roll log">
             <div className="actions inline-actions">
-                <button
-                    className="link-button"
-                    type="button"
-                    disabled={entries.length === 0}
-                    onClick={() => {
-                        if (window.confirm('Clear the roll log?')) clear()
-                    }}
-                >
+                <ConfirmButton className="link-button" disabled={entries.length === 0} question="Clear the roll log?" onConfirm={clear}>
                     Clear log
-                </button>
+                </ConfirmButton>
             </div>
 
             {entries.length === 0 ? (

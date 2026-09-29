@@ -1,3 +1,4 @@
+import { ConfirmButton } from '../components/ConfirmButton'
 import { useState } from 'react'
 import SectionCard from '../components/SectionCard'
 import { characterDisplayName } from '../lib/character'
@@ -31,12 +32,6 @@ export function LibraryScreen({ onPlay, onEdit }: { onPlay: () => void; onEdit: 
     const handleCreate = () => {
         createCharacter()
         onEdit()
-    }
-
-    const handleDelete = (id: string, name: string) => {
-        if (window.confirm(`Delete ${name}? This cannot be undone. Export a backup first if unsure.`)) {
-            deleteCharacter(id)
-        }
     }
 
     const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,13 +165,13 @@ export function LibraryScreen({ onPlay, onEdit }: { onPlay: () => void; onEdit: 
                                         >
                                             Export
                                         </button>
-                                        <button
+                                        <ConfirmButton
                                             className="secondary-button"
-                                            type="button"
-                                            onClick={() => handleDelete(character.id, name)}
+                                            question={`Delete ${name}? This cannot be undone.`}
+                                            onConfirm={() => deleteCharacter(character.id)}
                                         >
                                             Delete
-                                        </button>
+                                        </ConfirmButton>
                                     </div>
                                 </article>
                             )

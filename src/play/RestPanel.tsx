@@ -1,3 +1,4 @@
+import { ConfirmButton } from '../components/ConfirmButton'
 import { useState } from 'react'
 import SectionCard from '../components/SectionCard'
 import { longRest, shortRest } from '../engine/rests'
@@ -51,7 +52,6 @@ export function RestPanel({ character, sheet, content, onChange }: RestPanelProp
     }
 
     const takeLongRest = () => {
-        if (!window.confirm('Take a long rest? This restores HP, hit dice, and long-rest features.')) return
         onChange((current) => longRest(current, content))
         setMessage('Long rest taken. HP, resources and half your hit dice restored.')
         setOpen(false)
@@ -63,9 +63,14 @@ export function RestPanel({ character, sheet, content, onChange }: RestPanelProp
                 <button className="secondary-button" type="button" disabled={dead} onClick={() => setOpen(!open)}>
                     Short Rest
                 </button>
-                <button className="secondary-button" type="button" disabled={dead} onClick={takeLongRest}>
+                <ConfirmButton
+                    className="secondary-button"
+                    disabled={dead}
+                    question="Take a long rest? Restores HP, hit dice and long-rest features."
+                    onConfirm={takeLongRest}
+                >
                     Long Rest
-                </button>
+                </ConfirmButton>
             </div>
 
             <p className="muted">

@@ -1,3 +1,4 @@
+import { ConfirmButton } from '../components/ConfirmButton'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { newRollId, parseExpression, rollExpression } from '../engine/rolls'
@@ -59,16 +60,14 @@ export function CampaignLog({ rolls, isGm, myName, privateRolls, onClear, onRoll
                     Roll
                 </button>
                 {isGm && (
-                    <button
+                    <ConfirmButton
                         className="link-button"
-                        type="button"
                         disabled={rolls.length === 0}
-                        onClick={() => {
-                            if (window.confirm('Clear the campaign log for everyone?')) onClear()
-                        }}
+                        question="Clear the log for everyone?"
+                        onConfirm={onClear}
                     >
                         Clear log
-                    </button>
+                    </ConfirmButton>
                 )}
             </form>
             {error && <p className="roll-error">{error}</p>}

@@ -1,3 +1,4 @@
+import { ConfirmButton } from '../components/ConfirmButton'
 import SectionCard from '../components/SectionCard'
 import { characterDisplayName } from '../lib/character'
 import { myBindings, nameFor, useCampaignStore } from '../store/campaign'
@@ -125,15 +126,13 @@ export function CampaignView() {
                         </p>
                     </div>
                 )}
-                <button
+                <ConfirmButton
                     className="secondary-button"
-                    type="button"
-                    onClick={() => {
-                        if (window.confirm(`Leave ${campaign.name}?`)) void leaveCampaign(campaign.id)
-                    }}
+                    question={`Leave ${campaign.name}?`}
+                    onConfirm={() => void leaveCampaign(campaign.id)}
                 >
                     Leave this campaign
-                </button>
+                </ConfirmButton>
             </SectionCard>
         </div>
     )
