@@ -6,7 +6,6 @@ import { BuilderEquipmentPanel } from '../character-builder/BuilderEquipmentPane
 import { BuilderFeaturesPanel } from '../character-builder/BuilderFeaturesPanel'
 import { BuilderHomePanel } from '../character-builder/BuilderHomePanel'
 import { BuilderLineagePanel } from '../character-builder/BuilderLineagePanel'
-import { BuilderPreviewPanel } from '../character-builder/BuilderPreviewPanel'
 import { BuilderProficienciesPanel } from '../character-builder/BuilderProficienciesPanel'
 import { BuilderTechniquesPanel } from '../character-builder/BuilderTechniquesPanel'
 import { characterDisplayName } from '../lib/character'
@@ -25,12 +24,17 @@ const BUILDER_TABS = [
     { id: 'features', label: 'Features' },
     { id: 'techniques', label: 'Techniques' },
     { id: 'equipment', label: 'Equipment' },
-    { id: 'preview', label: 'Preview' },
 ] as const
 
 type BuilderTab = (typeof BUILDER_TABS)[number]['id']
 
-export function BuilderScreen({ onOpenLibrary }: { onOpenLibrary: () => void }) {
+export function BuilderScreen({
+    onOpenLibrary,
+    onPlay,
+}: {
+    onOpenLibrary: () => void
+    onPlay: () => void
+}) {
     const { character, setCharacter } = useActiveCharacter()
     const clearNotes = useLibraryStore((state) => state.clearNotes)
     const [tab, setTab] = useState<BuilderTab>('home')
@@ -59,7 +63,12 @@ export function BuilderScreen({ onOpenLibrary }: { onOpenLibrary: () => void }) 
 
     return (
         <section id="panel-builder" role="tabpanel" className="tab-panel">
-            <h2>{characterDisplayName(character)}</h2>
+            <div className="play-header">
+                <h2>{characterDisplayName(character)}</h2>
+                <button className="primary-button" type="button" onClick={onPlay}>
+                    View play sheet
+                </button>
+            </div>
 
             {character.migrationNotes.length > 0 && (
                 <div className="status-message" role="status">
@@ -165,17 +174,6 @@ export function BuilderScreen({ onOpenLibrary }: { onOpenLibrary: () => void }) 
                 <BuilderEquipmentPanel character={character} setCharacter={setCharacter} />
             )}
 
-            {tab === 'preview' && (
-                <BuilderPreviewPanel
-                    character={character}
-                    editableClasses={classes}
-                    editableSubclasses={subclasses}
-                    editableBackgrounds={backgrounds}
-                    editableLineages={lineages}
-                    editableFeatures={features}
-                    editableTechniques={techniques}
-                />
-            )}
         </section>
     )
 }

@@ -3,12 +3,14 @@ import { BuilderScreen } from './screens/BuilderScreen'
 import { DataScreen } from './screens/DataScreen'
 import { LibraryScreen } from './screens/LibraryScreen'
 import { NpcScreen } from './screens/NpcScreen'
+import { PlayScreen } from './screens/PlayScreen'
 import { useStorageStatus } from './store/storage'
 
-type AppTab = 'library' | 'builder' | 'npc' | 'data'
+type AppTab = 'library' | 'play' | 'builder' | 'npc' | 'data'
 
 const TABS: Array<{ id: AppTab; label: string }> = [
     { id: 'library', label: 'My Characters' },
+    { id: 'play', label: 'Play' },
     { id: 'builder', label: 'Character Builder' },
     { id: 'npc', label: 'NPC Studio' },
     { id: 'data', label: 'Campaign Data' },
@@ -53,9 +55,23 @@ export default function App() {
                 ))}
             </nav>
 
-            {activeTab === 'library' && <LibraryScreen onOpen={() => setActiveTab('builder')} />}
+            {activeTab === 'library' && (
+                <LibraryScreen
+                    onPlay={() => setActiveTab('play')}
+                    onEdit={() => setActiveTab('builder')}
+                />
+            )}
+            {activeTab === 'play' && (
+                <PlayScreen
+                    onEdit={() => setActiveTab('builder')}
+                    onOpenLibrary={() => setActiveTab('library')}
+                />
+            )}
             {activeTab === 'builder' && (
-                <BuilderScreen onOpenLibrary={() => setActiveTab('library')} />
+                <BuilderScreen
+                    onOpenLibrary={() => setActiveTab('library')}
+                    onPlay={() => setActiveTab('play')}
+                />
             )}
             {activeTab === 'npc' && <NpcScreen />}
             {activeTab === 'data' && <DataScreen />}

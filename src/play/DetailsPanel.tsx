@@ -1,0 +1,96 @@
+import { useState } from 'react'
+import SectionCard from '../components/SectionCard'
+import type { Sheet } from '../engine/sheet'
+import type { Character, Technique } from '../types/schema'
+
+type DetailTab = 'features' | 'techniques' | 'proficiencies' | 'notes'
+
+const TABS: Array<{ id: DetailTab; label: string }> = [
+    { id: 'features', label: 'Features' },
+    { id: 'techniques', label: 'Techniques' },
+    { id: 'proficiencies', label: 'Proficiencies' },
+    { id: 'notes', label: 'Notes' },
+]
+
+type DetailsPanelProps = {
+    character: Character
+    sheet: Sheet
+    techniques: Technique[]
+    lineageProficiencies: { armor: string[]; weapons: string[] }
+}
+
+export function DetailsPanel({ character, sheet, techniques, lineageProficiencies }: DetailsPanelProps) {
+    const [tab, setTab] = useState<DetailTab>('features')
+
+    return (
+        <SectionCard title="Details">
+            <div className="builder-tabs" role="tablist">
+                {TABS.map((item) => (
+                    <button
+                        key={item.id}
+                        type="button"
+                        role="tab"
+                        aria-selected={tab === item.id}
+                        className={tab === item.id ? 'active' : ''}
+                        onClick={() => setTab(item.id)}
+                    >
+                        {item.label}
+                    </button>
+                ))}
+            </div>
+
+            {tab === 'features' && (
+                <div className="detail-list">
+                    {sheet.features.length === 0 && <p className="muted">No features yet.</p>}
+                    {sheet.features.map(({ feature, origin }) => (
+                        <details key={feature.id} className="feature-item">
+                            <summary>
+                                <strong>{feature.name}</strong>
+                                <small className="muted"> · {origin} · {feature.featureType}</small>
+                            </summary>
+                            <p>{feature.description}</p>
+                        </details>
+                    ))}
+                </div>
+            )}
+
+            {tab === 'techniques' && (
+                <div className="detail-list">
+                    {character.knownTechniques.length === 0 && (
+                        <p className="muted">No techniques learned yet.</p>
+                    )}
+                    {character.knownTechniques.map((known) => {
+                        const technique = techniques.find((item) => item.id === known.techniqueId)
+                        if (!technique) return null
+                        return (
+                            <details key={known.techniqueId} className="feature-item">
+                                <summary>
+                                    <strong>{technique.name}</strong>
+                                    <small className="muted"> · {technique.element} · {known.level}</small>
+                                </summary>
+                                <p>{technique.description}</p>
+                            </details>
+                        )
+                    })}
+                </div>
+            )}
+
+            {tab === 'proficiencies' && (
+                <ul className="stats">
+                    <li><strong>Armor:</strong> {lineageProficiencies.armor.join(', ') || 'None'}</li>
+                    <li><strong>Weapons:</strong> {lineageProficiencies.weapons.join(', ') || 'None'}</li>
+                    <li><strong>Tools:</strong> {character.toolProficiencies.join(', ') || 'None'}</li>
+                    <li><strong>Languages:</strong> {character.languages.join(', ') || 'None'}</li>
+                </ul>
+            )}
+
+            {tab === 'notes' && (
+                <div className="detail-list">
+                    <p><strong>Background:</strong> {character.backgroundNotes || '—'}</p>
+                    <p><strong>Equipment:</strong> {character.equipmentNotes || '—'}</p>
+                    <p><strong>Notes:</strong> {character.notes || '—'}</p>
+                </div>
+            )}
+        </SectionCard>
+    )
+}

@@ -5,14 +5,24 @@ Vite + React + TypeScript (strict). State is Zustand with localStorage persisten
 ```
 src/
   types/schema.ts        Types, CHARACTER_SCHEMA_VERSION
-  engine/                Pure rules code. No React, no storage. (abilities, bending)
+  engine/                Pure rules code. No React, no storage.
+                         abilities, bending, hitPoints, dice, features, resources, rests, effects, sheet
   data/                  Built-in rules content, split by topic (classes, lineages, features, ...)
   lib/                   Pure helpers: migrations, zod schemas, import/export, normalize, generator, random
   store/                 Zustand stores (content edits, character library, NPCs, active character hook)
-  screens/               Top-level screens (Library, Builder, NPC Studio, Campaign Data)
+  screens/               Top-level screens (Library, Play, Builder, NPC Studio, Campaign Data)
+  play/                  Play-sheet components (HP, rests, resources, stats, badges)
   character-builder/     Builder step panels
   campaign-data/         Campaign Data editor panels
 ```
+
+## The play sheet
+
+`engine/sheet.ts` `computeSheet(character, content)` is the single source for everything on the Play screen: HP, AC, initiative, saves, skills, passives, resources and features. Every number carries a `breakdown` (label + value) and every advantage or disadvantage carries the names of its sources, so the UI can always say why.
+
+Effects (`engine/effects.ts`) are how a rule reaches the sheet. A feature in `data/features.ts` declares `effects: [...]` (`bonus`, `setBase`, `advantage`, `disadvantage`, `suppressDisadvantage`); armor, shields and exhaustion add Baseline 5e effects. To add a rule, add an effect to the feature. Do not add special cases to the UI.
+
+Resources (`engine/resources.ts`) come from three places: the class's technique slot table, the class's `resources` (pools that scale by level), and features that declare `uses` and `recharge`. Spent counts live on the character as `resourcesUsed[id]`.
 
 ## Persistence
 

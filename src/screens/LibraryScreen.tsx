@@ -11,7 +11,7 @@ import {
 import { useCollection } from '../store/content'
 import { useLibraryStore } from '../store/library'
 
-export function LibraryScreen({ onOpen }: { onOpen: () => void }) {
+export function LibraryScreen({ onPlay, onEdit }: { onPlay: () => void; onEdit: () => void }) {
     const characters = useLibraryStore((state) => state.characters)
     const quarantine = useLibraryStore((state) => state.quarantine)
     const { createCharacter, selectCharacter, copyCharacter, deleteCharacter } =
@@ -22,14 +22,15 @@ export function LibraryScreen({ onOpen }: { onOpen: () => void }) {
     const lineages = useCollection('lineages')
     const [message, setMessage] = useState('')
 
-    const open = (id: string) => {
+    const open = (id: string, destination: 'play' | 'edit') => {
         selectCharacter(id)
-        onOpen()
+        if (destination === 'play') onPlay()
+        else onEdit()
     }
 
     const handleCreate = () => {
         createCharacter()
-        onOpen()
+        onEdit()
     }
 
     const handleDelete = (id: string, name: string) => {
@@ -139,9 +140,16 @@ export function LibraryScreen({ onOpen }: { onOpen: () => void }) {
                                         <button
                                             className="primary-button"
                                             type="button"
-                                            onClick={() => open(character.id)}
+                                            onClick={() => open(character.id, 'play')}
                                         >
-                                            Open
+                                            Play
+                                        </button>
+                                        <button
+                                            className="secondary-button"
+                                            type="button"
+                                            onClick={() => open(character.id, 'edit')}
+                                        >
+                                            Edit
                                         </button>
                                         <button
                                             className="secondary-button"

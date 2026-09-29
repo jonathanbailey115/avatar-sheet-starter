@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
+import { SHIELD_AC_BONUS, armorTable } from '../data/armor'
 import type { Character } from '../types/schema'
 
 type BuilderEquipmentPanelProps = {
@@ -50,7 +51,42 @@ export function BuilderEquipmentPanel({
         <div className="grid">
             <SectionCard title="Loadout">
                 <label>
-                    Armor or defense gear
+                    Armor (used to calculate AC, Baseline 5e)
+                    <select
+                        value={character.armorId}
+                        onChange={(event) =>
+                            setCharacter((current) => ({ ...current, armorId: event.target.value }))
+                        }
+                    >
+                        <option value="">No armor</option>
+                        {(['light', 'medium', 'heavy'] as const).map((category) => (
+                            <optgroup key={category} label={`${category[0].toUpperCase()}${category.slice(1)} armor`}>
+                                {armorTable
+                                    .filter((armor) => armor.category === category)
+                                    .map((armor) => (
+                                        <option key={armor.id} value={armor.id}>
+                                            {armor.name} (AC {armor.baseAc}
+                                            {armor.dexCap === null ? ' + Dex' : armor.dexCap > 0 ? ` + Dex, max ${armor.dexCap}` : ''})
+                                        </option>
+                                    ))}
+                            </optgroup>
+                        ))}
+                    </select>
+                </label>
+
+                <label className="inline-check">
+                    <input
+                        type="checkbox"
+                        checked={character.hasShield}
+                        onChange={(event) =>
+                            setCharacter((current) => ({ ...current, hasShield: event.target.checked }))
+                        }
+                    />
+                    Carrying a shield (+{SHIELD_AC_BONUS} AC)
+                </label>
+
+                <label>
+                    Other defense gear (notes)
                     <input
                         value={character.armorName}
                         onChange={(event) =>

@@ -169,6 +169,24 @@ describe('saves, skills, passives', () => {
     })
 })
 
+describe('exhaustion (Baseline 5e)', () => {
+    it('level 1: disadvantage on ability checks and initiative, not saves', () => {
+        const sheet = computeSheet(earth({ exhaustion: 1 }), realContent)
+        expect(sheet.skills.Athletics.roll.net).toBe('disadvantage')
+        expect(sheet.initiative.roll.net).toBe('disadvantage')
+        expect(sheet.saves.wisdom.roll.net).toBe('normal')
+    })
+
+    it('level 3: also disadvantage on saves', () => {
+        expect(computeSheet(earth({ exhaustion: 3 }), realContent).saves.wisdom.roll.net).toBe('disadvantage')
+    })
+
+    it('shows the level as the source', () => {
+        const sources = computeSheet(earth({ exhaustion: 2 }), realContent).skills.Stealth.roll.disadvantage
+        expect(sources).toEqual(['Exhaustion 2 (Baseline 5e)'])
+    })
+})
+
 describe('hit points and resources on the sheet', () => {
     it('Earth Kingdom level 1 with +2 Con has 14 HP and starts full', () => {
         const sheet = computeSheet(earth(), realContent)

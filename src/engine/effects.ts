@@ -85,6 +85,24 @@ export function armorEffects(
     return effects
 }
 
+/**
+ * Baseline 5e exhaustion: level 1+ disadvantage on ability checks (skills and initiative);
+ * level 3+ disadvantage on attack rolls and saving throws.
+ */
+export function exhaustionEffects(level: number): Effect[] {
+    const effects: Effect[] = []
+    if (level >= 1) {
+        const source = `Exhaustion ${level} (Baseline 5e)`
+        effects.push({ kind: 'disadvantage', target: 'skills', source })
+        effects.push({ kind: 'disadvantage', target: 'initiative', source })
+        if (level >= 3) {
+            effects.push({ kind: 'disadvantage', target: 'saves', source })
+            effects.push({ kind: 'disadvantage', target: 'attack', source })
+        }
+    }
+    return effects
+}
+
 export function isActive(effect: Effect, context: EffectContext): boolean {
     if (effect.requires === 'no-armor') return context.armor === null
     return true

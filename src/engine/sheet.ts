@@ -7,6 +7,7 @@ import {
     armorEffects,
     bonusesFor,
     collectFeatureEffects,
+    exhaustionEffects,
     rollModifiersFor,
 } from './effects'
 import type { EffectContext, RollModifiers } from './effects'
@@ -70,6 +71,7 @@ export function computeSheet(character: Character, content: RulesContent): Sheet
     const effects = [
         ...collectFeatureEffects(features),
         ...armorEffects(armor, character.hasShield, lineage),
+        ...exhaustionEffects(character.exhaustion),
     ]
     const context: EffectContext = { armor, abilityScores, proficiencyBonus }
 

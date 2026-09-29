@@ -177,3 +177,23 @@ Water: Community (max damage die), Oceanic Master rerolls. Fire: Positive Jing (
 Fixed: **C1** Guardian removed. **C2** Chi removed. **C3** three technique levels (`Practiced/Trained/Mastered`). **C4** `bendingType`/`style` and Styles removed; bending derives from `CharacterClass.element` (no bender classes exist yet, so Earth/Fire NPCs show "No class" until Phase 4). **D5** `Mixed` removed (old data migrates with an explanatory note). **D6, D7** placeholder techniques and the invented Brave feature removed. **D9** Religion uses Wisdom. **D17** shared ability math in `engine/abilities.ts`. **E1** template edits now take effect. **E2** all-zero weights no longer crash the generator. **E3** NPC lineage follows nation and benders only get their nation's element. **E5** everything persists. **E6** dead code deleted. **E8** effect chain replaced by `normalizeCharacter`. **E9** campaign import is validated with zod. **E10** `App.tsx` is 60 lines.
 
 Still open (by design, later phases): **A2/D8** the two invented backgrounds remain until SRD + custom backgrounds are built. **D10/D11** AC and initiative (Phase 4 engine). **D12-D16** Weaponsmaster grants, lineage mechanics, missing classes (Phase 4). **E4/E7** stat-block NPCs and HP structure (Phases 2 and 6). Three older files exceed 300 lines: `FeaturesPanel.tsx` (413), `NpcTemplatesPanel.tsx` (380), `BuilderPreviewPanel.tsx` (497, replaced by the play sheet in Phase 2).
+
+---
+
+## I. Phase 2 assumptions (please confirm or correct)
+
+These were needed to build the play sheet. Each is labelled in the UI where it applies.
+
+| # | Assumption | Basis |
+|---|------------|-------|
+| I1 | **Max HP** = full hit die + Con at level 1, then (roll or average) + Con per level, minimum 1 per level. Multiclass is not modelled (single class, hit dice = level). | GB L370-372 etc.; A14 |
+| I2 | **Mixed slot payment:** a Mastered technique may be paid with 1 Trained + 2 Practiced (slot values Practiced 1, Trained 2, Mastered 4), not only "2 Trained" or "4 Practiced". Slots above the cast level are never spent. | Extends "1 Mastered = 2 Trained = 4 Practiced" (GB L119-121) |
+| I3 | **Upcasting** (house rule A7) is enabled in the slot spender: casting at a higher level than the technique's known level. What the extra level *does* comes from each technique's own "above Practiced" text (Phase 4). | A7 |
+| I4 | **Unarmored Defense** applies whenever no *armor* is worn; a shield does not count as armor. | GB L446 says "aren't wearing any armor" |
+| I5 | **Armor proficiency penalty (Baseline 5e):** wearing armor or a shield you are not proficient with gives disadvantage on Str/Dex saves, Str/Dex checks and attack rolls. Proficiencies come from the lineage table. Lineages with no armor list are never penalised. The Water/Fire/Air lineages now carry their gmbinder armor lists. | GB L374, L506, L553 |
+| I6 | **Stealth disadvantage** comes from the armor table (padded, scale mail, half plate, and all heavy armor except none), not just heavy armor, as in 5e. Any feature with a `suppressDisadvantage` effect hides it (used by Iron Will / Lighter Materials in Phase 4). | A3; 5e SRD |
+| I7 | **Temp HP** are cleared on a long rest and do not stack (higher wins). | 5e SRD |
+| I8 | **Long rest** restores all HP, clears death saves, regains half your hit dice (min 1), reduces exhaustion by 1, and refreshes every Short/Long-rest resource. **Short rest** refreshes only "Short Rest" resources (Action Surge). | A4; GB rest text |
+| I9 | **Exhaustion** uses the 5e track (1: disadvantage on checks and initiative; 3: also saves and attacks). Halved speed/HP at higher levels is not modelled. gmbinder adds exhaustion to several Bloodbender abilities but defines no effects. | 5e SRD |
+| I10 | **Nothing on the play sheet rolls yet.** Rolling arrives in Phase 3. Hit dice on a short rest are the only dice rolled today. | roadmap |
+| I11 | **Earthbending class is a shell:** element, hit die from lineage, and the bender technique-slot table only. Grounded, Move Earth, Neutral Jing, Tradition features come in Phase 4. | roadmap |
