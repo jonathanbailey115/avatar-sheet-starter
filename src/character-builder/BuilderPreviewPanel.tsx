@@ -1,4 +1,12 @@
 import { useMemo, useState } from 'react'
+import {
+    ABILITY_ABBREVIATIONS,
+    SKILLS,
+    SKILL_ABILITIES,
+    formatModifier,
+    getAbilityModifier,
+    getProficiencyBonus,
+} from '../engine/abilities'
 import type {
     AbilityName,
     Background,
@@ -32,49 +40,12 @@ type SkillSummary = {
     ability: AbilityName
 }
 
-const abilityLabels: Record<AbilityName, string> = {
-    strength: 'STR',
-    dexterity: 'DEX',
-    constitution: 'CON',
-    intelligence: 'INT',
-    wisdom: 'WIS',
-    charisma: 'CHA',
-}
-
-const skillAbilityMap: SkillSummary[] = [
-    { name: 'Acrobatics', ability: 'dexterity' },
-    { name: 'Animal Handling', ability: 'wisdom' },
-    { name: 'Arcana', ability: 'intelligence' },
-    { name: 'Athletics', ability: 'strength' },
-    { name: 'Deception', ability: 'charisma' },
-    { name: 'History', ability: 'intelligence' },
-    { name: 'Insight', ability: 'wisdom' },
-    { name: 'Intimidation', ability: 'charisma' },
-    { name: 'Investigation', ability: 'intelligence' },
-    { name: 'Medicine', ability: 'wisdom' },
-    { name: 'Nature', ability: 'intelligence' },
-    { name: 'Perception', ability: 'wisdom' },
-    { name: 'Performance', ability: 'charisma' },
-    { name: 'Persuasion', ability: 'charisma' },
-    { name: 'Religion', ability: 'intelligence' },
-    { name: 'Sleight of Hand', ability: 'dexterity' },
-    { name: 'Stealth', ability: 'dexterity' },
-    { name: 'Survival', ability: 'wisdom' },
-]
-
-const getAbilityModifier = (score: number) => Math.floor((score - 10) / 2)
-
-const formatModifier = (value: number) => (value >= 0 ? `+${value}` : `${value}`)
+const skillAbilityMap: SkillSummary[] = SKILLS.map((name) => ({
+    name,
+    ability: SKILL_ABILITIES[name],
+}))
 
 const formatList = (items: string[]) => (items.length > 0 ? items.join(', ') : 'None')
-
-const getProficiencyBonus = (level: number) => {
-    if (level >= 17) return 6
-    if (level >= 13) return 5
-    if (level >= 9) return 4
-    if (level >= 5) return 3
-    return 2
-}
 
 export function BuilderPreviewPanel({
     character,
@@ -170,7 +141,7 @@ export function BuilderPreviewPanel({
             ...skill,
             total,
             isProficient,
-            shortAbility: abilityLabels[skill.ability],
+            shortAbility: ABILITY_ABBREVIATIONS[skill.ability],
         }
     })
 

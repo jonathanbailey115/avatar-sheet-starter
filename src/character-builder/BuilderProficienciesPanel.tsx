@@ -1,3 +1,9 @@
+import {
+    SKILL_ABILITIES,
+    formatModifier,
+    getAbilityModifier,
+    getProficiencyBonus,
+} from '../engine/abilities'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
 import {
@@ -40,27 +46,6 @@ const savingThrowOptions: Array<{ key: AbilityName; label: string }> = [
     { key: 'charisma', label: 'Charisma' },
 ]
 
-const skillAbilityMap: Record<SkillName, AbilityName> = {
-    Acrobatics: 'dexterity',
-    'Animal Handling': 'wisdom',
-    Arcana: 'intelligence',
-    Athletics: 'strength',
-    Deception: 'charisma',
-    History: 'intelligence',
-    Insight: 'wisdom',
-    Intimidation: 'charisma',
-    Investigation: 'intelligence',
-    Medicine: 'wisdom',
-    Nature: 'intelligence',
-    Perception: 'wisdom',
-    Performance: 'charisma',
-    Persuasion: 'charisma',
-    Religion: 'intelligence',
-    'Sleight of Hand': 'dexterity',
-    Stealth: 'dexterity',
-    Survival: 'wisdom',
-}
-
 const skillOptions: SkillName[] = [
     'Acrobatics',
     'Animal Handling',
@@ -81,22 +66,6 @@ const skillOptions: SkillName[] = [
     'Stealth',
     'Survival',
 ]
-
-function getProficiencyBonus(level: number) {
-    if (level >= 17) return 6
-    if (level >= 13) return 5
-    if (level >= 9) return 4
-    if (level >= 5) return 3
-    return 2
-}
-
-function getAbilityModifier(score: number) {
-    return Math.floor((score - 10) / 2)
-}
-
-function formatModifier(modifier: number) {
-    return modifier >= 0 ? `+${modifier}` : `${modifier}`
-}
 
 function formatAbilityName(ability: AbilityName) {
     return ability.charAt(0).toUpperCase() + ability.slice(1)
@@ -212,7 +181,7 @@ export function BuilderProficienciesPanel({
     }
 
     const getSkillTotal = (skill: SkillName) => {
-        const ability = skillAbilityMap[skill]
+        const ability = SKILL_ABILITIES[skill]
         const score = Number(character[ability] ?? 0)
         const modifier = getAbilityModifier(score)
         const proficient = character.skillProficiencies.includes(skill)
@@ -273,7 +242,7 @@ export function BuilderProficienciesPanel({
             <SectionCard title="Skills">
                 <div className="checkbox-list">
                     {skillOptions.map((skill) => {
-                        const ability = skillAbilityMap[skill]
+                        const ability = SKILL_ABILITIES[skill]
                         const score = Number(character[ability] ?? 0)
                         const baseModifier = getAbilityModifier(score)
                         const isProficient = character.skillProficiencies.includes(skill)

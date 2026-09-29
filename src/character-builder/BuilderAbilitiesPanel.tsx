@@ -1,3 +1,4 @@
+import { formatModifier, getAbilityModifier } from '../engine/abilities'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
 import type { Character } from '../types/schema'
@@ -55,14 +56,6 @@ const abilityFields: Array<{
             description: 'Presence, force of personality, leadership, and influence.',
         },
     ]
-
-function getAbilityModifier(score: number) {
-    return Math.floor((score - 10) / 2)
-}
-
-function formatModifier(modifier: number) {
-    return modifier >= 0 ? `+${modifier}` : `${modifier}`
-}
 
 export function BuilderAbilitiesPanel({
     character,
