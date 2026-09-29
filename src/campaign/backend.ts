@@ -1,4 +1,5 @@
 import type { RollEntry } from '../engine/rolls'
+import type { Character } from '../types/schema'
 import { rememberScope } from './authStorage'
 import { createBrowserLocalBackend } from './localBackend'
 import { normalizeSupabaseUrl } from './supabaseUrl'
@@ -68,6 +69,9 @@ class LazySupabaseBackend implements CampaignBackend {
     clearRolls = (campaignId: string) => this.backend().then((b) => b.clearRolls(campaignId))
     leave = (campaignId: string) => this.backend().then((b) => b.leave(campaignId))
     removeMember = (campaignId: string, userId: string) => this.backend().then((b) => b.removeMember(campaignId, userId))
+    saveNpc = (campaignId: string, npc: { id: string; character: Character; revealed: boolean }) =>
+        this.backend().then((b) => b.saveNpc(campaignId, npc))
+    deleteNpc = (campaignId: string, npcId: string) => this.backend().then((b) => b.deleteNpc(campaignId, npcId))
 
     subscribe(campaignId: string, onEvent: (event: CampaignEvent) => void): () => void {
         let stop: (() => void) | null = null

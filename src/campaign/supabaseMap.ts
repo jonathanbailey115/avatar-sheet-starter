@@ -1,6 +1,7 @@
 import type { RollEntry } from '../engine/rolls'
+import type { Character } from '../types/schema'
 import { CampaignError } from './types'
-import type { Campaign, CampaignMember, CampaignRoll, MemberStatus, PlayerSummary, Visibility } from './types'
+import type { Campaign, CampaignMember, CampaignNpc, CampaignRoll, MemberStatus, PlayerSummary, Visibility } from './types'
 
 /** Row shapes as Postgres returns them. */
 export interface CampaignRow {
@@ -27,6 +28,20 @@ export interface RollRow {
     entry: RollEntry
     created_at: string
 }
+
+export interface NpcRow {
+    id: string
+    data: { character: Character }
+    revealed: boolean
+    updated_at: string
+}
+
+export const npcFromRow = (row: NpcRow): CampaignNpc => ({
+    id: row.id,
+    character: row.data.character,
+    revealed: row.revealed,
+    updatedAt: Date.parse(row.updated_at),
+})
 
 export const campaignFromRow = (row: CampaignRow): Campaign => ({
     id: row.id,

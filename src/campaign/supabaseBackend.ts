@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { RollEntry } from '../engine/rolls'
+import type { Character } from '../types/schema'
 import { authStorageFor, currentScope, projectRefOf, rememberScope, storageKeyFor } from './authStorage'
 import {
     CAMPAIGN_COLUMNS,
@@ -8,11 +9,12 @@ import {
     campaignFromRow,
     friendlyError,
     memberFromRow,
+    npcFromRow,
     rollFromRow,
     statusFromRow,
     unwrap,
 } from './supabaseMap'
-import type { CampaignRow, MemberRow, RollRow, StatusRow } from './supabaseMap'
+import type { CampaignRow, MemberRow, NpcRow, RollRow, StatusRow } from './supabaseMap'
 import type {
     AccountSession,
     Campaign,
@@ -159,7 +161,7 @@ export class SupabaseBackend implements CampaignBackend {
     }
 
     async load(campaignId: string): Promise<CampaignSnapshot> {
-        const [campaign, members, statuses, rolls] = await Promise.all([
+        const [campaign, members, statuses, rolls, npcs] = await Promise.all([
             this.fetchCampaign(campaignId),
             this.client.from('campaign_members').select('user_id, display_name, role').eq('campaign_id', campaignId),
             this.client.from('member_status').select('user_id, summary, updated_at').eq('campaign_id', campaignId),
@@ -169,6 +171,7 @@ export class SupabaseBackend implements CampaignBackend {
                 .eq('campaign_id', campaignId)
                 .order('created_at', { ascending: false })
                 .limit(ROLL_LIMIT),
+            this.client.from('campaign_npcs').select('id, data, revealed, updated_at').eq('campaign_id', campaignId),
         ])
 
         return {
@@ -176,6 +179,7 @@ export class SupabaseBackend implements CampaignBackend {
             members: unwrap(members as { data: MemberRow[] | null; error: null }).map(memberFromRow),
             statuses: unwrap(statuses as { data: StatusRow[] | null; error: null }).map(statusFromRow),
             rolls: unwrap(rolls as { data: RollRow[] | null; error: null }).map(rollFromRow),
+            npcs: unwrap(npcs as { data: NpcRow[] | null; error: null }).map(npcFromRow),
         }
     }
 
@@ -191,6 +195,7 @@ export class SupabaseBackend implements CampaignBackend {
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'campaign_rolls', filter }, changed)
             .on('postgres_changes', { event: '*', schema: 'public', table: 'campaign_members', filter }, changed)
             .on('postgres_changes', { event: '*', schema: 'public', table: 'member_status', filter }, changed)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'campaign_npcs', filter }, changed)
             .subscribe()
 
         return () => {
@@ -216,6 +221,25 @@ export class SupabaseBackend implements CampaignBackend {
                 { campaign_id: campaignId, user_id: this.userId, summary, updated_at: new Date().toISOString() },
                 { onConflict: 'campaign_id,user_id' },
             )
+        if (error) throw friendlyError(error)
+    }
+
+    async saveNpc(campaignId: string, npc: { id: string; character: Character; revealed: boolean }): Promise<void> {
+        const { error } = await this.client.from('campaign_npcs').upsert(
+            {
+                id: npc.id,
+                campaign_id: campaignId,
+                data: { character: npc.character },
+                revealed: npc.revealed,
+                updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'id' },
+        )
+        if (error) throw friendlyError(error)
+    }
+
+    async deleteNpc(campaignId: string, npcId: string): Promise<void> {
+        const { error } = await this.client.from('campaign_npcs').delete().eq('campaign_id', campaignId).eq('id', npcId)
         if (error) throw friendlyError(error)
     }
 

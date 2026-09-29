@@ -1,4 +1,5 @@
 import type { RollEntry } from '../engine/rolls'
+import type { Character } from '../types/schema'
 
 export type CampaignRole = 'gm' | 'player'
 export type Visibility = 'all' | 'gm'
@@ -48,12 +49,21 @@ export interface CampaignRoll {
     createdAt: number
 }
 
+/** An NPC the GM saved to the campaign. Players only receive the ones marked revealed. */
+export interface CampaignNpc {
+    id: string
+    character: Character
+    revealed: boolean
+    updatedAt: number
+}
+
 export interface CampaignSnapshot {
     campaign: Campaign
     members: CampaignMember[]
     statuses: MemberStatus[]
     /** Newest first. */
     rolls: CampaignRoll[]
+    npcs: CampaignNpc[]
 }
 
 /** 'roll' carries a new roll to append; 'changed' means reload the snapshot. */
@@ -97,6 +107,9 @@ export interface CampaignBackend {
     clearRolls(campaignId: string): Promise<void>
     leave(campaignId: string): Promise<void>
     removeMember(campaignId: string, userId: string): Promise<void>
+    /** GM only. Adds the NPC or replaces the saved copy. */
+    saveNpc(campaignId: string, npc: { id: string; character: Character; revealed: boolean }): Promise<void>
+    deleteNpc(campaignId: string, npcId: string): Promise<void>
 }
 
 /** A message meant for the person using the app (wrong code, not allowed, and so on). */

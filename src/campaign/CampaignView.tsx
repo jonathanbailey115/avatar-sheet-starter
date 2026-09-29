@@ -3,6 +3,7 @@ import { characterDisplayName } from '../lib/character'
 import { myBindings, nameFor, useCampaignStore } from '../store/campaign'
 import { useLibraryStore } from '../store/library'
 import { CampaignLog } from './CampaignLog'
+import { CampaignNpcs } from './CampaignNpcs'
 import { formatCode } from './code'
 import { PartyBoard } from './PartyBoard'
 
@@ -106,6 +107,8 @@ export function CampaignView() {
                     />
                 </SectionCard>
             </div>
+
+            <CampaignNpcs campaignId={campaign.id} npcs={snapshot.npcs ?? []} isGm={Boolean(isGm)} />
 
             <SectionCard title="Campaign settings">
                 {isGm && gmKey && (

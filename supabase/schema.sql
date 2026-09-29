@@ -75,6 +75,7 @@ create unique index if not exists profiles_username_lower on public.profiles (lo
 alter table public.campaign_members replica identity full;
 alter table public.campaign_rolls replica identity full;
 alter table public.member_status replica identity full;
+alter table public.campaign_npcs replica identity full;
 
 -- ---------------------------------------------------------------------------------------------
 -- Helpers used by the policies. SECURITY DEFINER so they can look at membership without
@@ -451,7 +452,7 @@ declare
     t text;
 begin
     if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
-        foreach t in array array['campaign_rolls', 'member_status', 'campaign_members'] loop
+        foreach t in array array['campaign_rolls', 'member_status', 'campaign_members', 'campaign_npcs'] loop
             begin
                 execute format('alter publication supabase_realtime add table public.%I', t);
             exception when duplicate_object then

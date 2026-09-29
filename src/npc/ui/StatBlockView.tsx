@@ -6,7 +6,8 @@ import type { NpcPart } from '../types'
 interface Props {
     block: StatBlock
     warnings: string[]
-    onReroll: (part: NpcPart) => void
+    /** Leave out to hide the reroll buttons (players viewing a revealed NPC). */
+    onReroll?: (part: NpcPart) => void
 }
 
 const abbreviation = (key: string) => key.slice(0, 3).toUpperCase()
@@ -101,6 +102,7 @@ export function StatBlockView({ block, warnings, onReroll }: Props) {
                 </>
             )}
 
+            {onReroll && (
             <div className="reroll-row" aria-label="Reroll a part">
                 <span className="muted">Reroll:</span>
                 {NPC_PARTS.map((part) => (
@@ -109,6 +111,7 @@ export function StatBlockView({ block, warnings, onReroll }: Props) {
                     </button>
                 ))}
             </div>
+            )}
         </article>
     )
 }

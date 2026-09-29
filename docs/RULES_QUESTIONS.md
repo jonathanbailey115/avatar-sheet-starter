@@ -236,3 +236,20 @@ These were needed to build the play sheet. Each is labelled in the UI where it a
 | K9 | **Neutral Jing, Badgermole's Endurance, Lay of the Land** are situational: the roll prompt asks whether they apply. Lay of the Land adds your proficiency bonus (proficient or not, the doubling comes to the same +PB) on Intelligence and Constitution checks, and Int skills, in favored terrain. Choosing favored terrain does not change the number. | GB L448, L1564, L1585 |
 | K10 | **Backgrounds:** 13 premade, using the standard 5e skill and tool pairings with feature text written for this app, plus a custom builder (name, 2 skills, tools, one feature). No background grants languages. The old two invented backgrounds are gone; characters that had them are told to choose again. | A2, A1 |
 | K11 | **Not automated:** Earth Armor's AC bonus while concentrating, concentration tracking, Move Earth's damage roll, Reflect Missiles, Grounded range on targets, Extra Attack. They are shown as text. | scope |
+
+## NPC Studio defaults (need an owner look, all editable per NPC)
+
+These are choices the NPC generator makes where gmbinder gives no rule. None of them changes player rules.
+
+1. **Technique levels for generated benders.** gmbinder's Benders table gives slots per level, not which known techniques
+   are Trained or Mastered. The generator makes as many known techniques Mastered and Trained as the table has
+   Mastered and Trained slots at that level; the rest are Practiced. Fighting and Universal techniques stay Practiced.
+2. **Ability scores.** Standard array by priority (class key ability, then Constitution and Dexterity), plus +2 per
+   Ability Score Improvement the class table has reached. Weaponsmasters pick Strength or Dexterity at random.
+3. **Armor and weapons.** Only what the lineage is proficient in. Armor is whichever proficient piece gives the best AC
+   (Baseline 5e armor). Each role has a `combat` chance (0-1) of wearing armor and carrying a second weapon.
+4. **Missing classes.** Fire, Water and Air bending classes and Tech-Engineer are not in the app yet, so NPCs of those
+   nations are non-benders and the Studio says so.
+5. **Names, personality, ideals, bonds, flaws** are invented flavor text, not gmbinder content.
+6. **Sharing.** Sending an NPC to a campaign removes its notes and personality fields; the stat block is what players see
+   once the GM reveals it.

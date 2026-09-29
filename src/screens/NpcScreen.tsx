@@ -4,6 +4,7 @@ import { downloadText, safeFileName, serializeCharacter } from '../lib/character
 import { generateNpc, rerollPart } from '../npc/generate'
 import { buildStatBlock, statBlockText } from '../npc/statBlock'
 import type { NpcContext, NpcPart, NpcSpec } from '../npc/types'
+import { SendToCampaign } from '../npc/ui/SendToCampaign'
 import { QuickCreate } from '../npc/ui/QuickCreate'
 import { StatBlockView } from '../npc/ui/StatBlockView'
 import { getContent, useCollection, useContentStore } from '../store/content'
@@ -111,6 +112,7 @@ export function NpcScreen() {
                                         Export
                                     </button>
                                 </div>
+                                <SendToCampaign npc={selected} />
                             </>
                         ) : (
                             <p>Generate an NPC, or pick one from your list.</p>

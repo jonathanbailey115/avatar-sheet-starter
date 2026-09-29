@@ -1,9 +1,11 @@
 import type { RollEntry } from '../engine/rolls'
+import type { Character } from '../types/schema'
 import { normalizeCode, randomCode } from './code'
 import { CampaignError } from './types'
 import type {
     Campaign,
     CampaignMember,
+    CampaignNpc,
     CampaignRoll,
     CampaignSnapshot,
     MemberStatus,
@@ -25,9 +27,10 @@ export interface ServerState {
     members: Array<CampaignMember & { campaignId: string }>
     rolls: Array<CampaignRoll & { campaignId: string }>
     statuses: Array<MemberStatus & { campaignId: string }>
+    npcs: Array<CampaignNpc & { campaignId: string }>
 }
 
-export const emptyServerState = (): ServerState => ({ campaigns: [], members: [], rolls: [], statuses: [] })
+export const emptyServerState = (): ServerState => ({ campaigns: [], members: [], rolls: [], statuses: [], npcs: [] })
 
 const MAX_ROLLS = 500
 
@@ -135,6 +138,10 @@ export class CampaignServer {
                 .filter((item) => item.campaignId === campaignId && this.canSee(item, userId, campaignId))
                 .map(({ campaignId: _id, ...roll }) => roll)
                 .sort((a, b) => b.createdAt - a.createdAt),
+            // The GM gets every NPC; players only the ones the GM revealed.
+            npcs: this.state.npcs
+                .filter((item) => item.campaignId === campaignId && (item.revealed || this.campaign(campaignId).gmId === userId))
+                .map(({ campaignId: _id, ...npc }) => npc),
         }
     }
 
@@ -163,6 +170,19 @@ export class CampaignServer {
         } else {
             this.state.statuses.push({ campaignId, userId, summary, updatedAt: Date.now() })
         }
+    }
+
+    saveNpc(userId: string, campaignId: string, npc: { id: string; character: Character; revealed: boolean }): void {
+        this.requireGm(userId, campaignId)
+        const stored = { campaignId, id: npc.id, character: npc.character, revealed: npc.revealed, updatedAt: Date.now() }
+        const index = this.state.npcs.findIndex((item) => item.campaignId === campaignId && item.id === npc.id)
+        if (index >= 0) this.state.npcs[index] = stored
+        else this.state.npcs.push(stored)
+    }
+
+    deleteNpc(userId: string, campaignId: string, npcId: string): void {
+        this.requireGm(userId, campaignId)
+        this.state.npcs = this.state.npcs.filter((item) => !(item.campaignId === campaignId && item.id === npcId))
     }
 
     clearRolls(userId: string, campaignId: string): void {

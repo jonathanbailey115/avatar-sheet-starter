@@ -52,6 +52,8 @@ interface CampaignState {
     claimGm: (code: string, gmKey: string) => Promise<Campaign>
     openCampaign: (id: string) => Promise<void>
     closeCampaign: () => void
+    /** Fetch the open campaign again (after the GM changes something). */
+    reload: () => Promise<void>
     leaveCampaign: (id: string) => Promise<void>
     clearLog: () => Promise<void>
     removeMember: (userId: string) => Promise<void>
@@ -245,6 +247,8 @@ export const useCampaignStore = create<CampaignState>()(
                     set({ activeId: id, snapshot })
                     stopListening = getBackend().subscribe(id, onEvent)
                 },
+
+                reload: refresh,
 
                 closeCampaign: () => {
                     stopListening?.()
