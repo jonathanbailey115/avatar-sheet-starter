@@ -10,6 +10,8 @@ interface RollLogState {
     entries: RollEntry[]
     add: (entry: RollEntry) => void
     clear: () => void
+    /** Drop every roll made by these characters (they were deleted). */
+    removeForCharacters: (ids: string[]) => void
 }
 
 /** The local roll log. Campaigns (Phase 5) share entries from here with the rest of the table. */
@@ -19,6 +21,8 @@ export const useRollLog = create<RollLogState>()(
             entries: [],
             add: (entry) => set({ entries: [entry, ...get().entries].slice(0, MAX_ENTRIES) }),
             clear: () => set({ entries: [] }),
+            removeForCharacters: (ids) =>
+                set({ entries: get().entries.filter((entry) => entry.characterId === null || !ids.includes(entry.characterId)) }),
         }),
         {
             name: 'avatar-dnd:rolls',

@@ -6,6 +6,7 @@ import type { QuarantinedRecord } from '../lib/characterLoad'
 import { normalizeCharacter } from '../lib/normalize'
 import type { Character } from '../types/schema'
 import { announceAdded } from '../sync/events'
+import { useRollLog } from './rollLog'
 import { getContent, useContentStore } from './content'
 import { jsonStorage } from './storage'
 
@@ -87,6 +88,7 @@ export const useLibraryStore = create<LibraryState>()(
             deleteCharacter: (id) => {
                 const { characters, activeId } = get()
                 if (activeId === id) writeActiveCharacter(null)
+                useRollLog.getState().removeForCharacters([id])
                 set({
                     characters: characters.filter((character) => character.id !== id),
                     activeId: activeId === id ? null : activeId,
