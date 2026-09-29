@@ -73,6 +73,32 @@ describe('quick-create', () => {
     })
 })
 
+describe('every class', () => {
+    const classIds = realContent.classes.map((item) => item.id)
+
+    it.each(classIds)('%s builds valid NPCs at every level', (classId) => {
+        for (let level = 1; level <= 20; level += 1) {
+            const { character } = generateNpc({ nation: null, classId, level }, guard, seeded(level * 7))
+            expect(character.classId).toBe(classId)
+            const cls = realContent.classes.find((item) => item.id === classId)
+            if (cls?.element) expect(NATION_ELEMENT[character.nation]).toBe(cls.element)
+            for (const status of limitStatus(character, cls, realContent.techniques)) expect(status.used).toBeLessThanOrEqual(status.max)
+            expect(buildStatBlock(character, realContent).hp).toBeGreaterThan(0)
+        }
+    })
+
+    it('never gives a technique that needs a sub-bending the NPC does not have', () => {
+        for (let seed = 1; seed <= 40; seed += 1) {
+            const { character } = generateNpc({ nation: 'Water Tribe', classId: 'waterbending', level: 10 }, guard, seeded(seed))
+            const subclass = realContent.subclasses.find((item) => item.id === character.subclassId)
+            for (const known of character.knownTechniques) {
+                const discipline = realContent.techniques.find((item) => item.id === known.techniqueId)?.discipline
+                if (discipline) expect(subclass?.disciplines).toContain(discipline)
+            }
+        }
+    })
+})
+
 describe('rerolling one part', () => {
     const base = generateNpc({ nation: 'Earth Kingdom', classId: null, level: 8 }, guard, seeded(21)).character
 

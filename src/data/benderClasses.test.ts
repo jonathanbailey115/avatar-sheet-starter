@@ -113,3 +113,76 @@ describe('technique content', () => {
         }
     })
 })
+
+describe('Tech-Engineer', () => {
+    const engineer = (level: number, patch: Partial<Character> = {}) =>
+        build('tech-engineer', 'Earth Kingdom', level, { intelligence: 16, ...patch })
+
+    it('uses Intelligence for its Save DC and has no bending element', () => {
+        const cls = realContent.classes.find((item) => item.id === 'tech-engineer')
+        expect(cls?.element).toBeUndefined()
+        const sheet = computeSheet(engineer(5), realContent)
+        expect(sheet.bending?.ability).toBe('intelligence')
+        expect(sheet.bending?.saveDc).toBe(8 + 3 + 3)
+    })
+
+    it('tracks Universal Technique Slots and Spark Points from the class table', () => {
+        const at = (level: number) => Object.fromEntries(computeSheet(engineer(level), realContent).resources.map((r) => [r.name, r.max]))
+        expect(at(1)).toMatchObject({ 'Universal Technique Slots': 3, 'Spark Points': 1 })
+        expect(at(9)).toMatchObject({ 'Universal Technique Slots': 5, 'Spark Points': 5 })
+        expect(at(20)).toMatchObject({ 'Universal Technique Slots': 7, 'Spark Points': 10 })
+    })
+
+    it('follows the class table for Ability Score Improvements (4, 8, 12, 16)', () => {
+        const cls = realContent.classes.find((item) => item.id === 'tech-engineer')
+        const asi = cls?.featureGrants.filter((grant) => grant.featureId.endsWith('ability-score-improvement')).map((grant) => grant.level)
+        expect(asi).toEqual([4, 8, 12, 16])
+    })
+
+    it('learns Universal techniques only, two at first level and one more at 6th and 13th', () => {
+        const cls = realContent.classes.find((item) => item.id === 'tech-engineer')
+        const maxes = cls?.techniqueLimits?.[0].maxByLevel
+        expect([maxes?.[0], maxes?.[5], maxes?.[12]]).toEqual([2, 3, 4])
+        expect(cls?.techniqueLimits?.[0].kinds).toEqual(['Universal'])
+    })
+
+    it('grants each Specialization’s features by level', () => {
+        const featuresOf = (subclassId: string, level: number) =>
+            computeSheet(engineer(level, { subclassId }), realContent).features.map((granted) => granted.feature.name)
+        expect(featuresOf('armor-specialist', 2)).not.toContain('Beginner Upgrades')
+        expect(featuresOf('armor-specialist', 3)).toContain('Beginner Upgrades')
+        expect(featuresOf('armor-specialist', 19)).toContain('Pioneer Armorer')
+        expect(featuresOf('weapons-specialist', 13)).toContain('Masterwork Upgrades')
+        expect(featuresOf('gadgeteering-specialist', 7)).toContain('Innovative Contraptions')
+    })
+
+    it('Multidisciplinary Specialists crit on 19-20 with weapons from level 9', () => {
+        const sword = { id: 'w1', weaponId: 'longsword', bonus: 0 }
+        const crit = (level: number) =>
+            computeSheet(engineer(level, { subclassId: 'multidisciplinary-specialist', weapons: [sword] }), realContent).attacks.find(
+                (attack) => attack.kind === 'weapon',
+            )?.critMin
+        expect(crit(8)).toBe(20)
+        expect(crit(9)).toBe(19)
+    })
+
+    it('contraptions are optional features, available from the level the source lists', () => {
+        const contraptions = realContent.features.filter((feature) => feature.id.startsWith('contraption-'))
+        expect(contraptions).toHaveLength(18)
+        const level = (id: string) => contraptions.find((feature) => feature.id === id)?.levelRequirement
+        expect(level('contraption-cleats')).toBe(1)
+        expect(level('contraption-capacitors')).toBe(5)
+        expect(level('contraption-net-gun')).toBe(11)
+        expect(level('contraption-glider')).toBe(16)
+        expect(contraptions.every((feature) => !feature.isActiveByDefault)).toBe(true)
+        const tech = realContent.classes.find((item) => item.id === 'tech-engineer')
+        expect(tech?.featureGrants.some((grant) => grant.featureId.startsWith('contraption-'))).toBe(false)
+    })
+
+    it('a selected contraption shows up on the sheet once its level is reached', () => {
+        const picked = build('tech-engineer', 'Earth Kingdom', 4, { selectedFeatureIds: ['contraption-net-gun', 'contraption-cleats'] })
+        const names = computeSheet(picked, realContent).features.map((granted) => granted.feature.name)
+        expect(names).toContain('Cleats')
+        expect(names).not.toContain('Net Gun')
+    })
+})

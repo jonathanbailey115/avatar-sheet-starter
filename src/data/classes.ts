@@ -3,6 +3,7 @@ import { airbendingClass } from './airbending'
 import { BENDER_ASI_LEVELS } from './classFeature'
 import { earthbendingSubclasses } from './earthbending'
 import { firebendingClass, firebendingSubclasses } from './firebending'
+import { techEngineerClass, techEngineerSubclasses } from './techEngineer'
 import { waterbendingClass, waterbendingSubclasses } from './waterbending'
 import { weaponsmasterExtraGrants } from './weaponsmasterExtras'
 import {
@@ -116,6 +117,7 @@ export const characterClasses: CharacterClass[] = [
         basicAttack: { dice: '1d8', damageType: 'bludgeoning' },
         techniqueSlots: BENDER_TECHNIQUE_SLOTS,
     },
+    techEngineerClass,
     waterbendingClass,
     firebendingClass,
     airbendingClass,
@@ -123,6 +125,7 @@ export const characterClasses: CharacterClass[] = [
 
 export const characterSubclasses: CharacterSubclass[] = [
     ...earthbendingSubclasses,
+    ...techEngineerSubclasses,
     ...waterbendingSubclasses,
     ...firebendingSubclasses,
 ]

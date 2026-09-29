@@ -273,3 +273,15 @@ has a default so play is not blocked; tell me to change any of them.
 | L9 | **Chi:** the Healer and Bloodbender features talk about chi points and chi paths. The decision to remove Chi was about the character resource. | Feature text is kept exactly as printed; nothing tracks chi points. |
 | L10 | **Technique overlays:** where the text raises damage only at one level ("At Trained level, the damage increases by 2d8"), Mastered is not raised further. Where it says "for each level above Practiced", each step adds the dice. Shockwave says both Trained and Mastered add 2d8 without saying whether they stack. | Stacks (each level above Practiced adds 2d8). Flagged in the technique's note. |
 | L11 | **Not automated:** Flow's two-technique concentration, changing water to ice/steam, Dragon's Blessing burning, Meditation's Wisdom bonus, Spiritual Companion, Path features (Ebb, Fluidity, Energy Balancing dice pool, Positive Jing, Jet Stepping). They are shown as text. Only Quick Reflexes (Air, level 10) and Fluidity (advantage prompt) are wired into rolls. | Text only. |
+
+### L-TE. Tech-Engineer (please confirm or correct)
+
+| # | Question | Default used in the app |
+|---|----------|--------------------------|
+| LT1 | **Ability Score Improvement:** the text lists 4th, 8th, 12th, 16th and 19th; the class table lists 4th, 8th, 12th, 16th only. | Follows the table (your earlier decision). |
+| LT2 | **Improved Critical** (Multidisciplinary Specialist) says "Starting at level 9"; the class table puts Specialization features at 7, 13 and 19. | Level 9, as written in the feature. |
+| LT3 | **Spark Points** have no stated recharge. | Long rest (your earlier decision). |
+| LT4 | **Save DC ability:** the text allows Wisdom instead of Intelligence "with your GM's permission". | Intelligence only; a Wisdom switch is not built. |
+| LT5 | **Creative Mind contraptions and Gadgeteering upgrades** are choices ("you can only choose one of the gadgets" per tier, and upgrades per level). | Each is an optional feature you add in the builder from its level; the app does not enforce how many you take. |
+| LT6 | **Armor and Weapons Specialist upgrades** are crafting choices (one per tier, applied to a specific item). | Each tier is one feature that shows the whole menu as text; upgrades are not applied to equipment automatically. |
+| LT7 | **Tool proficiency:** the Specialization line gives Tinker's Tools or Smith's Tools, your choice. **Nimble Wit** also swaps Wisdom for Intelligence on Survival and Insight, and lets you add Spark Points to non-proficient saves. | Text only; not applied to the sheet. |

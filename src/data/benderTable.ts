@@ -45,3 +45,6 @@ export const UNIVERSAL_TECHNIQUE_SLOTS = [
 export const WEAPONSMASTER_ACTION_SURGE = [
     0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2,
 ]
+
+/** Tech-Engineer Spark Points by level (gmbinder, Tech-Engineer table). Index 0 is level 1. */
+export const SPARK_POINTS = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10]
