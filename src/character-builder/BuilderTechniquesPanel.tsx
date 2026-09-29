@@ -3,9 +3,9 @@ import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
 import { getBendingElement } from '../engine/bending'
 import { disciplinesOf, learnBlocker, limitStatus } from '../engine/techniques'
-import { masteredCount } from '../engine/training'
+import { masteredCount, masteredLimit } from '../engine/training'
 import { useCollection } from '../store/content'
-import { DEFAULT_TRAINING, MAX_MASTERED_TECHNIQUES, TECHNIQUE_LEVELS } from '../types/schema'
+import { DEFAULT_TRAINING, TECHNIQUE_LEVELS } from '../types/schema'
 import type { Character, CharacterClass, Technique, TechniqueLevel } from '../types/schema'
 
 type BuilderTechniquesPanelProps = {
@@ -81,11 +81,11 @@ export function BuilderTechniquesPanel({
         }))
         .filter((group) => group.items.length > 0)
 
-    const capReached = masteredCount(character) >= MAX_MASTERED_TECHNIQUES
-
     // What the class table gives at this level, next to what the character actually knows.
     const levelIndex = Math.min(20, Math.max(1, character.level)) - 1
     const slots = selectedClass?.techniqueSlots?.[levelIndex]
+    const masteredMax = masteredLimit(slots)
+    const capReached = masteredCount(character) >= masteredMax
     const pools = (selectedClass?.resources ?? []).filter((pool) => pool.id.endsWith('universal-slots'))
     const knownAt = (level: TechniqueLevel) => character.knownTechniques.filter((known) => known.level === level).length
     const overSlots = slots
@@ -136,7 +136,7 @@ export function BuilderTechniquesPanel({
                         ))}
                     </li>
                     <li>
-                        <strong>Mastered:</strong> {masteredCount(character)} of {MAX_MASTERED_TECHNIQUES}
+                        <strong>Mastered:</strong> {masteredCount(character)} of {masteredMax}
                     </li>
                     {character.level < 8 && (
                         <li className="muted">Rare techniques (marked *) unlock at level 8.</li>

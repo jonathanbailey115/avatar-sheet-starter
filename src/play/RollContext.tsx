@@ -14,6 +14,7 @@ import { useCampaignStore } from '../store/campaign'
 import { useRollLog } from '../store/rollLog'
 import type { Character } from '../types/schema'
 import { mergeSources, signed } from './rollHelpers'
+import { masteredLimit } from '../engine/training'
 import { applyTrainingRoll } from './trainingRoll'
 import { SituationPrompt } from './SituationPrompt'
 
@@ -251,7 +252,10 @@ export function RollProvider({ character, sheet, onChange, children }: RollProvi
                 const result = rollD20({ modifier: line.total, mode: merged.mode })
                 const dc = kind === 'training' ? known.training.dc : known.training.masteryDc
 
-                const { updated, summary } = applyTrainingRoll(character, known, kind, techniqueName, result)
+                const masteredSlots = sheet.resources.find((resource) => resource.slotLevel === 'Mastered')
+                const hasSlotTable = sheet.resources.some((resource) => resource.kind === 'slot')
+                const cap = masteredLimit(hasSlotTable ? { mastered: masteredSlots?.max ?? 0 } : undefined)
+                const { updated, summary } = applyTrainingRoll(character, known, kind, techniqueName, result, cap)
 
                 onChange((current) => ({
                     ...current,

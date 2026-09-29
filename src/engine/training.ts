@@ -24,6 +24,14 @@ export function masteredCount(character: Pick<Character, 'knownTechniques'>): nu
     return character.knownTechniques.filter((known) => known.level === 'Mastered').length
 }
 
+/**
+ * How many techniques can be Mastered. A class with a technique slot table (the Benders table) allows as many
+ * as it has Mastered slots at the character's level, so 0 until 4th level. Classes without one keep the general cap.
+ */
+export function masteredLimit(slots: { mastered: number } | undefined): number {
+    return slots ? slots.mastered : MAX_MASTERED_TECHNIQUES
+}
+
 export function canStartTraining(character: Pick<Character, 'knownTechniques'>, known: KnownTechnique): string | null {
     if (known.level === 'Mastered') return 'Already Mastered'
     if (known.training.active) return 'Already training'

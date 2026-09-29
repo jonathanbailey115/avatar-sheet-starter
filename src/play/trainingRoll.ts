@@ -8,6 +8,8 @@ export function applyTrainingRoll(
     kind: 'training' | 'mastery',
     techniqueName: string,
     roll: { natural: number; total: number },
+    /** How many techniques may be Mastered (see masteredLimit). */
+    masteredCap?: number,
 ): { updated: KnownTechnique; summary: string } {
     if (kind === 'training') {
         const outcome = resolveTrainingCheck(known, roll.natural, roll.total)
@@ -25,7 +27,7 @@ export function applyTrainingRoll(
         return { updated, summary: `Failure: the DC drops to ${updated.training.dc}.` }
     }
 
-    const outcome = resolveMasteryCheck(character, known, roll.total)
+    const outcome = resolveMasteryCheck(character, known, roll.total, masteredCap)
     const updated = outcome.known
     if (outcome.outcome === 'mastered') return { updated, summary: `Success: ${techniqueName} is Mastered.` }
     if (outcome.outcome === 'capped') {

@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import { BENDER_TECHNIQUE_SLOTS } from '../data/benderTable'
 import { DEFAULT_TRAINING } from '../types/schema'
 import type { KnownTechnique } from '../types/schema'
 import {
     canStartTraining,
     masteredCount,
+    masteredLimit,
     resolveMasteryCheck,
     resolveTrainingCheck,
     startTraining,
@@ -123,5 +125,34 @@ describe('mastery (DC 25, needs a master)', () => {
         }))
         expect(masteredCount({ knownTechniques: six })).toBe(6)
         expect(resolveMasteryCheck({ knownTechniques: six }, trained(), 30).outcome).toBe('capped')
+    })
+})
+
+describe('how many techniques can be Mastered', () => {
+    it('uses the class table’s Mastered slots when there is one, and the general cap of 6 when there is not', () => {
+        expect(masteredLimit({ mastered: 0 })).toBe(0)
+        expect(masteredLimit({ mastered: 3 })).toBe(3)
+        expect(masteredLimit(undefined)).toBe(6)
+    })
+
+    it('a level 3 bender has no Mastered slot, so the mastery check is capped', () => {
+        const trained = { techniqueId: 'x', level: 'Trained' as const, training: { active: true, points: 0, dc: 15, masteryDc: 25 } }
+        const level3 = BENDER_TECHNIQUE_SLOTS[2]
+        expect(level3.mastered).toBe(0)
+        expect(resolveMasteryCheck({ knownTechniques: [trained] }, trained, 30, masteredLimit(level3)).outcome).toBe('capped')
+        const level4 = BENDER_TECHNIQUE_SLOTS[3]
+        expect(resolveMasteryCheck({ knownTechniques: [trained] }, trained, 30, masteredLimit(level4)).outcome).toBe('mastered')
+    })
+})
+
+describe('the Benders table matches gmbinder', () => {
+    // [known, practiced, trained, mastered] for levels 1-20, copied from the book's table.
+    const BOOK = [
+        [2, 3, 0, 0], [3, 3, 0, 0], [4, 4, 1, 0], [5, 4, 1, 1], [6, 4, 2, 1], [7, 5, 2, 1], [8, 5, 2, 2], [9, 5, 3, 2], [10, 6, 3, 2], [10, 6, 4, 2],
+        [11, 7, 4, 3], [11, 7, 4, 3], [12, 8, 5, 3], [12, 8, 5, 4], [13, 8, 5, 4], [13, 9, 6, 4], [14, 9, 6, 5], [14, 10, 7, 5], [15, 11, 7, 5], [15, 12, 8, 6],
+    ]
+
+    it('has the same known techniques and slots at every level', () => {
+        expect(BENDER_TECHNIQUE_SLOTS.map((row) => [row.known, row.practiced, row.trained, row.mastered])).toEqual(BOOK)
     })
 })
