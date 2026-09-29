@@ -73,7 +73,7 @@ export function ChooseNewPassword() {
 /** The signed-in strip, with sign out and account settings. */
 export function AccountBar() {
     const account = useCampaignStore((state) => state.account)
-    const { signOut, setUsername, changePassword } = useCampaignStore.getState()
+    const { signOut, switchAccountHere, setUsername, changePassword } = useCampaignStore.getState()
     const [open, setOpen] = useState(false)
     const [name, setName] = useState(account?.username ?? '')
     const [password, setPassword] = useState('')
@@ -95,6 +95,9 @@ export function AccountBar() {
                 </button>
                 <button className="secondary-button" type="button" onClick={() => void signOut()}>
                     Sign out
+                </button>
+                <button className="secondary-button" type="button" onClick={switchAccountHere} title="Sign in to a different account in this tab, without signing out your other tabs">
+                    Use another account in this tab
                 </button>
             </div>
 

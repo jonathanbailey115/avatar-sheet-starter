@@ -89,6 +89,8 @@ export interface CampaignBackend {
     /** The current session, or null if nobody is signed in. */
     init(): Promise<AccountSession | null>
     setSessionScope(scope: SessionScope): void
+    /** Called when the sign-in disappears without the user asking (for example, signed out in another tab). */
+    onSignedOut(callback: () => void): void
     signUp(input: { email: string; password: string; username: string }): Promise<SignUpResult>
     signIn(email: string, password: string): Promise<AccountSession>
     signOut(): Promise<void>

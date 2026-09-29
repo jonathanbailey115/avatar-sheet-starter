@@ -34,6 +34,7 @@ export class SupabaseBackend implements CampaignBackend {
     readonly accounts = true
     private client: SupabaseClient
     private userId = ''
+    private signedOutListener: (() => void) | null = null
 
     constructor(
         private url: string,
@@ -45,7 +46,7 @@ export class SupabaseBackend implements CampaignBackend {
     }
 
     private build(scope: SessionScope): SupabaseClient {
-        return this.factory(this.url, this.anonKey, {
+        const client = this.factory(this.url, this.anonKey, {
             auth: {
                 persistSession: true,
                 autoRefreshToken: true,
@@ -53,6 +54,15 @@ export class SupabaseBackend implements CampaignBackend {
                 storageKey: storageKeyFor(projectRefOf(this.url), scope),
             },
         })
+        // A sign-out in another tab that shares this sign-in reaches us here.
+        client.auth.onAuthStateChange?.((event) => {
+            if (event === 'SIGNED_OUT' && client === this.client) this.signedOutListener?.()
+        })
+        return client
+    }
+
+    onSignedOut(callback: () => void): void {
+        this.signedOutListener = callback
     }
 
     setSessionScope(scope: SessionScope): void {
@@ -225,6 +235,12 @@ export class SupabaseBackend implements CampaignBackend {
     }
 
     async saveNpc(campaignId: string, npc: { id: string; character: Character; revealed: boolean }): Promise<void> {
+        if (!npc.revealed) {
+            // Realtime never announces an update that makes a row unreadable to a player, so a player's screen would keep
+            // showing an NPC the GM just hid. Delete events do reach everyone, so hide by deleting, then saving it hidden.
+            const removed = await this.client.from('campaign_npcs').delete().eq('campaign_id', campaignId).eq('id', npc.id)
+            if (removed.error) throw friendlyError(removed.error)
+        }
         const { error } = await this.client.from('campaign_npcs').upsert(
             {
                 id: npc.id,

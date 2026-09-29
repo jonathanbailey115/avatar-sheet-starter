@@ -76,6 +76,8 @@ export class LocalBackend implements CampaignBackend {
 
     setSessionScope(_scope: SessionScope): void {}
 
+    onSignedOut(_callback: () => void): void {}
+
     private noAccounts(): never {
         throw new CampaignError('Accounts need Supabase. Test mode has none.')
     }

@@ -30,6 +30,7 @@ class LazySupabaseBackend implements CampaignBackend {
     readonly kind = 'supabase' as const
     readonly accounts = true
     private inner: Promise<CampaignBackend> | null = null
+    onSignedOut = (callback: () => void) => void this.backend().then((b) => b.onSignedOut(callback))
     private loaded: CampaignBackend | null = null
 
     private backend(): Promise<CampaignBackend> {

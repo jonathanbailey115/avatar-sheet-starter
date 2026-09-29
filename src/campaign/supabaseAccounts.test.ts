@@ -11,6 +11,7 @@ interface Fake {
     calls: string[]
     lastSignUp?: unknown
     lastReset?: unknown
+    emitAuth?: (event: string) => void
 }
 
 function makeBackend(overrides: Partial<Fake> = {}) {
@@ -36,6 +37,10 @@ function makeBackend(overrides: Partial<Fake> = {}) {
                 fake.calls.push('signUp')
                 fake.lastSignUp = input
                 return fake.signUpResult
+            },
+            onAuthStateChange: (callback: (event: string) => void) => {
+                fake.emitAuth = callback
+                return { data: { subscription: { unsubscribe() {} } } }
             },
             signInWithPassword: async () => fake.signInResult,
             updateUser: async (input: unknown) => {
@@ -161,5 +166,17 @@ describe('usernames, passwords, and resets', () => {
         Object.assign(globalThis, { window: { location: { origin: 'https://game.example', pathname: '/' } } })
         await backend.requestPasswordReset(' a@b.co ')
         expect(fake.lastReset).toEqual({ email: 'a@b.co', options: { redirectTo: 'https://game.example/' } })
+    })
+})
+
+describe('losing the sign-in', () => {
+    it('tells the app when this account is signed out elsewhere', () => {
+        const { backend, fake } = makeBackend()
+        let told = 0
+        backend.onSignedOut(() => (told += 1))
+        fake.emitAuth?.('TOKEN_REFRESHED')
+        expect(told).toBe(0)
+        fake.emitAuth?.('SIGNED_OUT')
+        expect(told).toBe(1)
     })
 })

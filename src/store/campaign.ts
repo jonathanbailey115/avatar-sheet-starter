@@ -44,6 +44,8 @@ interface CampaignState {
     signUp: (input: { email: string; password: string; username: string }, scope: SessionScope) => Promise<'signed-in' | 'confirm-email'>
     signIn: (email: string, password: string, scope: SessionScope) => Promise<void>
     signOut: () => Promise<void>
+    /** Leave the account shared by this device and sign in to another one in this tab only. */
+    switchAccountHere: () => void
     setUsername: (username: string) => Promise<void>
     changePassword: (newPassword: string) => Promise<void>
     finishRecovery: (newPassword: string) => Promise<void>
@@ -136,6 +138,18 @@ export const useCampaignStore = create<CampaignState>()(
                 set({ account: null, userId: '', campaigns: [], activeId: null, snapshot: null })
             }
 
+            let watching = false
+            /** If the sign-in disappears (signed out in another tab), show the sign-in screen. */
+            const watchSignOut = () => {
+                if (watching) return
+                watching = true
+                getBackend().onSignedOut(() => {
+                    if (get().phase !== 'ready') return
+                    forget()
+                    set({ phase: 'signed-out', notice: 'You were signed out. Sign in again to continue.' })
+                })
+            }
+
             return {
                 displayName: '',
                 bindings: {},
@@ -163,6 +177,7 @@ export const useCampaignStore = create<CampaignState>()(
                     set({ phase: 'connecting', error: '' })
                     connecting = (async () => {
                         try {
+                            watchSignOut()
                             const session = await getBackend().init()
                             if (!session) {
                                 set({ phase: 'signed-out', account: null, userId: '' })
@@ -194,6 +209,12 @@ export const useCampaignStore = create<CampaignState>()(
                     const backend = getBackend()
                     backend.setSessionScope(scope)
                     await enter(await backend.signIn(email, password))
+                },
+
+                switchAccountHere: () => {
+                    getBackend().setSessionScope('tab')
+                    forget()
+                    set({ phase: 'signed-out' })
                 },
 
                 signOut: async () => {
