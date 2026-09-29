@@ -60,6 +60,17 @@ create table if not exists public.campaign_npcs (
 );
 create index if not exists campaign_npcs_by_campaign on public.campaign_npcs (campaign_id);
 
+-- Accounts. Supabase Auth stores the email and the (hashed) password. This table holds the
+-- username players choose. Sign-ups pass it along and a trigger below fills this in.
+create table if not exists public.profiles (
+    user_id uuid primary key references auth.users (id) on delete cascade,
+    username text not null,
+    created_at timestamptz not null default now(),
+    -- 3-20 characters; starts and ends with a letter or number
+    constraint username_format check (username ~ '^[A-Za-z0-9][A-Za-z0-9_ .-]{1,18}[A-Za-z0-9]$')
+);
+create unique index if not exists profiles_username_lower on public.profiles (lower(username));
+
 -- Realtime needs the whole old row to filter delete events by campaign.
 alter table public.campaign_members replica identity full;
 alter table public.campaign_rolls replica identity full;
@@ -100,6 +111,21 @@ $$;
 -- Functions the app calls. Creating and joining go through these, never through direct inserts.
 -- ---------------------------------------------------------------------------------------------
 
+-- The name other players see: your account username if you have one, else the name you typed.
+create or replace function public.member_name(p_fallback text)
+returns text
+language sql
+stable
+security definer
+set search_path = public
+as $$
+    select coalesce(
+        (select p.username from public.profiles p where p.user_id = auth.uid()),
+        nullif(trim(coalesce(p_fallback, '')), ''),
+        ''
+    )
+$$;
+
 -- Returns the new campaign's id, its join code, and a GM recovery key. The key is shown to the
 -- GM once; keep it. It lets you take the GM seat back if you ever lose this device's sign-in.
 create or replace function public.create_campaign(p_name text, p_display_name text)
@@ -119,7 +145,7 @@ begin
     if char_length(trim(coalesce(p_name, ''))) = 0 then
         raise exception 'A campaign needs a name';
     end if;
-    if char_length(trim(coalesce(p_display_name, ''))) = 0 then
+    if char_length(public.member_name(p_display_name)) = 0 then
         raise exception 'Choose a display name';
     end if;
 
@@ -135,7 +161,7 @@ begin
     returning id into v_id;
 
     insert into public.campaign_members (campaign_id, user_id, display_name, role)
-    values (v_id, auth.uid(), trim(p_display_name), 'gm');
+    values (v_id, auth.uid(), left(public.member_name(p_display_name), 40), 'gm');
 
     return query select v_id, v_code, v_key;
 end;
@@ -153,7 +179,7 @@ begin
     if auth.uid() is null then
         raise exception 'Not signed in';
     end if;
-    if char_length(trim(coalesce(p_display_name, ''))) = 0 then
+    if char_length(public.member_name(p_display_name)) = 0 then
         raise exception 'Choose a display name';
     end if;
 
@@ -166,7 +192,7 @@ begin
     end if;
 
     insert into public.campaign_members (campaign_id, user_id, display_name, role)
-    values (v_id, auth.uid(), trim(p_display_name), 'player')
+    values (v_id, auth.uid(), left(public.member_name(p_display_name), 40), 'player')
     on conflict (campaign_id, user_id) do update set display_name = excluded.display_name;
 
     return v_id;
@@ -200,12 +226,110 @@ begin
     update public.campaign_members set role = 'player' where campaign_id = v_id and role = 'gm';
 
     insert into public.campaign_members (campaign_id, user_id, display_name, role)
-    values (v_id, auth.uid(), coalesce(nullif(trim(p_display_name), ''), 'GM'), 'gm')
+    values (v_id, auth.uid(), coalesce(nullif(left(public.member_name(p_display_name), 40), ''), 'GM'), 'gm')
     on conflict (campaign_id, user_id) do update set role = 'gm';
 
     return v_id;
 end;
 $$;
+
+-- ---------------------------------------------------------------------------------------------
+-- Accounts: usernames
+-- ---------------------------------------------------------------------------------------------
+
+-- Anyone (even before signing up) can ask whether a username is free.
+create or replace function public.username_available(p_username text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+    select not exists (
+        select 1 from public.profiles p where lower(p.username) = lower(trim(coalesce(p_username, '')))
+    )
+$$;
+
+-- Choose or change your username. Also renames you in every campaign you are in.
+create or replace function public.claim_username(p_username text)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v text := trim(coalesce(p_username, ''));
+begin
+    if auth.uid() is null then
+        raise exception 'Not signed in';
+    end if;
+    if v !~ '^[A-Za-z0-9][A-Za-z0-9_ .-]{1,18}[A-Za-z0-9]$' then
+        raise exception 'Usernames are 3-20 characters: letters, numbers, spaces, dots, dashes or underscores';
+    end if;
+    if exists (select 1 from public.profiles p where lower(p.username) = lower(v) and p.user_id <> auth.uid()) then
+        raise exception 'That username is taken';
+    end if;
+
+    begin
+        insert into public.profiles (user_id, username) values (auth.uid(), v)
+        on conflict (user_id) do update set username = excluded.username;
+    exception when unique_violation then
+        raise exception 'That username is taken';
+    end;
+
+    update public.campaign_members set display_name = v where user_id = auth.uid();
+    return v;
+end;
+$$;
+
+-- When someone signs up with a username, create their profile. Forgiving on purpose: a bad or
+-- taken username never blocks the account; the app then asks them to choose another.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v text := trim(coalesce(new.raw_user_meta_data ->> 'username', ''));
+begin
+    if v ~ '^[A-Za-z0-9][A-Za-z0-9_ .-]{1,18}[A-Za-z0-9]$' then
+        begin
+            insert into public.profiles (user_id, username) values (new.id, v);
+        exception when unique_violation then
+            null;
+        end;
+    end if;
+    return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+    after insert on auth.users
+    for each row execute function public.handle_new_user();
+
+-- A roll always carries the roller's real campaign name, whatever the client sends.
+create or replace function public.set_roll_display_name()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    new.display_name := coalesce(
+        (select m.display_name from public.campaign_members m
+         where m.campaign_id = new.campaign_id and m.user_id = new.user_id),
+        new.display_name
+    );
+    return new;
+end;
+$$;
+
+drop trigger if exists rolls_display_name on public.campaign_rolls;
+create trigger rolls_display_name
+    before insert on public.campaign_rolls
+    for each row execute function public.set_roll_display_name();
 
 revoke all on function public.create_campaign(text, text) from public, anon;
 revoke all on function public.join_campaign(text, text) from public, anon;
@@ -215,6 +339,12 @@ grant execute on function public.join_campaign(text, text) to authenticated;
 grant execute on function public.claim_gm(text, text, text) to authenticated;
 grant execute on function public.is_member(uuid) to authenticated;
 grant execute on function public.is_gm(uuid) to authenticated;
+revoke all on function public.member_name(text) from public, anon;
+grant execute on function public.member_name(text) to authenticated;
+revoke all on function public.claim_username(text) from public, anon;
+grant execute on function public.claim_username(text) to authenticated;
+revoke all on function public.username_available(text) from public;
+grant execute on function public.username_available(text) to anon, authenticated;
 
 -- ---------------------------------------------------------------------------------------------
 -- Row level security
@@ -225,10 +355,17 @@ alter table public.campaign_members enable row level security;
 alter table public.campaign_rolls enable row level security;
 alter table public.member_status enable row level security;
 alter table public.campaign_npcs enable row level security;
+alter table public.profiles enable row level security;
 
 -- Start from nothing, then grant exactly what the app needs. Supabase grants broadly by default.
 revoke all on public.campaigns, public.campaign_members, public.campaign_rolls,
-    public.member_status, public.campaign_npcs from anon, authenticated;
+    public.member_status, public.campaign_npcs, public.profiles from anon, authenticated;
+
+-- profiles: you can read your own. Changing it goes through claim_username().
+grant select on public.profiles to authenticated;
+drop policy if exists profiles_select on public.profiles;
+create policy profiles_select on public.profiles for select to authenticated
+    using (user_id = auth.uid());
 
 -- campaigns: members can read everything except the key hash; the GM can rename or delete.
 grant select (id, code, name, gm_id, created_at) on public.campaigns to authenticated;
@@ -245,16 +382,14 @@ drop policy if exists campaigns_delete on public.campaigns;
 create policy campaigns_delete on public.campaigns for delete to authenticated
     using (public.is_gm(id));
 
--- campaign_members: see the table; change your own name; leave, or be removed by the GM.
+-- campaign_members: see the table; leave, or be removed by the GM. Names change only through
+-- claim_username(), so nobody can pose as someone else.
 grant select, delete on public.campaign_members to authenticated;
-grant update (display_name) on public.campaign_members to authenticated;
 
 drop policy if exists members_select on public.campaign_members;
 create policy members_select on public.campaign_members for select to authenticated
     using (public.is_member(campaign_id));
 drop policy if exists members_update on public.campaign_members;
-create policy members_update on public.campaign_members for update to authenticated
-    using (user_id = auth.uid()) with check (user_id = auth.uid());
 drop policy if exists members_delete on public.campaign_members;
 create policy members_delete on public.campaign_members for delete to authenticated
     using (user_id = auth.uid() or public.is_gm(campaign_id));

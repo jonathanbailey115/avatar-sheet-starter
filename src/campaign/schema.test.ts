@@ -1,25 +1,8 @@
-import { PGlite } from '@electric-sql/pglite'
+import type { PGlite } from '@electric-sql/pglite'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import schemaSql from '../../supabase/schema.sql?raw'
+import { SCHEMA_SQL, runAs, selectRows, startDb } from './pgHarness'
 
-/**
- * Runs supabase/schema.sql on a real Postgres (PGlite, in process) and checks the security rules.
- * Supabase provides the `authenticated`/`anon` roles and auth.uid(); we emulate those here.
- */
-
-const PRELUDE = `
-    create role anon nologin;
-    create role authenticated nologin;
-    create schema auth;
-    create function auth.uid() returns uuid language sql stable as $$
-        select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
-    $$;
-    grant usage on schema public, auth to anon, authenticated;
-    grant execute on function auth.uid() to anon, authenticated;
-    -- Supabase grants everything on new public tables by default; reproduce that.
-    alter default privileges in schema public grant all on tables to anon, authenticated;
-    alter default privileges in schema public grant all on functions to anon, authenticated;
-`
+/** The campaign security rules in supabase/schema.sql, checked on a real Postgres. */
 
 const ALICE = '11111111-1111-1111-1111-111111111111' // GM
 const BOB = '22222222-2222-2222-2222-222222222222'
@@ -31,26 +14,13 @@ let campaignId: string
 let code: string
 let gmKey: string
 
-/** Run something as a signed-in user, the way PostgREST does: role authenticated + JWT subject. */
-async function as<T>(userId: string | null, run: () => Promise<T>): Promise<T> {
-    await db.exec(`select set_config('request.jwt.claim.sub', '${userId ?? ''}', false); set role ${userId ? 'authenticated' : 'anon'};`)
-    try {
-        return await run()
-    } finally {
-        await db.exec('reset role')
-    }
-}
-
-async function rows<T = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<T[]> {
-    return (await db.query<T>(sql, params)).rows
-}
+const as = <T>(userId: string | null, run: () => Promise<T>) => runAs(db, userId, run)
+const rows = <T = Record<string, unknown>>(sql: string, params: unknown[] = []) => selectRows<T>(db, sql, params)
 
 const roll = (label = 'Athletics check') => JSON.stringify({ label, total: 14 })
 
 beforeAll(async () => {
-    db = new PGlite()
-    await db.exec(PRELUDE)
-    await db.exec(schemaSql)
+    db = await startDb()
 
     const created = await as(ALICE, () =>
         rows<{ out_id: string; out_code: string; out_gm_key: string }>(`select * from create_campaign('The Siege', 'Alice')`),
@@ -69,7 +39,7 @@ afterAll(async () => {
 
 describe('schema.sql can be run twice', () => {
     it('is idempotent', async () => {
-        await expect(db.exec(schemaSql)).resolves.toBeDefined()
+        await expect(db.exec(SCHEMA_SQL)).resolves.toBeDefined()
     })
 })
 
