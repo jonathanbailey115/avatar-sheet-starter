@@ -72,8 +72,9 @@ else {
     problems.push('anonymous')
 }
 
-for (const table of ['campaigns', 'campaign_members', 'campaign_rolls', 'member_status', 'campaign_npcs']) {
-    const result = await get(`/rest/v1/${table}?select=id&limit=1`)
+const COLUMN = { campaigns: 'id', campaign_members: 'campaign_id', campaign_rolls: 'id', member_status: 'campaign_id', campaign_npcs: 'id' }
+for (const table of Object.keys(COLUMN)) {
+    const result = await get(`/rest/v1/${table}?select=${COLUMN[table]}&limit=1`)
     if (result.status === 404 && result.body.includes('PGRST205')) {
         console.log(`  [TODO] Table "${table}" is missing. Run supabase/schema.sql in the SQL Editor.`)
         problems.push(table)
