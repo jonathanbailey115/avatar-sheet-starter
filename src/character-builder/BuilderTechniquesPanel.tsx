@@ -70,7 +70,9 @@ export function BuilderTechniquesPanel({
             ),
         }))
 
-    const groups = ['Earth', 'Universal', 'Fighting']
+    // The class's own element first, then Universal, then Fighting techniques.
+    const kinds = [element, 'Universal', 'Fighting'].filter((kind): kind is string => Boolean(kind))
+    const groups = kinds
         .map((kind) => ({
             kind,
             title: GROUP_TITLES[kind] ?? `${kind}bending techniques`,

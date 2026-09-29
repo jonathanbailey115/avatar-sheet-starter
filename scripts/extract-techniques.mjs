@@ -142,7 +142,7 @@ write(
     parseSpellSection(earthStart, earthEnd, 'earth', { Earthbending: { element: 'Earth' } }),
 )
 
-// Waterbending: the base list plus Healing and Bloodbending (unlocked by paths).
+// Waterbending: the base list, its Healing techniques, and Bloodbending (unlocked by its path).
 const waterStart = find((l) => l.includes('Waterbending Techniques</div>'))
 write(
     'water.generated.ts',
@@ -150,7 +150,8 @@ write(
     'Waterbending techniques, including Healing and Bloodbending (tagged with a discipline).',
     parseSpellSection(waterStart, earthStart, 'water', {
         Waterbending: { element: 'Water' },
-        Healing: { element: 'Water', discipline: 'Healing' },
+        // Healing techniques sit in the Waterbending list and nothing restricts them (docs/RULES_QUESTIONS.md L5).
+        Healing: { element: 'Water' },
         Bloodbending: { element: 'Water', discipline: 'Bloodbending' },
     }),
 )

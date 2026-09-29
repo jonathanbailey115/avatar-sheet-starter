@@ -186,3 +186,21 @@ describe('Tech-Engineer', () => {
         expect(names).not.toContain('Net Gun')
     })
 })
+
+describe('campaign data round trip', () => {
+    it('exporting and importing every built-in technique loses nothing', async () => {
+        const { parseCampaignData, serializeCampaignData } = await import('../lib/campaignData')
+        const text = serializeCampaignData({ lineages: [], techniques: realContent.techniques, features: [], npcTemplates: [] })
+        const parsed = parseCampaignData(text)
+        expect(parsed.warnings).toEqual([])
+        expect(parsed.data.techniques).toEqual(realContent.techniques)
+    })
+
+    it('exporting and importing every built-in feature loses nothing', async () => {
+        const { parseCampaignData, serializeCampaignData } = await import('../lib/campaignData')
+        const text = serializeCampaignData({ lineages: [], techniques: [], features: realContent.features, npcTemplates: [] })
+        const parsed = parseCampaignData(text)
+        expect(parsed.warnings).toEqual([])
+        expect(parsed.data.features).toEqual(realContent.features)
+    })
+})

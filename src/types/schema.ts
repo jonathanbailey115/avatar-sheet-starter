@@ -33,7 +33,7 @@ export interface Lineage {
 export type TechniqueElement = Element | 'Universal' | 'Fighting'
 
 /** Sub-bendings gmbinder lists inside an element's technique list. */
-export type TechniqueDiscipline = 'Bloodbending' | 'Healing' | 'Combustionbending'
+export type TechniqueDiscipline = 'Bloodbending' | 'Combustionbending'
 
 /** A save the target makes against the caster's Bending Save DC. */
 export interface TechniqueSave {

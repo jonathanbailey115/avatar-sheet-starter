@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { abilityName, skillName } from './characterSchema'
-import type { Feature, Lineage, NpcTemplate, Technique } from '../types/schema'
+import type { EffectTarget, Feature, FeatureEffect, Lineage, NpcTemplate, Technique } from '../types/schema'
 
 const nationOrAny = z.enum(['Air Nomads', 'Water Tribe', 'Earth Kingdom', 'Fire Nation', 'Any'])
 const element = z.enum(['Air', 'Water', 'Earth', 'Fire'])
@@ -30,13 +30,57 @@ const lineageSchema: z.ZodType<Lineage, z.ZodTypeDef, unknown> = z.object({
     featureIds: strings.optional(),
 })
 
+const techniqueDamage = z.object({
+    label: z.string().optional(),
+    base: z.string(),
+    perLevel: z.string().optional(),
+    byLevel: z.object({ Practiced: z.string(), Trained: z.string(), Mastered: z.string() }).partial().optional(),
+    type: z.string(),
+    addModifier: z.boolean().optional(),
+    onSave: z.enum(['half', 'negates', 'unaffected']),
+})
+
 const techniqueSchema: z.ZodType<Technique, z.ZodTypeDef, unknown> = z.object({
     id: z.string().min(1),
     name: z.string(),
-    element: z.union([element, z.literal('Universal')]),
+    element: z.union([element, z.literal('Universal'), z.literal('Fighting')]),
     description: z.string(),
     rare: z.boolean().optional(),
+    discipline: z.enum(['Bloodbending', 'Combustionbending']).optional(),
+    prerequisite: z.string().optional(),
+    castingTime: z.string().optional(),
+    range: z.string().optional(),
+    components: z.string().optional(),
+    duration: z.string().optional(),
+    concentration: z.boolean().optional(),
+    levelText: z.object({ Practiced: z.string(), Trained: z.string(), Mastered: z.string() }).optional(),
+    resolution: z.enum(['save', 'attack', 'none']).optional(),
+    save: z.object({ ability: z.union([abilityName, z.literal('affinity')]), fallback: abilityName.optional() }).optional(),
+    damage: z.array(techniqueDamage).optional(),
+    mechanicsNote: z.string().optional(),
 })
+
+const EFFECT_TARGET = /^(ac|initiative|attack|saves|skills|save:[a-z]+|skill:[A-Za-z ]+|check:[a-z]+)$/
+const effectTarget = z.custom<EffectTarget>((value) => typeof value === 'string' && EFFECT_TARGET.test(value))
+const effectBase = { target: effectTarget, requires: z.literal('no-armor').optional(), situation: z.string().optional() }
+
+const featureEffect: z.ZodType<FeatureEffect, z.ZodTypeDef, unknown> = z.discriminatedUnion('kind', [
+    z.object({
+        kind: z.literal('bonus'),
+        value: z.union([z.number(), z.literal('proficiency'), z.object({ ability: abilityName })]),
+        ...effectBase,
+    }),
+    z.object({ kind: z.literal('setBase'), base: z.number(), abilities: z.array(abilityName), ...effectBase }),
+    z.object({ kind: z.literal('advantage'), ...effectBase }),
+    z.object({ kind: z.literal('disadvantage'), tag: z.string().optional(), ...effectBase }),
+    z.object({ kind: z.literal('suppressDisadvantage'), tag: z.string(), ...effectBase }),
+    z.object({
+        kind: z.literal('critRange'),
+        min: z.number(),
+        attackKinds: z.array(z.enum(['weapon', 'bending', 'unarmed'])),
+        ...effectBase,
+    }),
+])
 
 const featureSchema: z.ZodType<Feature, z.ZodTypeDef, unknown> = z.object({
     id: z.string().min(1),
@@ -48,6 +92,7 @@ const featureSchema: z.ZodType<Feature, z.ZodTypeDef, unknown> = z.object({
     isActiveByDefault: z.boolean(),
     uses: z.number().optional(),
     recharge: z.enum(['Short Rest', 'Long Rest', 'Manual']).nullable().optional(),
+    effects: z.array(featureEffect).optional(),
 })
 
 const weight = z.number().min(0).optional()
