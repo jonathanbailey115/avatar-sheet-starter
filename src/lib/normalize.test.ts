@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { DEFAULT_TRAINING } from '../types/schema'
 import { createBlankCharacter } from './character'
 import { normalizeCharacter } from './normalize'
 import { realContent } from './testFixtures'
@@ -47,7 +48,7 @@ describe('normalizeCharacter', () => {
         const character = normalizeCharacter(
             {
                 ...createBlankCharacter(),
-                knownTechniques: [{ techniqueId: 'gone', level: 'Trained' }],
+                knownTechniques: [{ techniqueId: 'gone', level: 'Trained', training: DEFAULT_TRAINING }],
                 selectedFeatureIds: ['gone', 'class-weaponsmaster-extra-attack'],
             },
             realContent,
@@ -75,7 +76,7 @@ describe('normalizeCharacter', () => {
     it('reports removed techniques on load so nothing vanishes silently', () => {
         const stale = {
             ...createBlankCharacter(),
-            knownTechniques: [{ techniqueId: 'stone-guard', level: 'Practiced' as const }],
+            knownTechniques: [{ techniqueId: 'stone-guard', level: 'Practiced' as const, training: DEFAULT_TRAINING }],
         }
         const loaded = normalizeCharacter(stale, realContent, { reportRemovals: true })
         expect(loaded.knownTechniques).toEqual([])

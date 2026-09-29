@@ -60,10 +60,26 @@ export const characterSchema: z.ZodType<Character, z.ZodTypeDef, unknown> = z.ob
     ideals: z.string(),
     bonds: z.string(),
     flaws: z.string(),
+    customBackground: z
+        .object({
+            name: z.string(),
+            description: z.string(),
+            skillProficiencies: z.array(skillName).max(2),
+            toolProficiencies: strings,
+            featureName: z.string(),
+            featureText: z.string(),
+        })
+        .nullable(),
     knownTechniques: z.array(
         z.object({
             techniqueId: z.string(),
             level: z.enum(['Practiced', 'Trained', 'Mastered']),
+            training: z.object({
+                active: z.boolean(),
+                points: z.number().int().min(0).max(5),
+                dc: z.number().int(),
+                masteryDc: z.number().int(),
+            }),
         }),
     ),
     notes: z.string(),

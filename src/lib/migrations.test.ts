@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CHARACTER_SCHEMA_VERSION } from '../types/schema'
+import { CHARACTER_SCHEMA_VERSION, DEFAULT_TRAINING } from '../types/schema'
 import { parseCharacterRecord } from './characterIO'
 import { getSchemaVersion, migrateCharacter } from './migrations'
 import { legacyCharacterV1 } from './testFixtures'
@@ -21,7 +21,7 @@ describe('schema 1 -> 2 migration', () => {
     it('keeps old techniques as Practiced and tells the player', () => {
         const character = parseCharacterRecord(legacyCharacterV1())
         expect(character.knownTechniques).toEqual([
-            { techniqueId: 'stone-guard', level: 'Practiced' },
+            { techniqueId: 'stone-guard', level: 'Practiced', training: DEFAULT_TRAINING },
         ])
         expect(character.migrationNotes.join(' ')).toMatch(/Practiced/)
     })
@@ -118,5 +118,28 @@ describe('schema 3 -> 4 migration', () => {
 
     it('does not nag when there were no weapon notes', () => {
         expect(parseCharacterRecord(v3()).migrationNotes.join(' ')).not.toMatch(/weapon list/)
+    })
+})
+
+describe('schema 4 -> 5 migration', () => {
+    const v4 = (overrides: Record<string, unknown> = {}) => {
+        const { customBackground: _c, ...rest } = migrateCharacter(legacyCharacterV1()) as Record<string, unknown>
+        return {
+            ...rest,
+            schemaVersion: 4,
+            knownTechniques: [{ techniqueId: 'earth-tremors', level: 'Trained' }],
+            ...overrides,
+        }
+    }
+
+    it('gives every known technique fresh training state', () => {
+        const c = parseCharacterRecord(v4())
+        expect(c.knownTechniques).toEqual([
+            { techniqueId: 'earth-tremors', level: 'Trained', training: DEFAULT_TRAINING },
+        ])
+    })
+
+    it('starts with no custom background', () => {
+        expect(parseCharacterRecord(v4()).customBackground).toBeNull()
     })
 })

@@ -6,7 +6,7 @@ export type BendingType = Element | 'Non-Bender'
 export type TechniqueLevel = 'Practiced' | 'Trained' | 'Mastered'
 
 export const TECHNIQUE_LEVELS: TechniqueLevel[] = ['Practiced', 'Trained', 'Mastered']
-export const CHARACTER_SCHEMA_VERSION = 4
+export const CHARACTER_SCHEMA_VERSION = 5
 
 export interface Lineage {
     id: string
@@ -29,19 +29,79 @@ export interface Lineage {
     featureIds?: string[]
 }
 
+/** Where a technique comes from. Fighting techniques are the Weaponsmaster's. */
+export type TechniqueElement = Element | 'Universal' | 'Fighting'
+
+/** A save the target makes against the caster's Bending Save DC. */
+export interface TechniqueSave {
+    /** 'affinity': the target rolls the Elemental Affinity save of its own element (gmbinder text). */
+    ability: AbilityName | 'affinity'
+    /** What non-benders roll when the technique text names it (e.g. Strength). */
+    fallback?: AbilityName
+}
+
+export interface TechniqueDamage {
+    label?: string
+    /** Dice at Practiced level, e.g. "3d8". Empty when `byLevel` gives every level. */
+    base: string
+    /** Extra dice for each level above Practiced, e.g. "1d8". */
+    perLevel?: string
+    /** Exact dice per level; takes precedence over base and perLevel. */
+    byLevel?: Partial<Record<TechniqueLevel, string>>
+    type: string
+    /** Add the caster's bending ability modifier. */
+    addModifier?: boolean
+    /** What a successful save does to this damage. */
+    onSave: 'half' | 'negates' | 'unaffected'
+}
+
 export interface Technique {
     id: string
     name: string
-    element: Element | 'Universal'
+    element: TechniqueElement
     description: string
     rare?: boolean
+    /** e.g. "Trained Tremors" */
+    prerequisite?: string
+    castingTime?: string
+    range?: string
+    components?: string
+    duration?: string
+    concentration?: boolean
+    /** Separate rules text per level (Fighting techniques). */
+    levelText?: Record<TechniqueLevel, string>
+    /** Mechanics the app can roll for you. Authored in data/techniques/mechanics.ts. */
+    resolution?: 'save' | 'attack' | 'none'
+    save?: TechniqueSave
+    damage?: TechniqueDamage[]
+    /** A short reminder shown beside the rolls. */
+    mechanicsNote?: string
+}
+
+/** Training Points progress toward the next technique level (gmbinder, Training). */
+export interface TechniqueTraining {
+    /** Being trained uses one of your 2 training slots. */
+    active: boolean
+    /** 0-5. At 5 the technique levels up. */
+    points: number
+    /** Elemental Ability Check DC; starts at 15 and drops by 1 on each failure. */
+    dc: number
+    /** Mastery check DC; starts at 25 and drops by 1 on each failure. */
+    masteryDc: number
 }
 
 /** A technique a character knows, at the level they know it. */
 export interface KnownTechnique {
     techniqueId: string
     level: TechniqueLevel
+    training: TechniqueTraining
 }
+
+export const DEFAULT_TRAINING: TechniqueTraining = { active: false, points: 0, dc: 15, masteryDc: 25 }
+export const MAX_TRAINING_SLOTS = 2
+/** Benders may master up to 6 techniques (gmbinder). */
+export const MAX_MASTERED_TECHNIQUES = 6
+
 
 export type HitDie = 6 | 8 | 10 | 12
 
@@ -80,6 +140,14 @@ export type FeatureEffect =
     | (EffectBase & { kind: 'suppressDisadvantage'; tag: string })
     /** Attacks of these kinds score a critical hit on a natural roll of `min` or higher. */
     | (EffectBase & { kind: 'critRange'; min: number; attackKinds: AttackKind[] })
+
+/** A cap on techniques known, counted across the listed kinds. Index 0 of `maxByLevel` is level 1. */
+export interface TechniqueLimit {
+    id: string
+    label: string
+    kinds: TechniqueElement[]
+    maxByLevel: number[]
+}
 
 export interface TechniqueSlotRow {
     known: number
@@ -174,6 +242,7 @@ export interface Character {
     /** Spent uses by resource id (see engine/resources). */
     resourcesUsed: Record<string, number>
     backgroundId?: string
+    customBackground: CustomBackground | null
     backgroundNotes: string
     personality: string
     ideals: string
@@ -240,6 +309,8 @@ export interface CharacterClass {
     element?: Element
     /** Bender technique slot table by level; index 0 is level 1. */
     techniqueSlots?: TechniqueSlotRow[]
+    /** How many techniques the class can know, by kind and level. */
+    techniqueLimits?: TechniqueLimit[]
     resources?: ClassResource[]
     /** The ability behind Bending Save DC and Bending Attack Modifier. */
     bendingAbility?: AbilityName
@@ -260,6 +331,19 @@ export interface CharacterSubclass {
     unlockLevel: number
     featureGrants: ClassFeatureGrant[]
 }
+
+/** A player-made background (D&D Beyond style "custom background"). */
+export interface CustomBackground {
+    name: string
+    description: string
+    skillProficiencies: SkillName[]
+    toolProficiencies: string[]
+    featureName: string
+    featureText: string
+}
+
+/** `backgroundId` value that means "use `customBackground`". */
+export const CUSTOM_BACKGROUND_ID = 'custom'
 
 export interface Background {
     id: string

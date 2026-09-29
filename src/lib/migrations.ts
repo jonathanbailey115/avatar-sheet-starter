@@ -11,6 +11,7 @@ type Raw = Record<string, unknown>
  *      maxHpAdjustment, armorId, hasShield. `hp` became `maxHpOverride` (NPCs only; player
  *      sheets never had a way to enter it, so their value was placeholder data).
  *   4  `weapons` (equipped weapons chosen from the weapon table). Typed weapon notes stay as notes.
+ *   5  Techniques carry Training Point state; `customBackground` (player-made background).
  *
  * To change the schema: bump CHARACTER_SCHEMA_VERSION, add an `n -> n+1` function below, add a test.
  */
@@ -121,10 +122,25 @@ function migrate3to4(raw: Raw): Raw {
     return { ...raw, schemaVersion: 4, weapons: [], migrationNotes: notes }
 }
 
+function migrate4to5(raw: Raw): Raw {
+    const known = Array.isArray(raw.knownTechniques) ? raw.knownTechniques : []
+    return {
+        ...raw,
+        schemaVersion: 5,
+        customBackground: null,
+        knownTechniques: known.map((item) =>
+            isRecord(item)
+                ? { ...item, training: { active: false, points: 0, dc: 15, masteryDc: 25 } }
+                : item,
+        ),
+    }
+}
+
 const MIGRATIONS: Record<number, (raw: Raw) => Raw> = {
     1: migrate1to2,
     2: migrate2to3,
     3: migrate3to4,
+    4: migrate4to5,
 }
 
 /**

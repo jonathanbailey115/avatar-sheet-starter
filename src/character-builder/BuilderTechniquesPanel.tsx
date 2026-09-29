@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
 import { getBendingElement } from '../engine/bending'
-import { TECHNIQUE_LEVELS } from '../types/schema'
+import { DEFAULT_TRAINING, TECHNIQUE_LEVELS } from '../types/schema'
 import type { Character, CharacterClass, Technique, TechniqueLevel } from '../types/schema'
 
 type BuilderTechniquesPanelProps = {
@@ -30,7 +30,7 @@ export function BuilderTechniquesPanel({
     const learn = (techniqueId: string) =>
         setCharacter((current) => ({
             ...current,
-            knownTechniques: [...current.knownTechniques, { techniqueId, level: 'Practiced' }],
+            knownTechniques: [...current.knownTechniques, { techniqueId, level: 'Practiced', training: DEFAULT_TRAINING }],
         }))
 
     const forget = (techniqueId: string) =>

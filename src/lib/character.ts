@@ -24,6 +24,7 @@ export function createBlankCharacter(role: CharacterRole = 'Player Character'): 
         exhaustion: 0,
         resourcesUsed: {},
         backgroundId: undefined,
+        customBackground: null,
         backgroundNotes: '',
         personality: '',
         ideals: '',
