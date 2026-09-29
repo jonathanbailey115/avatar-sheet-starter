@@ -1,3 +1,4 @@
+import { CHARACTER_SCHEMA_VERSION } from '../types/schema'
 import { describe, expect, it } from 'vitest'
 import { createBlankCharacter } from './character'
 import { loadStoredCharacters } from './characterLoad'
@@ -29,7 +30,7 @@ describe('character export and import', () => {
         const result = parseCharacterImport(JSON.stringify(legacyCharacterV1()))
         expect(result.errors).toEqual([])
         expect(result.characters[0].name).toBe('Ling')
-        expect(result.characters[0].schemaVersion).toBe(2)
+        expect(result.characters[0].schemaVersion).toBe(CHARACTER_SCHEMA_VERSION)
     })
 
     it('imports the good characters and reports the bad ones', () => {

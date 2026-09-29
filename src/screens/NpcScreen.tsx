@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import SectionCard from '../components/SectionCard'
+import { computeMaxHp, getHitDie } from '../engine/hitPoints'
 import { downloadText, safeFileName, serializeCharacter } from '../lib/characterIO'
 import { generateNpc } from '../lib/generator'
 import { useCollection } from '../store/content'
@@ -137,7 +138,7 @@ export function NpcScreen() {
                                             'No lineage'}{' '}
                                         · {classes.find((item) => item.id === npc.classId)?.name ?? 'No class'}
                                     </p>
-                                    <p>HP {npc.hp}</p>
+                                    <p>HP {computeMaxHp(npc, getHitDie(npc, lineages))}</p>
                                     {npc.knownTechniques.length > 0 && (
                                         <>
                                             <p>

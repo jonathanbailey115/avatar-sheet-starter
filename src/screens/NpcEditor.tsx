@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
 import { BuilderTechniquesPanel } from '../character-builder/BuilderTechniquesPanel'
+import { computeMaxHp, getHitDie } from '../engine/hitPoints'
 import { downloadText, safeFileName, serializeCharacter } from '../lib/characterIO'
 import { useCollection } from '../store/content'
 import { nations } from '../types/schema'
@@ -126,14 +127,18 @@ export function NpcEditor({ draft, setDraft, onSave, onCancel }: NpcEditorProps)
                 </label>
 
                 <label>
-                    HP
+                    Max HP (blank = calculated from lineage)
                     <input
                         type="number"
-                        value={draft.hp}
+                        min={1}
+                        placeholder={String(computeMaxHp({ ...draft, maxHpOverride: null }, getHitDie(draft, lineages)))}
+                        value={draft.maxHpOverride ?? ''}
                         onChange={(event) =>
                             update((current) => ({
                                 ...current,
-                                hp: toNumber(event.target.valueAsNumber),
+                                maxHpOverride: Number.isNaN(event.target.valueAsNumber)
+                                    ? null
+                                    : Math.max(1, Math.round(event.target.valueAsNumber)),
                             }))
                         }
                     />

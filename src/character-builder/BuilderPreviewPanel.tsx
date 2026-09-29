@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { getBendingElement } from '../engine/bending'
+import { computeMaxHp, getHitDie } from '../engine/hitPoints'
 import {
     ABILITY_ABBREVIATIONS,
     SKILLS,
@@ -213,7 +214,7 @@ export function BuilderPreviewPanel({
                         <div className="preview-vitals">
                             <article className="preview-vital-chip">
                                 <span>HP</span>
-                                <strong>{character.hp}</strong>
+                                <strong>{computeMaxHp(character, getHitDie(character, editableLineages)) || '—'}</strong>
                             </article>
                             <article className="preview-vital-chip">
                                 <span>Prof</span>

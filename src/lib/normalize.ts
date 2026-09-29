@@ -1,3 +1,4 @@
+import { computeMaxHp, getHitDie } from '../engine/hitPoints'
 import {
     deriveMigratedLanguages,
     deriveMigratedTools,
@@ -103,6 +104,12 @@ export function normalizeCharacter(
     next.toolProficiencies = deriveMigratedTools(next, ctx)
     next.languages = deriveMigratedLanguages(next, ctx)
     next.migrationNotes = notes
+
+    // Keep play state inside its legal range (level or Constitution may have changed).
+    const maxHp = computeMaxHp(next, getHitDie(next, content.lineages))
+    next.hpLost = maxHp > 0 ? Math.min(next.hpLost, maxHp) : 0
+    next.hitDiceUsed = Math.min(next.hitDiceUsed, next.level)
+    next.hpRolls = next.hpRolls.slice(0, Math.max(0, next.level - 1))
 
     return JSON.stringify(next) === JSON.stringify(input) ? input : next
 }

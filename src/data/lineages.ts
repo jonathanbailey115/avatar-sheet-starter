@@ -3,18 +3,21 @@ import type { Lineage } from '../types/schema'
 export const lineages: Lineage[] = [
     {
         id: 'air-nomad-human',
+        hitDie: 6,
         name: 'Air Nomads',
         nation: 'Air Nomads',
         description: 'Raised in or descended from the Air Nomad tradition.',
     },
     {
         id: 'water-tribe-human',
+        hitDie: 10,
         name: 'Water Tribe',
         nation: 'Water Tribe',
         description: 'Connected to the cultures of the north or south.',
     },
     {
         id: 'earth-kingdom-human',
+        hitDie: 12,
         name: 'Earth Kingdom',
         nation: 'Earth Kingdom',
         description:
@@ -71,6 +74,7 @@ export const lineages: Lineage[] = [
     },
     {
         id: 'fire-nation-human',
+        hitDie: 8,
         name: 'Fire Nation',
         nation: 'Fire Nation',
         description: 'Descended from the disciplined and ambitious Fire Nation.',

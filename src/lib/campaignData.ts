@@ -15,6 +15,7 @@ const lineageSchema: z.ZodType<Lineage, z.ZodTypeDef, unknown> = z.object({
     name: z.string(),
     nation: nationOrAny,
     description: z.string(),
+    hitDie: z.union([z.literal(6), z.literal(8), z.literal(10), z.literal(12)]).optional(),
     hitDiceText: z.string().optional(),
     hitPointsAtFirstLevelText: z.string().optional(),
     hitPointsPerLevelText: z.string().optional(),

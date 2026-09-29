@@ -7,6 +7,9 @@ type Raw = Record<string, unknown>
  *   1  Unversioned original sheet: chi, bendingType, style, tiered `techniques`, nation "Mixed".
  *   2  Bending derives from class. Chi, style and bendingType removed. `knownTechniques` holds
  *      {techniqueId, level}. `migrationNotes` added. Proficiency `manual*` lists always present.
+ *   3  Play state: hpLost, tempHp, hitDiceUsed, deathSaves, exhaustion, resourcesUsed, hpRolls,
+ *      maxHpAdjustment, armorId, hasShield. `hp` became `maxHpOverride` (NPCs only; player
+ *      sheets never had a way to enter it, so their value was placeholder data).
  *
  * To change the schema: bump CHARACTER_SCHEMA_VERSION, add an `n -> n+1` function below, add a test.
  */
@@ -76,8 +79,40 @@ function migrate1to2(raw: Raw): Raw {
     }
 }
 
+function migrate2to3(raw: Raw): Raw {
+    const { hp, ...rest } = raw
+    const notes = stringList(raw.migrationNotes)
+
+    const isNpc = rest.role === 'NPC'
+    const maxHpOverride = isNpc && typeof hp === 'number' && hp > 0 ? Math.round(hp) : null
+
+    if (typeof rest.armorName === 'string' && rest.armorName.trim() !== '') {
+        notes.push(
+            `Your armor was typed as "${rest.armorName.trim()}". Pick it from the armor list on the Equipment tab so AC is calculated.`,
+        )
+    }
+
+    return {
+        ...rest,
+        schemaVersion: 3,
+        maxHpOverride,
+        maxHpAdjustment: 0,
+        hpRolls: [],
+        hpLost: 0,
+        tempHp: 0,
+        hitDiceUsed: 0,
+        deathSaves: { successes: 0, failures: 0 },
+        exhaustion: 0,
+        resourcesUsed: {},
+        armorId: '',
+        hasShield: false,
+        migrationNotes: notes,
+    }
+}
+
 const MIGRATIONS: Record<number, (raw: Raw) => Raw> = {
     1: migrate1to2,
+    2: migrate2to3,
 }
 
 /**

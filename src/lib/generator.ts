@@ -81,7 +81,6 @@ export function generateNpc(
         nation,
         lineageId: lineage?.id ?? '',
         classId: characterClass?.id ?? '',
-        hp: 8 + Math.floor(rng() * 8),
         backgroundNotes: `${template.role} generated from weighted tables.`,
         notes: 'Use this as a draft NPC and expand it in the NPC studio.',
     }
