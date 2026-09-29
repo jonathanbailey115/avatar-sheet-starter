@@ -49,7 +49,7 @@ It reads `.env.local`, only reads from your project, and tells you which steps a
 - **Save the GM recovery key** shown at creation. You should not need it now that GMs have accounts, but if the GM ever loses their account, the join code plus that key hands the GM seat to whichever account uses it.
 
 Your friends need the app itself, not the database. Host the built app (Vercel or Netlify are free) and set the same two
-variables, `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, in the host's settings. Hosting is covered in the last phase.
+variables, `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, in the host's settings. Hosting is covered in `HOSTING.md`.
 
 ## Good to know
 

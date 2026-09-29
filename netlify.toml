@@ -1,0 +1,16 @@
+# Netlify: build the app and publish the result. The database address and key are read from the
+# site's environment variables (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY) at build time.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# The service worker file must always be re-checked so updates reach installed copies.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache"

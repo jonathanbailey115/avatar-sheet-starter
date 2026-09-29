@@ -22,6 +22,19 @@ Status legend: **OPEN** = needs your decision, **DECIDED** = already settled in 
 | A15 | Offer **standard array, point buy (27), 4d6 drop lowest, and manual entry**. |
 | B1-B3 | **Follow each class table** for ASI: Weaponsmaster and Tech-Engineer 4/8/12/16; Bender classes 4/9/12/16/19. (Class text mentioning 19th for Weaponsmaster/Tech-Engineer and 8th for benders is treated as the typo.) |
 | Deps/git | Zustand, Vitest, zod approved. Small commits on branch `overhaul`. `reference/` stays git-ignored. No hard deadline: full roadmap in order. |
+| Sharing | **Installable web app**: one web link that friends can also install (see `docs/HOSTING.md`). A Windows .exe is not needed. |
+| L1 | Combustionbender's *Telekinetic Firebending* starts at **level 3**, when the Principle is chosen. |
+| L3 / LT4 | **Per-character switch** for the GM-permitted alternate bending ability (Airbending: Dexterity instead of Wisdom; Tech-Engineer: Wisdom instead of Intelligence). Off by default. |
+| L5 | **Healing techniques** (Water Glove, Submerge) can be learned by **any Waterbender**, not only the Healer path. |
+| L6 | **Energy Guidance** is a **Firebending** technique, as printed. |
+| L10 | Airbending **Shockwave** and similar "each level above Practiced" damage **stacks**. |
+| LT2 | **Improved Critical** (Multidisciplinary Specialist) stays at **level 9**. |
+| M1 | **Bolas, Net and War Fan** get Baseline 5e-style stand-in stats (only the Net is in the SRD; Bolas and War Fan values are this app's). Net deals no damage. |
+| M2 | **Crossbows** proficiency covers every crossbow, including the hand crossbow. |
+| M3 | **Air Nomads** with a non-Airbending class: a **warning note only**. |
+| M7 | **SRD feats** are added (Alert, Savage Attacker, Skilled, Grappler; written as short summaries, labelled Baseline 5e). More can be added later from the owner's D&D Beyond books. |
+| M8 | The misprinted "Bender Bender (Mage Slayer)" feat is named **Bender Slayer**. |
+| NPC levels | Any technique can be Trained or Mastered; only the number of Mastered / Trained techniques is capped by the class table's slots. The NPC generator's approach (as many as the slots) stays. |
 
 Still open: A11-A13 (defaults assumed: no Mixed nation with optional GM-approved extra lineage feature, Species step Human/Variant Human, gmbinder stays local). A10 is superseded by A6.
 
