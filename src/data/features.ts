@@ -181,5 +181,13 @@ export const features: Feature[] = [
         featureType: 'Passive',
         levelRequirement: 1,
         isActiveByDefault: true,
+        effects: [
+            { kind: 'bonus', target: 'check:intelligence', value: 'proficiency', situation: 'related to your favored terrain' },
+            { kind: 'bonus', target: 'check:constitution', value: 'proficiency', situation: 'related to your favored terrain' },
+            { kind: 'bonus', target: 'skill:Arcana', value: 'proficiency', situation: 'related to your favored terrain' },
+            { kind: 'bonus', target: 'skill:History', value: 'proficiency', situation: 'related to your favored terrain' },
+            { kind: 'bonus', target: 'skill:Investigation', value: 'proficiency', situation: 'related to your favored terrain' },
+            { kind: 'bonus', target: 'skill:Nature', value: 'proficiency', situation: 'related to your favored terrain' },
+        ],
     },
 ]
