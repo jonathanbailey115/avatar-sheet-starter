@@ -179,6 +179,7 @@ export type RollKind =
     | 'damage'
     | 'death-save'
     | 'hit-die'
+    | 'technique'
     | 'custom'
 
 /** One line in the roll log. Everything the log and the campaign feed need to display a roll. */

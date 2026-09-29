@@ -2,30 +2,6 @@ import type { Feature } from '../types/schema'
 
 export const features: Feature[] = [
     {
-        id: 'background-community-fixer',
-        name: 'Community Fixer',
-        description:
-            'You know how to find help, favors, and practical support among ordinary people.',
-        source: 'Background',
-        featureType: 'Passive',
-        levelRequirement: 1,
-        isActiveByDefault: true,
-        uses: undefined,
-        recharge: null,
-    },
-    {
-        id: 'background-street-instincts',
-        name: 'Street Instincts',
-        description:
-            'You quickly read danger, opportunity, and shifting mood in crowded places.',
-        source: 'Background',
-        featureType: 'Passive',
-        levelRequirement: 1,
-        isActiveByDefault: true,
-        uses: undefined,
-        recharge: null,
-    },
-    {
         id: 'class-weaponsmaster-adapted-fighting',
         name: 'Adapted Fighting',
         description:

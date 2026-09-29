@@ -72,6 +72,9 @@ Still open: A11-A13 (defaults assumed: no Mixed nation with optional GM-approved
 | B16 | **Lay of the Land wording** ("proficiency bonus doubled if you are proficient") fine, but "Intelligence or Constitution Check related to your favored terrain" has no rule for *which checks are terrain-related*. | GB L448 | Player toggles "terrain applies" per roll. |
 | B17 | **"Gust" is an Airbending class feature (GB L2234), not a technique.** The seed treats it as a technique. | GB L2234 vs seed | See D6. |
 | B18 | **Earth Kingdom starting equipment offers a halberd (a martial weapon), but the Earth weapon proficiency list has no halberds or glaives** (GB L424, L430). A character who takes the starting halberd is not proficient with it. The same list has no proficiency for "any martial melee weapon", the other starting choice (GB L430). | GB L424, L430 | The sheet follows the proficiency list exactly. Tell me if Earth Kingdom should also be proficient with halberds, or with whatever martial weapon they pick. |
+| B19 | **Rock Glove damage at Mastered is ambiguous.** "At Trained level the damage is increased by 1d8. When this ability reaches Mastered, you can throw 2 rock gloves, the damage increases by 1d8 per glove" (GB L3301). Is that 3d8 total across both gloves, or 2 extra dice per glove? | GB L3301 | The sheet rolls 1d8 (+1d8 per level) per glove, so Mastered is 3d8 for each of two gloves. Tell me if it should be different. |
+| B20 | **Mastery check can be retried "once per day"** (GB L127) but the app has no calendar. | GB L127 | The app lets you press the button any time; keep to once per day at the table. |
+| B21 | **"Known Techniques" versus "prepared".** The Benders table gives Known Techniques (GB L1067-1086) while Using Techniques says you prepare that many each long rest (GB L1093). | GB L1093 | The sheet treats it as the number of techniques you know, and lets you cast any known technique. No daily preparing step. |
 
 ---
 
@@ -215,3 +218,21 @@ These were needed to build the play sheet. Each is labelled in the UI where it a
 | J8 | **Situational rules** (like Earthbending's Neutral Jing, "vs a creature that takes its turn before you") are not applied automatically. Clicking a roll asks which ones apply. | GB L1564 |
 | J9 | **Ability checks** get exhaustion disadvantage, and Str/Dex checks get the armor-proficiency disadvantage. | 5e SRD |
 | J10 | **Not automated yet:** Extra Attack (shown as feature text), the Weaponsmaster Technique Bonus, Adapted Fighting, and everything technique-based (Phase 4). Airbender's option to use Dexterity, and Tech-Engineer's option to use Wisdom, need a chooser. Current rules use Wisdom and Intelligence. | GB L787, L2171 |
+
+---
+
+## K. Phase 4 assumptions (please confirm or correct)
+
+| # | Assumption | Basis |
+|---|------------|-------|
+| K1 | **Technique text is verbatim from gmbinder** (extracted by `scripts/extract-techniques.mjs`, typos in names fixed). Save DC and damage on the sheet come from a small hand-authored list (`data/techniques/mechanics.ts`) covering the ~20 techniques whose rules are clear. Everything else is shown as text only. | GB technique list |
+| K2 | **Damage per level** uses each technique's own "for each level above Practiced" line. Upcasting a technique (casting it at a higher level than you know it) uses that same scaling. | A7 |
+| K3 | **Save DC** is your Bending Save DC for every technique. The save the target rolls is named from the technique text; where the text only says "Elemental Affinity Saving Throw" for non-benders with no fallback, the sheet says the GM decides (A8). | GB L115 |
+| K4 | **Known techniques** are capped by the class: Benders by the table's Known Techniques column (Earth and Universal count together). Weaponsmaster: Universal 2 (+1 at 6th, +1 at 13th), Fighting one at 1st and one more every 3 levels. Rare techniques unlock at level 8, and prerequisites (like Earthquake needing Trained Tremors) are enforced when learning. | GB L719-721, L717, L1157 |
+| K5 | **Training:** 2 slots, Training Points 0-5, DC 15 (drops 1 per failure, back to 15 on success), a natural 20 gives 2 points, 5 points make Practiced -> Trained. Mastered needs a master's guidance and a DC 25 check (drops 1 per failure), and you can hold at most 6 Mastered techniques. The check is a plain ability check with your bending ability. | GB L123-127; B10 |
+| K6 | **Weaponsmaster Universal techniques** cost one Universal Technique Slot each and cannot be upcast; the Fighting techniques cost nothing on the sheet (some spend Combat Expertise Points, tracked as pips). Fighting techniques are text only for now. | A6 decision |
+| K7 | **Earthbending Ability Score Improvement** is granted at 4th, 9th, 12th, 16th, 19th (Benders table) even though the Earthbending text says 8th. The feature text says so. | B3 decision |
+| K8 | **Tradition of Earthbending only.** Metalbending and Lavabending Traditions, their techniques, and the Water, Fire and Air classes are not built yet. | scope |
+| K9 | **Neutral Jing, Badgermole's Endurance, Lay of the Land** are situational: the roll prompt asks whether they apply. Lay of the Land adds your proficiency bonus (proficient or not, the doubling comes to the same +PB) on Intelligence and Constitution checks, and Int skills, in favored terrain. Choosing favored terrain does not change the number. | GB L448, L1564, L1585 |
+| K10 | **Backgrounds:** 13 premade, using the standard 5e skill and tool pairings with feature text written for this app, plus a custom builder (name, 2 skills, tools, one feature). No background grants languages. The old two invented backgrounds are gone; characters that had them are told to choose again. | A2, A1 |
+| K11 | **Not automated:** Earth Armor's AC bonus while concentrating, concentration tracking, Move Earth's damage roll, Reflect Missiles, Grounded range on targets, Extra Attack. They are shown as text. | scope |

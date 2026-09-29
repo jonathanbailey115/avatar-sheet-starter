@@ -9,6 +9,7 @@ import { BuilderLineagePanel } from '../character-builder/BuilderLineagePanel'
 import { BuilderProficienciesPanel } from '../character-builder/BuilderProficienciesPanel'
 import { BuilderTechniquesPanel } from '../character-builder/BuilderTechniquesPanel'
 import { characterDisplayName } from '../lib/character'
+import { withCustomBackground } from '../lib/customBackground'
 import { useActiveCharacter } from '../store/active'
 import { useCollection } from '../store/content'
 import { useLibraryStore } from '../store/library'
@@ -56,6 +57,9 @@ export function BuilderScreen({
             </section>
         )
     }
+
+    // Panels that list backgrounds or their features should see this character's custom background too.
+    const withCustom = withCustomBackground(character, { backgrounds, features })
 
     const filteredLineages = lineages.filter(
         (lineage) => lineage.nation === 'Any' || lineage.nation === character.nation,
@@ -145,7 +149,7 @@ export function BuilderScreen({
                     setCharacter={setCharacter}
                     editableClasses={classes}
                     editableLineages={lineages}
-                    editableBackgrounds={backgrounds}
+                    editableBackgrounds={withCustom.backgrounds}
                 />
             )}
 
@@ -155,9 +159,9 @@ export function BuilderScreen({
                     setCharacter={setCharacter}
                     editableClasses={classes}
                     editableSubclasses={subclasses}
-                    editableBackgrounds={backgrounds}
+                    editableBackgrounds={withCustom.backgrounds}
                     editableLineages={lineages}
-                    editableFeatures={features}
+                    editableFeatures={withCustom.features}
                 />
             )}
 

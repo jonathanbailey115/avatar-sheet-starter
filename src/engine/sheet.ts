@@ -23,6 +23,7 @@ import type { LifeState } from './hitPoints'
 import { hitDiceRemaining } from './rests'
 import { getResources, remainingOf, usedOf } from './resources'
 import type { ResourceDef } from './resources'
+import { withCustomBackground } from '../lib/customBackground'
 import type { RulesContent } from '../lib/normalize'
 import type { AbilityName, Character, HitDie, SkillName } from '../types/schema'
 
@@ -64,7 +65,8 @@ function passive(line: StatLine): number {
     return 10 + line.total + shift
 }
 
-export function computeSheet(character: Character, content: RulesContent): Sheet {
+export function computeSheet(character: Character, baseContent: RulesContent): Sheet {
+    const content = withCustomBackground(character, baseContent)
     const proficiencyBonus = getProficiencyBonus(character.level)
     const abilityScores = abilityScoresOf(character)
     const armor = findArmor(character.armorId)

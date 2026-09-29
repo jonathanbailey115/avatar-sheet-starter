@@ -32,6 +32,14 @@ Resources (`engine/resources.ts`) come from three places: the class's technique 
 
 In the UI, `play/RollContext.tsx` turns a `StatLine` into a roll: it merges automatic advantage/disadvantage sources, the "next roll" toggle and Shift/Alt clicks, asks about situational rules, rolls, and writes a `RollEntry` to `store/rollLog.ts`. Phase 5 will send those same entries to the campaign log.
 
+## Techniques
+
+`scripts/extract-techniques.mjs` reads the git-ignored gmbinder source and writes `src/data/techniques/*.generated.ts` (committed). `data/techniques/mechanics.ts` layers hand-authored saves and damage on top by technique id; the extractor never touches it. To add a technique's mechanics, add an entry there.
+
+`engine/techniques.ts` (damage by level, save wording, limits, prerequisites), `engine/casting.ts` (slot or Universal Slot cost) and `engine/training.ts` (Training Points and mastery) are pure and tested. `play/TechniqueCard.tsx` is the only UI that uses them on the play sheet.
+
+Classes cap known techniques with `techniqueLimits`. A class gets technique slots from `techniqueSlots` (benders) or spends a `resources` pool (Weaponsmaster).
+
 ## Persistence
 
 | localStorage key        | Contents |

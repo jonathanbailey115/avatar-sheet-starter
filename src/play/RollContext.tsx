@@ -10,6 +10,8 @@ import type { Sheet } from '../engine/sheet'
 import type { StatLine } from '../engine/statLine'
 import { useRollLog } from '../store/rollLog'
 import type { Character } from '../types/schema'
+import { mergeSources, signed } from './rollHelpers'
+import { applyTrainingRoll } from './trainingRoll'
 import { SituationPrompt } from './SituationPrompt'
 
 type CheckKind = Extract<RollKind, 'check' | 'save' | 'initiative'>
@@ -31,6 +33,14 @@ export interface RollApi {
     rollDamage: (attack: AttackOption, options: { critical: boolean; twoHanded: boolean }) => void
     rollDeathSave: () => void
     rollCustom: (expression: string) => boolean
+    /** Roll damage or any other dice for a technique. */
+    rollFormula: (
+        label: string,
+        formula: string,
+        options?: { damageType?: string; notes?: string[] },
+    ) => void
+    /** Roll a Training or mastery check for a known technique and apply the result. */
+    rollTraining: (techniqueId: string, techniqueName: string, kind: 'training' | 'mastery') => void
     logEntry: (entry: Omit<RollEntry, 'id' | 'at' | 'characterId' | 'characterName'>) => void
     /** The attack roll still waiting for its damage roll (so damage knows if it was a critical). */
     lastAttack: (attackId: string) => RollEntry | undefined
@@ -79,38 +89,21 @@ export function RollProvider({ character, sheet, onChange, children }: RollProvi
     /** Roll a d20 with everything known: automatic sources, forced mode, and confirmed situations. */
     const executeD20 = useCallback(
         (roll: PendingRoll, chosen: SituationalOption[]) => {
-            const advantage = [
-                ...roll.line.roll.advantage,
-                ...chosen.filter((option) => option.kind === 'advantage').map((option) => option.source),
-                ...(roll.forced === 'advantage' ? ['Chosen when rolling'] : []),
-            ]
-            const disadvantage = [
-                ...roll.line.roll.disadvantage,
-                ...chosen.filter((option) => option.kind === 'disadvantage').map((option) => option.source),
-                ...(roll.forced === 'disadvantage' ? ['Chosen when rolling'] : []),
-            ]
             const bonuses = chosen.filter((option) => option.kind === 'bonus')
             const modifier = roll.line.total + bonuses.reduce((sum, option) => sum + option.value, 0)
-
-            const mode: RollMode =
-                advantage.length > 0 && disadvantage.length === 0
-                    ? 'advantage'
-                    : disadvantage.length > 0 && advantage.length === 0
-                      ? 'disadvantage'
-                      : 'normal'
+            const merged = mergeSources(roll.line, roll.forced, chosen)
+            const mode = merged.mode
 
             const result = rollD20({ modifier, mode, critMin: roll.attack?.critMin ?? 20 })
             const notes = [
-                ...advantage.map((source) => `Advantage: ${source}`),
-                ...disadvantage.map((source) => `Disadvantage: ${source}`),
-                ...(advantage.length > 0 && disadvantage.length > 0 ? ['Advantage and disadvantage cancel out.'] : []),
+                ...merged.notes,
                 ...bonuses.map((option) => `${option.source} ${option.value >= 0 ? '+' : ''}${option.value}`),
             ]
 
             log({
                 kind: roll.kind,
                 label: roll.label,
-                formula: `1d20${modifier === 0 ? '' : modifier > 0 ? `+${modifier}` : modifier}`,
+                formula: `1d20${signed(modifier)}`,
                 dice: [result.natural],
                 discarded: result.discarded,
                 modifier,
@@ -224,6 +217,58 @@ export function RollProvider({ character, sheet, onChange, children }: RollProvi
                 })
                 return true
             },
+            rollFormula: (label, formula, options = {}) => {
+                const result = rollExpression(formula)
+                if (!result) return
+                log({
+                    kind: 'damage',
+                    label,
+                    formula: result.formula,
+                    dice: result.dice,
+                    discarded: [],
+                    modifier: result.flat,
+                    total: Math.max(0, result.total),
+                    mode: 'normal',
+                    damageType: options.damageType,
+                    notes: options.notes ?? [],
+                })
+            },
+            rollTraining: (techniqueId, techniqueName, kind) => {
+                const known = character.knownTechniques.find((item) => item.techniqueId === techniqueId)
+                if (!known || !sheet.bending || !known.training.active) return
+                // Only the right kind of technique can make each check; anything else is not a roll.
+                if (kind === 'training' && known.level !== 'Practiced') return
+                if (kind === 'mastery' && known.level !== 'Trained') return
+
+                const line = sheet.checks[sheet.bending.ability]
+                const merged = mergeSources(line, nextMode)
+                const result = rollD20({ modifier: line.total, mode: merged.mode })
+                const dc = kind === 'training' ? known.training.dc : known.training.masteryDc
+
+                const { updated, summary } = applyTrainingRoll(character, known, kind, techniqueName, result)
+
+                onChange((current) => ({
+                    ...current,
+                    knownTechniques: current.knownTechniques.map((item) =>
+                        item.techniqueId === techniqueId ? updated : item,
+                    ),
+                }))
+                log({
+                    kind: 'check',
+                    label: `${kind === 'training' ? 'Training' : 'Mastery attempt'}: ${techniqueName} (DC ${dc})`,
+                    formula: `1d20${signed(line.total)}`,
+                    dice: [result.natural],
+                    discarded: result.discarded,
+                    modifier: line.total,
+                    total: result.total,
+                    mode: merged.mode,
+                    natural: result.natural,
+                    crit: result.natural === 20,
+                    fumble: result.fumble,
+                    notes: [...merged.notes, summary],
+                })
+                setNextMode('normal')
+            },
             logEntry: log,
             lastAttack: (attackId) => {
                 // Newest first: the latest roll tied to this attack decides. If damage was
@@ -237,7 +282,8 @@ export function RollProvider({ character, sheet, onChange, children }: RollProvi
                 return latest?.kind === 'attack' ? latest : undefined
             },
         }),
-        [nextMode, start, log, onChange, sheet.maxHp, entries, character.id],
+        // `character` and `sheet` must be listed: training rolls read the current techniques and bending.
+        [nextMode, start, log, onChange, sheet, entries, character],
     )
 
     return (

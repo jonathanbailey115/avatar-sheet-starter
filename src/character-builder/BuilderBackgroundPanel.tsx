@@ -1,50 +1,10 @@
 import { useMemo } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
-import { isLanguagesMigrated, isToolsMigrated } from '../lib/proficiencies'
+import { blankCustomBackground, withCustomBackground } from '../lib/customBackground'
+import { CUSTOM_BACKGROUND_ID } from '../types/schema'
 import type { Background, Character, Feature } from '../types/schema'
-
-function legacyToolsAfterBackgroundChange(
-    current: Character,
-    editableBackgrounds: Background[],
-    nextBackground: Background | null,
-): string[] {
-    const filtered = current.toolProficiencies.filter(
-        (tool) =>
-            !editableBackgrounds.some((background) =>
-                background.toolProficiencies.includes(tool),
-            ),
-    )
-
-    if (!nextBackground) {
-        return filtered
-    }
-
-    return Array.from(
-        new Set([...filtered, ...nextBackground.toolProficiencies]),
-    )
-}
-
-function legacyLanguagesAfterBackgroundChange(
-    current: Character,
-    editableBackgrounds: Background[],
-    nextBackground: Background | null,
-): string[] {
-    const filtered = current.languages.filter(
-        (language) =>
-            !editableBackgrounds.some((background) =>
-                background.languages.includes(language),
-            ),
-    )
-
-    if (!nextBackground) {
-        return filtered
-    }
-
-    return Array.from(
-        new Set([...filtered, ...nextBackground.languages]),
-    )
-}
+import { CustomBackgroundForm } from './CustomBackgroundForm'
 
 type BuilderBackgroundPanelProps = {
     character: Character
@@ -56,9 +16,14 @@ type BuilderBackgroundPanelProps = {
 export function BuilderBackgroundPanel({
     character,
     setCharacter,
-    editableBackgrounds,
-    editableFeatures,
+    editableBackgrounds: baseBackgrounds,
+    editableFeatures: baseFeatures,
 }: BuilderBackgroundPanelProps) {
+    // Includes this character's custom background so it shows like any other.
+    const { backgrounds: editableBackgrounds, features: editableFeatures } = withCustomBackground(character, {
+        backgrounds: baseBackgrounds,
+        features: baseFeatures,
+    })
     const selectedBackground =
         editableBackgrounds.find((item) => item.id === character.backgroundId) ?? null
 
@@ -71,37 +36,14 @@ export function BuilderBackgroundPanel({
     }, [selectedBackground, editableFeatures])
 
     const handleBackgroundChange = (backgroundId: string) => {
-        const nextBackground =
-            editableBackgrounds.find((item) => item.id === backgroundId) ?? null
-
-        setCharacter((current) => {
-            const legacyToolUpdates = isToolsMigrated(current)
-                ? {}
-                : {
-                      toolProficiencies: legacyToolsAfterBackgroundChange(
-                          current,
-                          editableBackgrounds,
-                          nextBackground,
-                      ),
-                  }
-
-            const legacyLanguageUpdates = isLanguagesMigrated(current)
-                ? {}
-                : {
-                      languages: legacyLanguagesAfterBackgroundChange(
-                          current,
-                          editableBackgrounds,
-                          nextBackground,
-                      ),
-                  }
-
-            return {
-                ...current,
-                backgroundId: nextBackground ? nextBackground.id : undefined,
-                ...legacyToolUpdates,
-                ...legacyLanguageUpdates,
-            }
-        })
+        setCharacter((current) => ({
+            ...current,
+            backgroundId: backgroundId || undefined,
+            customBackground:
+                backgroundId === CUSTOM_BACKGROUND_ID
+                    ? (current.customBackground ?? blankCustomBackground())
+                    : current.customBackground,
+        }))
     }
 
     return (
@@ -114,7 +56,8 @@ export function BuilderBackgroundPanel({
                         onChange={(event) => handleBackgroundChange(event.target.value)}
                     >
                         <option value="">Select a background</option>
-                        {editableBackgrounds.map((background) => (
+                        <option value={CUSTOM_BACKGROUND_ID}>Custom background…</option>
+                        {baseBackgrounds.map((background) => (
                             <option key={background.id} value={background.id}>
                                 {background.name}
                             </option>
@@ -134,6 +77,10 @@ export function BuilderBackgroundPanel({
                     </p>
                 )}
             </SectionCard>
+
+            {character.backgroundId === CUSTOM_BACKGROUND_ID && (
+                <CustomBackgroundForm character={character} setCharacter={setCharacter} />
+            )}
 
             <SectionCard title="Granted Benefits">
                 {!selectedBackground ? (

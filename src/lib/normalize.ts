@@ -7,6 +7,7 @@ import {
     deriveSkillProficiencies,
     resolveProficiencyContext,
 } from './proficiencies'
+import { withCustomBackground } from './customBackground'
 import type {
     Background,
     Character,
@@ -42,9 +43,10 @@ function addNote(notes: string[], note: string): void {
  */
 export function normalizeCharacter(
     input: Character,
-    content: RulesContent,
+    baseContent: RulesContent,
     options: NormalizeOptions = {},
 ): Character {
+    const content = withCustomBackground(input, baseContent)
     const next: Character = { ...input }
     const notes = [...input.migrationNotes]
 
@@ -62,6 +64,13 @@ export function normalizeCharacter(
             next.lineageToolChoices = []
             next.lineageFavoredTerrains = []
         }
+    }
+
+    if (next.backgroundId && !content.backgrounds.some((item) => item.id === next.backgroundId)) {
+        if (options.reportRemovals) {
+            addNote(notes, `The background "${next.backgroundId}" is no longer available. Choose a background again.`)
+        }
+        next.backgroundId = undefined
     }
 
     if (next.classId && !content.classes.some((item) => item.id === next.classId)) {

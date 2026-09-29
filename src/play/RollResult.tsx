@@ -23,7 +23,7 @@ export function RollResult({ entry, showWho = false }: { entry: RollEntry; showW
                 {entry.kind === 'death-save' && entry.crit && <span className="roll-tag roll-tag-crit">NAT 20</span>}
             </div>
 
-            <div className="roll-result-body">
+            <div className="roll-result-body" hidden={entry.kind === 'technique'}>
                 <span className="roll-total" aria-label={`Total ${entry.total}`}>
                     {entry.total}
                 </span>

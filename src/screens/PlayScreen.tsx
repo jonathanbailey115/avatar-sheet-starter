@@ -15,6 +15,7 @@ import { RollProvider, useRoll } from '../play/RollContext'
 import { RollBar } from '../play/RollBar'
 import { RollLog } from '../play/RollLog'
 import { StatsPanel } from '../play/StatsPanel'
+import { TechniquesPanel } from '../play/TechniquesPanel'
 import { useActiveCharacter } from '../store/active'
 import { useRulesContent } from '../store/rules'
 import type { Character } from '../types/schema'
@@ -126,6 +127,13 @@ function PlaySheet({ character, sheet, content, change, onEdit }: PlaySheetProps
                 <div className="play-col">
                     <HpPanel character={character} sheet={sheet} onChange={change} />
                     <AttackPanel sheet={sheet} />
+                    <TechniquesPanel
+                        character={character}
+                        sheet={sheet}
+                        characterClass={characterClass}
+                        techniques={content.techniques}
+                        onChange={change}
+                    />
                     <ResourcesPanel character={character} sheet={sheet} onChange={change} />
                     <RestPanel character={character} sheet={sheet} content={content} onChange={change} />
                     <HitPointSetup character={character} sheet={sheet} onChange={change} />
@@ -135,7 +143,6 @@ function PlaySheet({ character, sheet, content, change, onEdit }: PlaySheetProps
                     <DetailsPanel
                         character={character}
                         sheet={sheet}
-                        techniques={content.techniques}
                         lineageProficiencies={{
                             armor: lineage?.armorProficiencies ?? [],
                             weapons: lineage?.weaponProficiencies ?? [],

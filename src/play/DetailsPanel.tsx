@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import SectionCard from '../components/SectionCard'
 import type { Sheet } from '../engine/sheet'
-import type { Character, Technique } from '../types/schema'
+import type { Character } from '../types/schema'
 
-type DetailTab = 'features' | 'techniques' | 'proficiencies' | 'notes'
+type DetailTab = 'features' | 'proficiencies' | 'notes'
 
 const TABS: Array<{ id: DetailTab; label: string }> = [
     { id: 'features', label: 'Features' },
-    { id: 'techniques', label: 'Techniques' },
     { id: 'proficiencies', label: 'Proficiencies' },
     { id: 'notes', label: 'Notes' },
 ]
@@ -15,11 +14,10 @@ const TABS: Array<{ id: DetailTab; label: string }> = [
 type DetailsPanelProps = {
     character: Character
     sheet: Sheet
-    techniques: Technique[]
     lineageProficiencies: { armor: string[]; weapons: string[] }
 }
 
-export function DetailsPanel({ character, sheet, techniques, lineageProficiencies }: DetailsPanelProps) {
+export function DetailsPanel({ character, sheet, lineageProficiencies }: DetailsPanelProps) {
     const [tab, setTab] = useState<DetailTab>('features')
 
     return (
@@ -51,27 +49,6 @@ export function DetailsPanel({ character, sheet, techniques, lineageProficiencie
                             <p>{feature.description}</p>
                         </details>
                     ))}
-                </div>
-            )}
-
-            {tab === 'techniques' && (
-                <div className="detail-list">
-                    {character.knownTechniques.length === 0 && (
-                        <p className="muted">No techniques learned yet.</p>
-                    )}
-                    {character.knownTechniques.map((known) => {
-                        const technique = techniques.find((item) => item.id === known.techniqueId)
-                        if (!technique) return null
-                        return (
-                            <details key={known.techniqueId} className="feature-item">
-                                <summary>
-                                    <strong>{technique.name}</strong>
-                                    <small className="muted"> · {technique.element} · {known.level}</small>
-                                </summary>
-                                <p>{technique.description}</p>
-                            </details>
-                        )
-                    })}
                 </div>
             )}
 
