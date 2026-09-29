@@ -51,6 +51,34 @@ Classes cap known techniques with `techniqueLimits`. A class gets technique slot
 
 `store/campaign.ts` holds your display name, which character is playing in which campaign, and the open campaign's live data. `play/RollContext.tsx` publishes each roll to the bound campaign, and `campaign/CampaignSync.tsx` keeps the party board current. Only a small summary of a character (name, class, HP, AC, state) is ever shared, never the whole sheet.
 
+## Classes, lineages and feats
+
+Class, subclass and feat wording is copied from gmbinder by `scripts/extract-class-features.mjs` into
+`src/data/classText.generated.ts`; technique text by `scripts/extract-techniques.mjs` into `src/data/techniques/*.generated.ts`.
+Both generated files are committed, so the app builds without the (git-ignored) source. What is authored by hand: levels,
+feature types and effects in `src/data/{waterbending,firebending,airbending,techEngineer,earthbending}.ts`, and rollable
+technique mechanics in `src/data/techniques/mechanics.ts` and `elementMechanics.ts`. A technique can belong to a
+*discipline* (Bloodbending, Combustionbending, Lightningbending); it is only learnable when the subclass or a feat grants
+that discipline (`disciplinesOf` in `engine/techniques.ts`).
+
+Ability scores: `engine/abilityScores.ts` adds the species bonus (Human +1 all, Variant Human +1 to two, capped at 20) to the
+typed scores, and holds the standard array, point buy and 4d6 rules. Everything on the sheet reads `abilityScoresOf`.
+
+## NPC Studio
+
+`src/npc/` is pure: `generate.ts` builds a full NPC from a role template (weights) and an optional nation, class and level;
+`rerollPart` redoes one part and only what depends on it. `statBlock.ts` turns a character into a stat block using the same
+`computeSheet` as a player sheet. The GM can save an NPC to a campaign (`campaign_npcs`); players only receive revealed ones,
+without notes.
+
+## Account sync
+
+Characters and NPCs follow the signed-in account. `sync/plan.ts` (pure) decides what to download, upload or delete from
+last-changed times and delete tombstones (the newer side wins); `sync/syncRun.ts` performs one pass through the backend;
+`sync/cloudSync.ts` watches the stores and schedules passes. Each account only uploads items it owns on the device; items that
+were already on the device before the account are added on request. The database rule that an older copy never replaces a
+newer one lives in `save_synced_characters` (`supabase/schema.sql`) and is tested on a real Postgres.
+
 ## Persistence
 
 | localStorage key        | Contents |
