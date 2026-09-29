@@ -1,3 +1,4 @@
+import { abilityScoresOf } from '../engine/abilityScores'
 import {
     SKILL_ABILITIES,
     formatModifier,
@@ -173,7 +174,7 @@ export function BuilderProficienciesPanel({
     }
 
     const getSaveTotal = (ability: AbilityName) => {
-        const score = Number(character[ability] ?? 0)
+        const score = abilityScoresOf(character)[ability]
         const modifier = getAbilityModifier(score)
         const proficient = character.savingThrowProficiencies.includes(ability)
 
@@ -182,7 +183,7 @@ export function BuilderProficienciesPanel({
 
     const getSkillTotal = (skill: SkillName) => {
         const ability = SKILL_ABILITIES[skill]
-        const score = Number(character[ability] ?? 0)
+        const score = abilityScoresOf(character)[ability]
         const modifier = getAbilityModifier(score)
         const proficient = character.skillProficiencies.includes(skill)
 
@@ -243,7 +244,7 @@ export function BuilderProficienciesPanel({
                 <div className="checkbox-list">
                     {skillOptions.map((skill) => {
                         const ability = SKILL_ABILITIES[skill]
-                        const score = Number(character[ability] ?? 0)
+                        const score = abilityScoresOf(character)[ability]
                         const baseModifier = getAbilityModifier(score)
                         const isProficient = character.skillProficiencies.includes(skill)
                         const total = getSkillTotal(skill)

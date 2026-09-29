@@ -1,4 +1,5 @@
 import { getAbilityModifier } from './abilities'
+import { abilityScore } from './abilityScores'
 import type { Character, HitDie, Lineage } from '../types/schema'
 
 /**
@@ -9,7 +10,8 @@ import type { Character, HitDie, Lineage } from '../types/schema'
 type HpFields = Pick<
     Character,
     'hpLost' | 'tempHp' | 'deathSaves' | 'maxHpOverride' | 'maxHpAdjustment' | 'hpRolls' | 'level' | 'constitution'
->
+> &
+    Partial<Pick<Character, 'species' | 'speciesAbilityChoices'>>
 
 export type LifeState = 'conscious' | 'dying' | 'stable' | 'dead'
 
@@ -41,7 +43,7 @@ export function computeMaxHp(character: HpFields, hitDie: HitDie | null): number
     if (character.maxHpOverride !== null) return character.maxHpOverride
     if (hitDie === null) return 0
 
-    const con = getAbilityModifier(character.constitution)
+    const con = getAbilityModifier(abilityScore(character, 'constitution'))
     let total = Math.max(1, hitDie + con)
 
     for (let level = 2; level <= character.level; level += 1) {

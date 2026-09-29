@@ -1,6 +1,7 @@
 import { averageHitDieRoll } from '../engine/hitPoints'
 import { rollDie } from '../engine/dice'
 import { getAbilityModifier } from '../engine/abilities'
+import { abilityScoresOf } from '../engine/abilityScores'
 import type { Sheet } from '../engine/sheet'
 import type { Character } from '../types/schema'
 
@@ -13,7 +14,7 @@ type HitPointSetupProps = {
 /** Level 1 is a full hit die. Each later level is the average or a roll, chosen by the player. */
 export function HitPointSetup({ character, sheet, onChange }: HitPointSetupProps) {
     const { hitDie } = sheet
-    const con = getAbilityModifier(character.constitution)
+    const con = getAbilityModifier(abilityScoresOf(character).constitution)
     const levels = Array.from({ length: Math.max(0, character.level - 1) }, (_, i) => i + 2)
 
     const setRoll = (level: number, roll: number | null) =>

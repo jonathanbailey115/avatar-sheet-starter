@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { CHARACTER_SCHEMA_VERSION, DEFAULT_TRAINING } from '../types/schema'
 import { parseCharacterRecord } from './characterIO'
 import { getSchemaVersion, migrateCharacter } from './migrations'
+import { abilityScoresOf } from '../engine/abilityScores'
+import { createBlankCharacter } from './character'
 import { legacyCharacterV1 } from './testFixtures'
 
 describe('schema 1 -> 2 migration', () => {
@@ -141,5 +143,18 @@ describe('schema 4 -> 5 migration', () => {
 
     it('starts with no custom background', () => {
         expect(parseCharacterRecord(v4()).customBackground).toBeNull()
+    })
+})
+
+describe('schema 5 to 6: species', () => {
+    it('keeps every typed ability score exactly as it was (species "none")', () => {
+        const old = { ...JSON.parse(JSON.stringify(createBlankCharacter())), schemaVersion: 5, strength: 14, constitution: 9 }
+        delete (old as Record<string, unknown>).species
+        delete (old as Record<string, unknown>).speciesAbilityChoices
+        delete (old as Record<string, unknown>).speciesSkill
+        const migrated = migrateCharacter(old) as Record<string, unknown>
+        expect(migrated.schemaVersion).toBe(6)
+        expect(migrated).toMatchObject({ species: 'none', speciesAbilityChoices: [], speciesSkill: null, strength: 14, constitution: 9 })
+        expect(abilityScoresOf(migrated as never).strength).toBe(14)
     })
 })

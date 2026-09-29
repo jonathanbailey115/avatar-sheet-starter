@@ -135,6 +135,11 @@ export function resolveBackgroundSkills(ctx: ProficiencySourceContext): SkillNam
     return ctx.backgroundRecord?.skillProficiencies ?? []
 }
 
+/** Variant Human: one skill of the player's choice (gmbinder, Species). */
+export function resolveSpeciesSkill(character: Character): SkillName[] {
+    return character.species === 'variant-human' && character.speciesSkill ? [character.speciesSkill] : []
+}
+
 export function resolveGrantedSkills(
     character: Character,
     ctx: ProficiencySourceContext,
@@ -143,6 +148,7 @@ export function resolveGrantedSkills(
         resolveValidClassSkillChoices(character, ctx),
         resolveLineageSkillChoices(character, ctx),
         resolveBackgroundSkills(ctx),
+        resolveSpeciesSkill(character),
     ])
 }
 
@@ -180,6 +186,7 @@ export function deriveMigratedSkills(
         resolveValidClassSkillChoices(character, ctx),
         resolveLineageSkillChoices(character, ctx),
         resolveBackgroundSkills(ctx),
+        resolveSpeciesSkill(character),
         character.manualSkills ?? [],
     ])
 }

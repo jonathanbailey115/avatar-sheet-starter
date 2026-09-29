@@ -136,11 +136,20 @@ function migrate4to5(raw: Raw): Raw {
     }
 }
 
+/**
+ * v6 adds the species step. Existing scores were typed as final values, so they stay exactly as they
+ * are: species "none" adds nothing. The player can pick a species on the Abilities tab.
+ */
+function migrate5to6(raw: Raw): Raw {
+    return { ...raw, schemaVersion: 6, species: 'none', speciesAbilityChoices: [], speciesSkill: null }
+}
+
 const MIGRATIONS: Record<number, (raw: Raw) => Raw> = {
     1: migrate1to2,
     2: migrate2to3,
     3: migrate3to4,
     4: migrate4to5,
+    5: migrate5to6,
 }
 
 /**

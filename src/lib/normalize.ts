@@ -91,6 +91,14 @@ export function normalizeCharacter(
         content.features.some((feature) => feature.id === id),
     )
 
+    // Species choices only mean something for a Variant Human: two different abilities and one skill.
+    if (next.species === 'variant-human') {
+        next.speciesAbilityChoices = [...new Set(next.speciesAbilityChoices)].slice(0, 2)
+    } else {
+        next.speciesAbilityChoices = []
+        next.speciesSkill = null
+    }
+
     const seenTechniques = new Set<string>()
     next.knownTechniques = next.knownTechniques.filter((known) => {
         if (seenTechniques.has(known.techniqueId)) return false

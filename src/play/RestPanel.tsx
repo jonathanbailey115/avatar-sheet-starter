@@ -1,6 +1,8 @@
 import { ConfirmButton } from '../components/ConfirmButton'
 import { useState } from 'react'
 import SectionCard from '../components/SectionCard'
+import { getAbilityModifier } from '../engine/abilities'
+import { abilityScoresOf } from '../engine/abilityScores'
 import { longRest, shortRest } from '../engine/rests'
 import type { Sheet } from '../engine/sheet'
 import type { RulesContent } from '../lib/normalize'
@@ -28,7 +30,7 @@ export function RestPanel({ character, sheet, content, onChange }: RestPanelProp
         const result = shortRest(character, content, { spendHitDice: spend })
         onChange(() => result.character)
 
-        const con = Math.floor((character.constitution - 10) / 2)
+        const con = getAbilityModifier(abilityScoresOf(character).constitution)
         if (result.rolls.length > 0 && sheet.hitDie) {
             logEntry({
                 kind: 'hit-die',

@@ -6,7 +6,10 @@ export type BendingType = Element | 'Non-Bender'
 export type TechniqueLevel = 'Practiced' | 'Trained' | 'Mastered'
 
 export const TECHNIQUE_LEVELS: TechniqueLevel[] = ['Practiced', 'Trained', 'Mastered']
-export const CHARACTER_SCHEMA_VERSION = 5
+export const CHARACTER_SCHEMA_VERSION = 6
+
+/** gmbinder's Species. "none" means the typed ability scores are already final. */
+export type Species = 'none' | 'human' | 'variant-human'
 
 export interface Lineage {
     id: string
@@ -233,6 +236,11 @@ export interface Character {
     name: string
     nation: Nation
     lineageId: string
+    species: Species
+    /** Variant Human: the two abilities that get +1. */
+    speciesAbilityChoices: AbilityName[]
+    /** Variant Human: the one skill it grants. */
+    speciesSkill: SkillName | null
     level: number
     /** Sets max HP directly (GM-set NPCs). Null means derive from lineage, level and Constitution. */
     maxHpOverride: number | null

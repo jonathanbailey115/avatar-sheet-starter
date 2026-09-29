@@ -6,7 +6,6 @@ import type {
     AbilityName,
     AttackKind,
     BonusValue,
-    Character,
     EffectTarget,
     FeatureEffect,
     Lineage,
@@ -256,13 +255,4 @@ export function armorClassFor(
     return { total: breakdown.reduce((sum, part) => sum + part.value, 0), breakdown }
 }
 
-export function abilityScoresOf(character: Character): Record<AbilityName, number> {
-    return {
-        strength: character.strength,
-        dexterity: character.dexterity,
-        constitution: character.constitution,
-        intelligence: character.intelligence,
-        wisdom: character.wisdom,
-        charisma: character.charisma,
-    }
-}
+export { abilityScoresOf } from './abilityScores'

@@ -1,4 +1,5 @@
 import { getAbilityModifier } from './abilities'
+import { abilityScoresOf } from './abilityScores'
 import { rollDie, secureRandom } from './dice'
 import type { Rng } from './dice'
 import { applyHealing, getHitDie, computeMaxHp, getLifeState } from './hitPoints'
@@ -30,7 +31,7 @@ export function shortRest(
     const rng = options.rng ?? secureRandom
     const hitDie = getHitDie(character, content.lineages)
     const maxHp = computeMaxHp(character, hitDie)
-    const con = getAbilityModifier(character.constitution)
+    const con = getAbilityModifier(abilityScoresOf(character).constitution)
     const alive = getLifeState(character, maxHp) !== 'dead'
 
     const toSpend =

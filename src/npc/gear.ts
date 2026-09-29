@@ -2,6 +2,7 @@ import { armorTable } from '../data/armor'
 import type { ArmorPiece } from '../data/armor'
 import { weaponTable } from '../data/weapons'
 import type { Weapon } from '../data/weapons'
+import { abilityScoresOf } from '../engine/abilityScores'
 import { weaponProficient } from '../engine/attacks'
 import { computeSheet } from '../engine/sheet'
 import { newId } from '../lib/character'
@@ -37,7 +38,8 @@ export function equip(character: Character, content: RulesContent, combat: numbe
     const pool = weaponPool(lineage)
     const melee = pool.filter((weapon) => weapon.kind === 'melee')
     const ranged = pool.filter((weapon) => weapon.kind === 'ranged')
-    const dexterous = character.dexterity > character.strength
+    const scores = abilityScoresOf(character)
+    const dexterous = scores.dexterity > scores.strength
     const preferred = dexterous ? pool.filter((w) => w.properties.includes('finesse') || w.kind === 'ranged') : melee
     const main = pickOne(preferred.length > 0 ? preferred : pool, rng)
     const backup = main?.kind === 'melee' ? pickOne(ranged, rng) : pickOne(melee, rng)

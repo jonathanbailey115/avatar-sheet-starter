@@ -13,6 +13,10 @@ export function createBlankCharacter(role: CharacterRole = 'Player Character'): 
         name: '',
         nation: 'Earth Kingdom',
         lineageId: '',
+        // NPCs are built with final scores; player characters start as Human (+1 to every ability).
+        species: role === 'NPC' ? 'none' : 'human',
+        speciesAbilityChoices: [],
+        speciesSkill: null,
         level: 1,
         maxHpOverride: null,
         maxHpAdjustment: 0,

@@ -44,7 +44,7 @@ describe('max HP (gmbinder lineage hit dice)', () => {
     })
 
     it('a level never adds less than 1 HP, even with a terrible Con', () => {
-        const c = { ...createBlankCharacter(), constitution: 1, level: 2 } // -5
+        const c = { ...createBlankCharacter(), species: 'none' as const, constitution: 1, level: 2 } // -5
         expect(computeMaxHp(c, 6)).toBe(1 + 1)
     })
 
