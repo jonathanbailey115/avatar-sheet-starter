@@ -83,6 +83,15 @@ export function BuilderTechniquesPanel({
 
     const capReached = masteredCount(character) >= MAX_MASTERED_TECHNIQUES
 
+    // What the class table gives at this level, next to what the character actually knows.
+    const levelIndex = Math.min(20, Math.max(1, character.level)) - 1
+    const slots = selectedClass?.techniqueSlots?.[levelIndex]
+    const pools = (selectedClass?.resources ?? []).filter((pool) => pool.id.endsWith('universal-slots'))
+    const knownAt = (level: TechniqueLevel) => character.knownTechniques.filter((known) => known.level === level).length
+    const overSlots = slots
+        ? ([['Trained', slots.trained], ['Mastered', slots.mastered]] as const).filter(([level, max]) => knownAt(level) > max)
+        : []
+
     return (
         <div className="grid">
             <SectionCard title="Bending and limits">
@@ -105,6 +114,27 @@ export function BuilderTechniquesPanel({
                             {entry.used > entry.max && ' (over the limit for your level)'}
                         </li>
                     ))}
+                    {slots && (
+                        <li>
+                            <strong>Technique slots at level {character.level}:</strong> Practiced {slots.practiced} · Trained {slots.trained} ·
+                            Mastered {slots.mastered}
+                        </li>
+                    )}
+                    {pools.map((pool) => (
+                        <li key={pool.id}>
+                            <strong>{pool.name}:</strong> {pool.maxByLevel[levelIndex]}
+                        </li>
+                    ))}
+                    <li>
+                        <strong>Known at each level:</strong> Practiced {knownAt('Practiced')} · Trained {knownAt('Trained')} · Mastered{' '}
+                        {knownAt('Mastered')}
+                        {overSlots.map(([level]) => (
+                            <span key={level} className="roll-error">
+                                {' '}
+                                More {level} techniques than {level} slots at this level.
+                            </span>
+                        ))}
+                    </li>
                     <li>
                         <strong>Mastered:</strong> {masteredCount(character)} of {MAX_MASTERED_TECHNIQUES}
                     </li>
