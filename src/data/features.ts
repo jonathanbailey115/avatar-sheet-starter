@@ -70,8 +70,8 @@ export const features: Feature[] = [
         featureType: 'Limited Use',
         levelRequirement: 3,
         isActiveByDefault: true,
-        uses: 1,
-        recharge: 'Short Rest',
+        uses: undefined,
+        recharge: null,
     },
     {
         id: 'class-weaponsmaster-ability-score-improvement',
@@ -118,6 +118,7 @@ export const features: Feature[] = [
         featureType: 'Passive',
         levelRequirement: 7,
         isActiveByDefault: true,
+        effects: [{ kind: 'bonus', target: 'initiative', value: 'proficiency' }],
         uses: undefined,
         recharge: null,
     },
@@ -166,6 +167,9 @@ export const features: Feature[] = [
         featureType: 'Passive',
         levelRequirement: 1,
         isActiveByDefault: true,
+        effects: [
+            { kind: 'setBase', target: 'ac', base: 10, abilities: ['dexterity', 'constitution'], requires: 'no-armor' },
+        ],
     },
     {
         id: 'lineage-earth-kingdom-lay-of-the-land',

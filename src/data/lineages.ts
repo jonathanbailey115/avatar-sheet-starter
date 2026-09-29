@@ -4,6 +4,7 @@ export const lineages: Lineage[] = [
     {
         id: 'air-nomad-human',
         hitDie: 6,
+        armorProficiencies: ['Light Armor'],
         name: 'Air Nomads',
         nation: 'Air Nomads',
         description: 'Raised in or descended from the Air Nomad tradition.',
@@ -11,6 +12,7 @@ export const lineages: Lineage[] = [
     {
         id: 'water-tribe-human',
         hitDie: 10,
+        armorProficiencies: ['Light Armor', 'Medium Armor', 'Shields'],
         name: 'Water Tribe',
         nation: 'Water Tribe',
         description: 'Connected to the cultures of the north or south.',
@@ -75,6 +77,7 @@ export const lineages: Lineage[] = [
     {
         id: 'fire-nation-human',
         hitDie: 8,
+        armorProficiencies: ['Light Armor', 'Medium Armor'],
         name: 'Fire Nation',
         nation: 'Fire Nation',
         description: 'Descended from the disciplined and ambitious Fire Nation.',

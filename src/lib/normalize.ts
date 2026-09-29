@@ -1,4 +1,5 @@
 import { computeMaxHp, getHitDie } from '../engine/hitPoints'
+import { getResources, usedOf } from '../engine/resources'
 import {
     deriveMigratedLanguages,
     deriveMigratedTools,
@@ -110,6 +111,14 @@ export function normalizeCharacter(
     next.hpLost = maxHp > 0 ? Math.min(next.hpLost, maxHp) : 0
     next.hitDiceUsed = Math.min(next.hitDiceUsed, next.level)
     next.hpRolls = next.hpRolls.slice(0, Math.max(0, next.level - 1))
+
+    // Spent-resource counts only make sense for resources the character currently has.
+    const spent: Record<string, number> = {}
+    for (const def of getResources(next, content)) {
+        const used = usedOf(next, def)
+        if (used > 0) spent[def.id] = used
+    }
+    next.resourcesUsed = spent
 
     return JSON.stringify(next) === JSON.stringify(input) ? input : next
 }

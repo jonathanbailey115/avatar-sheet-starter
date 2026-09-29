@@ -81,4 +81,29 @@ describe('normalizeCharacter', () => {
         expect(loaded.knownTechniques).toEqual([])
         expect(loaded.migrationNotes.join(' ')).toMatch(/stone-guard/)
     })
+
+    it('drops spent counts for resources you no longer have and clamps the rest', () => {
+        const character = normalizeCharacter(
+            {
+                ...createBlankCharacter(),
+                classId: 'weaponsmaster',
+                level: 1,
+                resourcesUsed: {
+                    'weaponsmaster:combat-expertise': 9, // max is 1 at level 1
+                    'weaponsmaster:action-surge': 1, // not available until level 3
+                    'feature:gone': 2,
+                },
+            },
+            realContent,
+        )
+        expect(character.resourcesUsed).toEqual({ 'weaponsmaster:combat-expertise': 1 })
+    })
+
+    it('never leaves damage above max HP after a level or Constitution drop', () => {
+        const character = normalizeCharacter(
+            { ...createBlankCharacter(), lineageId: EARTH, constitution: 14, hpLost: 50 },
+            realContent,
+        )
+        expect(character.hpLost).toBe(14)
+    })
 })

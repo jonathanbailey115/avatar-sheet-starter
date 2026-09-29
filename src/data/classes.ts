@@ -1,4 +1,10 @@
 import type { CharacterClass, CharacterSubclass } from '../types/schema'
+import {
+    BENDER_TECHNIQUE_SLOTS,
+    COMBAT_EXPERTISE_POINTS,
+    UNIVERSAL_TECHNIQUE_SLOTS,
+    WEAPONSMASTER_ACTION_SURGE,
+} from './benderTable'
 
 export const characterClasses: CharacterClass[] = [
     {
@@ -29,6 +35,43 @@ export const characterClasses: CharacterClass[] = [
             { featureId: 'class-weaponsmaster-survivor', level: 15 },
             { featureId: 'class-weaponsmaster-ability-score-improvement', level: 16 },
         ],
+        resources: [
+            {
+                id: 'combat-expertise',
+                name: 'Combat Expertise Points',
+                maxByLevel: COMBAT_EXPERTISE_POINTS,
+                recharge: 'Long Rest',
+                description: 'Spend on Adapted Fighting and fighting techniques. Regained after a long rest.',
+            },
+            {
+                id: 'universal-slots',
+                name: 'Universal Technique Slots',
+                maxByLevel: UNIVERSAL_TECHNIQUE_SLOTS,
+                recharge: 'Long Rest',
+                description: 'Uses of your Universal Techniques. Regained after a long rest.',
+            },
+            {
+                id: 'action-surge',
+                name: 'Action Surge',
+                maxByLevel: WEAPONSMASTER_ACTION_SURGE,
+                recharge: 'Short Rest',
+                description: 'One additional action on your turn. Regained after a short or long rest.',
+            },
+        ],
+    },
+    {
+        id: 'earthbending',
+        name: 'Earthbending',
+        description:
+            'You are proficient in Earthbending and your Bending Ability is Constitution. (Class features are added in a later update; technique slots work now.)',
+        hitDie: 'Lineage-based',
+        primaryAbility: 'Constitution',
+        savingThrows: [],
+        skillChoices: { choose: 0, options: [] },
+        featureGrants: [],
+        subclassName: 'Earthbending Tradition',
+        element: 'Earth',
+        techniqueSlots: BENDER_TECHNIQUE_SLOTS,
     },
 ]
 
