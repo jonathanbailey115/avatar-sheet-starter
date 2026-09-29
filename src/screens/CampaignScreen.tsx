@@ -5,6 +5,7 @@ import { getBackend, hasSupabaseConfig } from '../campaign/backend'
 import { CampaignView } from '../campaign/CampaignView'
 import { Lobby } from '../campaign/Lobby'
 import SectionCard from '../components/SectionCard'
+import { SyncStatus } from '../sync/SyncStatus'
 import { useCampaignStore } from '../store/campaign'
 
 export function CampaignScreen() {
@@ -59,7 +60,10 @@ export function CampaignScreen() {
             {phase === 'ready' && (!usesAccounts || account?.username) && (
                 <>
                     {usesAccounts ? (
-                        <AccountBar />
+                        <>
+                            <AccountBar />
+                            <SyncStatus />
+                        </>
                     ) : (
                         <SectionCard title="You at the table">
                             <label>

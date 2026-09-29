@@ -10,6 +10,10 @@ import type {
     CampaignEvent,
     CampaignSnapshot,
     PlayerSummary,
+    SavedInfo,
+    SavedItem,
+    SavedKind,
+    SavedUpload,
     SessionScope,
     SignUpResult,
     Visibility,
@@ -175,6 +179,15 @@ export class LocalBackend implements CampaignBackend {
     async deleteNpc(campaignId: string, npcId: string): Promise<void> {
         this.change(campaignId, (server) => server.deleteNpc(this.userId, campaignId, npcId))
     }
+
+    // Test mode has no accounts, so there is nothing to save characters to.
+    async listSavedCharacters(): Promise<SavedInfo[]> {
+        return []
+    }
+    async loadSavedCharacters(_kind: SavedKind, _ids: string[]): Promise<SavedItem[]> {
+        return []
+    }
+    async saveCharacters(_rows: SavedUpload[]): Promise<void> {}
 
     async removeMember(campaignId: string, userId: string): Promise<void> {
         this.change(campaignId, (server) => server.removeMember(this.userId, campaignId, userId))

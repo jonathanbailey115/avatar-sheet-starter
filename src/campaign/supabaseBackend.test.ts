@@ -44,6 +44,11 @@ describe('friendlyError', () => {
         expect(friendlyError({ message: 'Anonymous sign-ins are disabled' }).message).toMatch(/Authentication > Providers/)
     })
 
+    it('tells you to re-run the setup when a newer table is missing', () => {
+        expect(friendlyError({ message: "Could not find the table 'public.user_characters' in the schema cache" }).message).toMatch(/schema.sql/)
+        expect(friendlyError({ message: 'Could not find the function public.save_synced_characters(p_rows) in the schema cache' }).message).toMatch(/schema.sql/)
+    })
+
     it('explains being offline', () => {
         expect(friendlyError({ message: 'TypeError: Failed to fetch' }).message).toMatch(/Could not reach/)
     })

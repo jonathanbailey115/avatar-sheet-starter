@@ -1,3 +1,4 @@
+import { SavedBadge } from '../sync/SyncStatus'
 import { ConfirmButton } from '../components/ConfirmButton'
 import { useState } from 'react'
 import SectionCard from '../components/SectionCard'
@@ -127,6 +128,7 @@ export function LibraryScreen({ onPlay, onEdit }: { onPlay: () => void; onEdit: 
                             return (
                                 <article key={character.id} className="npc-item">
                                     <h3>{name}</h3>
+                                    <SavedBadge kind="character" id={character.id} />
                                     <p>
                                         Level {character.level} · {className} · {lineageName}
                                     </p>

@@ -3,7 +3,7 @@ import type { Character } from '../types/schema'
 import { rememberScope } from './authStorage'
 import { createBrowserLocalBackend } from './localBackend'
 import { normalizeSupabaseUrl } from './supabaseUrl'
-import type { Campaign, CampaignBackend, CampaignEvent, PlayerSummary, SessionScope, Visibility } from './types'
+import type { Campaign, CampaignBackend, CampaignEvent, PlayerSummary, SavedKind, SavedUpload, SessionScope, Visibility } from './types'
 
 let instance: CampaignBackend | null = null
 
@@ -72,6 +72,9 @@ class LazySupabaseBackend implements CampaignBackend {
     removeMember = (campaignId: string, userId: string) => this.backend().then((b) => b.removeMember(campaignId, userId))
     saveNpc = (campaignId: string, npc: { id: string; character: Character; revealed: boolean }) =>
         this.backend().then((b) => b.saveNpc(campaignId, npc))
+    listSavedCharacters = () => this.backend().then((b) => b.listSavedCharacters())
+    loadSavedCharacters = (kind: SavedKind, ids: string[]) => this.backend().then((b) => b.loadSavedCharacters(kind, ids))
+    saveCharacters = (rows: SavedUpload[]) => this.backend().then((b) => b.saveCharacters(rows))
     deleteNpc = (campaignId: string, npcId: string) => this.backend().then((b) => b.deleteNpc(campaignId, npcId))
 
     subscribe(campaignId: string, onEvent: (event: CampaignEvent) => void): () => void {

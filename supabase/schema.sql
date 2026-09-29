@@ -444,6 +444,82 @@ create policy npcs_delete on public.campaign_npcs for delete to authenticated
     using (public.is_gm(campaign_id));
 
 -- ---------------------------------------------------------------------------------------------
+-- Saved characters: each account's own characters and NPCs, so they follow the player to any device.
+-- Only the owner can read or change a row. A row with deleted = true is a tombstone, so a deletion
+-- on one device reaches the others.
+-- ---------------------------------------------------------------------------------------------
+
+create table if not exists public.user_characters (
+    owner_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+    kind text not null check (kind in ('character', 'npc')),
+    id text not null check (char_length(id) between 1 and 100),
+    data jsonb,
+    deleted boolean not null default false,
+    updated_at timestamptz not null,
+    primary key (owner_id, kind, id),
+    constraint user_characters_size check (data is null or pg_column_size(data) < 200000),
+    constraint user_characters_tombstone check (not deleted or data is null),
+    constraint user_characters_live check (deleted or data is not null)
+);
+
+alter table public.user_characters enable row level security;
+revoke all on public.user_characters from anon, authenticated;
+grant select, insert, update, delete on public.user_characters to authenticated;
+
+drop policy if exists user_characters_select on public.user_characters;
+create policy user_characters_select on public.user_characters for select to authenticated
+    using (owner_id = auth.uid());
+drop policy if exists user_characters_insert on public.user_characters;
+create policy user_characters_insert on public.user_characters for insert to authenticated
+    with check (owner_id = auth.uid());
+drop policy if exists user_characters_update on public.user_characters;
+create policy user_characters_update on public.user_characters for update to authenticated
+    using (owner_id = auth.uid()) with check (owner_id = auth.uid());
+drop policy if exists user_characters_delete on public.user_characters;
+create policy user_characters_delete on public.user_characters for delete to authenticated
+    using (owner_id = auth.uid());
+
+-- Save a batch. A row only replaces the stored one if it is at least as new, so a device that was
+-- offline for a week cannot overwrite newer work from another device.
+create or replace function public.save_synced_characters(p_rows jsonb)
+returns void
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+    r jsonb;
+    is_deleted boolean;
+begin
+    if auth.uid() is null then
+        raise exception 'Not signed in';
+    end if;
+    if jsonb_typeof(p_rows) <> 'array' or jsonb_array_length(p_rows) > 200 then
+        raise exception 'Send at most 200 characters at a time';
+    end if;
+
+    for r in select * from jsonb_array_elements(p_rows) loop
+        is_deleted := coalesce((r ->> 'deleted')::boolean, false);
+        insert into public.user_characters (owner_id, kind, id, data, deleted, updated_at)
+        values (
+            auth.uid(),
+            r ->> 'kind',
+            r ->> 'id',
+            case when is_deleted then null else r -> 'data' end,
+            is_deleted,
+            to_timestamp(((r ->> 'updated_at')::numeric) / 1000.0)
+        )
+        on conflict (owner_id, kind, id) do update
+            set data = excluded.data, deleted = excluded.deleted, updated_at = excluded.updated_at
+            where public.user_characters.updated_at <= excluded.updated_at;
+    end loop;
+end;
+$$;
+
+revoke all on function public.save_synced_characters(jsonb) from public, anon;
+grant execute on function public.save_synced_characters(jsonb) to authenticated;
+
+-- ---------------------------------------------------------------------------------------------
 -- Realtime: broadcast changes to the shared log, the party board and the roster.
 -- ---------------------------------------------------------------------------------------------
 

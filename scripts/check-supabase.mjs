@@ -72,7 +72,7 @@ else {
     problems.push('anonymous')
 }
 
-const COLUMN = { campaigns: 'id', campaign_members: 'campaign_id', campaign_rolls: 'id', member_status: 'campaign_id', campaign_npcs: 'id', profiles: 'user_id' }
+const COLUMN = { campaigns: 'id', campaign_members: 'campaign_id', campaign_rolls: 'id', member_status: 'campaign_id', campaign_npcs: 'id', profiles: 'user_id', user_characters: 'owner_id' }
 for (const table of Object.keys(COLUMN)) {
     const result = await get(`/rest/v1/${table}?select=${COLUMN[table]}&limit=1`)
     if (result.status === 404 && result.body.includes('PGRST205')) {

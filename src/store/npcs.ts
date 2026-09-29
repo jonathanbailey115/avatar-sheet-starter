@@ -4,6 +4,7 @@ import { loadStoredCharacters } from '../lib/characterLoad'
 import type { QuarantinedRecord } from '../lib/characterLoad'
 import { normalizeCharacter } from '../lib/normalize'
 import type { Character } from '../types/schema'
+import { announceAdded } from '../sync/events'
 import { getContent, useContentStore } from './content'
 import { jsonStorage } from './storage'
 
@@ -22,7 +23,10 @@ export const useNpcStore = create<NpcState>()(
         (set, get) => ({
             npcs: [],
             quarantine: [],
-            addNpc: (npc) => set({ npcs: [normalizeCharacter(npc, getContent()), ...get().npcs] }),
+            addNpc: (npc) => {
+                set({ npcs: [normalizeCharacter(npc, getContent()), ...get().npcs] })
+                announceAdded('npc', [npc.id])
+            },
             saveNpc: (npc) =>
                 set({
                     npcs: get().npcs.map((item) =>

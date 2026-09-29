@@ -1,3 +1,4 @@
+import { SavedBadge } from '../sync/SyncStatus'
 import { ConfirmButton } from '../components/ConfirmButton'
 import { useMemo, useState } from 'react'
 import SectionCard from '../components/SectionCard'
@@ -129,6 +130,7 @@ export function NpcScreen() {
                             {npcs.map((npc) => (
                                 <article key={npc.id} className={`npc-item${npc.id === selectedId ? ' selected' : ''}`}>
                                     <h3>{npc.name || 'Unnamed NPC'}</h3>
+                                    <SavedBadge kind="npc" id={npc.id} />
                                     <p className="muted">
                                         Level {npc.level} · {classes.find((item) => item.id === npc.classId)?.name ?? 'No class'} · {npc.nation}
                                     </p>

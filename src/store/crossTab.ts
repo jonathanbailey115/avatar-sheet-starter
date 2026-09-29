@@ -1,6 +1,7 @@
 import { useCampaignStore } from './campaign'
 import { useContentStore } from './content'
 import { useLibraryStore } from './library'
+import { useSyncStore } from '../sync/syncStore'
 import { useNpcStore } from './npcs'
 
 /**
@@ -13,6 +14,7 @@ const STORES: Record<string, { persist: { rehydrate: () => Promise<void> | void 
     'avatar-dnd:npcs': useNpcStore,
     'avatar-dnd:content': useContentStore,
     'avatar-dnd:campaigns': useCampaignStore,
+    'avatar-dnd:cloud-sync': useSyncStore,
 }
 
 export function startCrossTabSync(): void {

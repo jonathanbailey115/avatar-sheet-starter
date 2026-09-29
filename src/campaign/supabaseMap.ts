@@ -43,6 +43,15 @@ export const npcFromRow = (row: NpcRow): CampaignNpc => ({
     updatedAt: Date.parse(row.updated_at),
 })
 
+export interface SavedRow {
+    kind: 'character' | 'npc'
+    id: string
+    deleted: boolean
+    updated_at: string
+}
+
+export const SAVED_BATCH = 20
+
 export const campaignFromRow = (row: CampaignRow): Campaign => ({
     id: row.id,
     code: row.code,
@@ -94,6 +103,10 @@ export function friendlyError(error: { message?: string; code?: string } | null 
     }
     if (/valid email|Unable to validate email/i.test(message)) {
         return new CampaignError('That does not look like a valid email address.')
+    }
+    // A table or function from a newer schema.sql that the project has not run yet.
+    if (/Could not find the (table|function)|PGRST20[25]|schema cache/i.test(message)) {
+        return new CampaignError('Your database is missing the latest setup. Run supabase/schema.sql again (see docs/SUPABASE_SETUP.md).')
     }
     if (/Anonymous sign-ins are disabled/i.test(message)) {
         return new CampaignError('Anonymous sign-ins are off in your Supabase project. Turn them on under Authentication > Providers.')

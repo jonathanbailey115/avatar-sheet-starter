@@ -29,7 +29,7 @@ function useAction() {
 export function Lobby({ onOpen }: { onOpen: (campaign: Campaign) => void }) {
     const displayName = useCampaignStore((state) => nameFor(state))
     const campaigns = useCampaignStore((state) => state.campaigns)
-    const { createCampaign, joinCampaign, claimGm, openCampaign } = useCampaignStore.getState()
+    const { createCampaign, joinCampaign, claimGm } = useCampaignStore.getState()
 
     const [newName, setNewName] = useState('')
     const [code, setCode] = useState('')

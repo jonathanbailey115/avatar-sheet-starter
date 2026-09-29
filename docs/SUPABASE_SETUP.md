@@ -41,7 +41,8 @@ It reads `.env.local`, only reads from your project, and tells you which steps a
 - Everyone makes an account on the Campaigns tab (or signs in). Your account follows you: sign in on any device and your campaigns are there, no code or key needed.
 - The GM creates a campaign and shares the 8-character **join code**. Friends join with it.
 - **Two characters at once:** each account plays one character per campaign, so to play two you sign in to two accounts. There is no limit on how many accounts use the same computer or network. In one browser, untick **Keep me signed in on this device** when you sign in to the second account (it then lives only in that tab), and use a different tab for each.
-- Characters are saved on the device they were made on, not in your account. Use *Export* on My Characters to move one to another device.
+- **Your characters follow your account.** Characters and NPCs you make while signed in are saved to your account and appear on any device you sign in to (a few seconds after a change, and again when you come back to the tab). Characters that were already on a device before you signed in are not uploaded automatically: the Campaigns tab offers an **Add to my account** button. Cards show whether each one is in your account. Nothing here is shared with other players: only you can read your saved characters. Use *Export* on My Characters for a backup file as well.
+- Everyone who uses the same browser can see the characters stored on it, even from different accounts. Characters are only uploaded to the account that owns them.
 - Each player chooses "Playing as" a character. From then on their rolls appear in the shared log, and their HP, AC and state show on the party board.
 - **Send my rolls to the GM only** makes private rolls: the roller and the GM see them, nobody else.
 - The GM can clear the log and remove players. Only the GM can.

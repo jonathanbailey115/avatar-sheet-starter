@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { RollEntry } from '../engine/rolls'
 import type { Character } from '../types/schema'
+import { deleteCampaignNpc, listSaved, loadSaved, saveCampaignNpc, saveRows } from './supabaseData'
 import { authStorageFor, currentScope, projectRefOf, rememberScope, storageKeyFor } from './authStorage'
 import {
     CAMPAIGN_COLUMNS,
@@ -22,6 +23,10 @@ import type {
     CampaignEvent,
     CampaignSnapshot,
     PlayerSummary,
+    SavedInfo,
+    SavedItem,
+    SavedKind,
+    SavedUpload,
     SessionScope,
     SignUpResult,
     Visibility,
@@ -234,29 +239,24 @@ export class SupabaseBackend implements CampaignBackend {
         if (error) throw friendlyError(error)
     }
 
-    async saveNpc(campaignId: string, npc: { id: string; character: Character; revealed: boolean }): Promise<void> {
-        if (!npc.revealed) {
-            // Realtime never announces an update that makes a row unreadable to a player, so a player's screen would keep
-            // showing an NPC the GM just hid. Delete events do reach everyone, so hide by deleting, then saving it hidden.
-            const removed = await this.client.from('campaign_npcs').delete().eq('campaign_id', campaignId).eq('id', npc.id)
-            if (removed.error) throw friendlyError(removed.error)
-        }
-        const { error } = await this.client.from('campaign_npcs').upsert(
-            {
-                id: npc.id,
-                campaign_id: campaignId,
-                data: { character: npc.character },
-                revealed: npc.revealed,
-                updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'id' },
-        )
-        if (error) throw friendlyError(error)
+    saveNpc(campaignId: string, npc: { id: string; character: Character; revealed: boolean }): Promise<void> {
+        return saveCampaignNpc(this.client, campaignId, npc)
     }
 
-    async deleteNpc(campaignId: string, npcId: string): Promise<void> {
-        const { error } = await this.client.from('campaign_npcs').delete().eq('campaign_id', campaignId).eq('id', npcId)
-        if (error) throw friendlyError(error)
+    deleteNpc(campaignId: string, npcId: string): Promise<void> {
+        return deleteCampaignNpc(this.client, campaignId, npcId)
+    }
+
+    listSavedCharacters(): Promise<SavedInfo[]> {
+        return listSaved(this.client)
+    }
+
+    loadSavedCharacters(kind: SavedKind, ids: string[]): Promise<SavedItem[]> {
+        return loadSaved(this.client, kind, ids)
+    }
+
+    saveCharacters(rows: SavedUpload[]): Promise<void> {
+        return saveRows(this.client, rows)
     }
 
     async clearRolls(campaignId: string): Promise<void> {

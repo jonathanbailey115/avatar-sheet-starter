@@ -82,6 +82,32 @@ export type SignUpResult = { status: 'signed-in'; session: AccountSession } | { 
 /** 'device' remembers you here. 'tab' keeps this tab's sign-in separate, so another tab can be someone else. */
 export type SessionScope = 'device' | 'tab'
 
+/** Characters and NPCs saved to an account so they follow the player between devices. */
+export type SavedKind = 'character' | 'npc'
+
+export interface SavedInfo {
+    kind: SavedKind
+    id: string
+    deleted: boolean
+    updatedAt: number
+}
+
+export interface SavedItem {
+    kind: SavedKind
+    id: string
+    /** The stored record. Validate and migrate it before use; it may come from an older version. */
+    data: unknown
+}
+
+export interface SavedUpload {
+    kind: SavedKind
+    id: string
+    updatedAt: number
+    /** Present unless this is a deletion. */
+    data?: unknown
+    deleted?: boolean
+}
+
 export interface CampaignBackend {
     readonly kind: 'supabase' | 'local'
     /** True when players sign in with accounts. Local test mode has none. */
@@ -109,6 +135,9 @@ export interface CampaignBackend {
     clearRolls(campaignId: string): Promise<void>
     leave(campaignId: string): Promise<void>
     removeMember(campaignId: string, userId: string): Promise<void>
+    listSavedCharacters(): Promise<SavedInfo[]>
+    loadSavedCharacters(kind: SavedKind, ids: string[]): Promise<SavedItem[]>
+    saveCharacters(rows: SavedUpload[]): Promise<void>
     /** GM only. Adds the NPC or replaces the saved copy. */
     saveNpc(campaignId: string, npc: { id: string; character: Character; revealed: boolean }): Promise<void>
     deleteNpc(campaignId: string, npcId: string): Promise<void>

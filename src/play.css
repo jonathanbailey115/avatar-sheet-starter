@@ -275,3 +275,8 @@ button.ability-tile:hover, .vital-roll:hover { border-color: var(--accent); back
 .npc-abilities { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; list-style: none; padding: 0; margin: 0.5rem 0; }
 .reroll-row { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-top: 1rem; }
 .npc-item.selected { outline: 2px solid var(--accent, #c8842b); }
+
+/* Account sync */
+.sync-status { margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.saved-badge { display: inline-block; margin: 0 0 0.4rem; padding: 0.05rem 0.5rem; border-radius: 999px; border: 1px solid currentColor; opacity: 0.85; }
+.saved-badge-local { opacity: 0.6; border-style: dashed; }

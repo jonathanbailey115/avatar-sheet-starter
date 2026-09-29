@@ -5,6 +5,7 @@ import { loadStoredCharacters } from '../lib/characterLoad'
 import type { QuarantinedRecord } from '../lib/characterLoad'
 import { normalizeCharacter } from '../lib/normalize'
 import type { Character } from '../types/schema'
+import { announceAdded } from '../sync/events'
 import { getContent, useContentStore } from './content'
 import { jsonStorage } from './storage'
 
@@ -19,7 +20,7 @@ function readActive(): string | null {
     }
 }
 
-function writeActive(id: string | null): void {
+export function writeActiveCharacter(id: string | null): void {
     try {
         if (id) sessionStorage.setItem(ACTIVE_KEY, id)
         else sessionStorage.removeItem(ACTIVE_KEY)
@@ -53,13 +54,14 @@ export const useLibraryStore = create<LibraryState>()(
 
             createCharacter: () => {
                 const character = normalizeCharacter(createBlankCharacter(), getContent())
-                writeActive(character.id)
+                writeActiveCharacter(character.id)
                 set({ characters: [...get().characters, character], activeId: character.id })
+                announceAdded('character', [character.id])
                 return character.id
             },
 
             selectCharacter: (id) => {
-                writeActive(id)
+                writeActiveCharacter(id)
                 set({ activeId: id })
             },
 
@@ -77,12 +79,14 @@ export const useLibraryStore = create<LibraryState>()(
             copyCharacter: (id) => {
                 const original = get().characters.find((character) => character.id === id)
                 if (!original) return
-                set({ characters: [...get().characters, copyCharacter(original)] })
+                const copy = copyCharacter(original)
+                set({ characters: [...get().characters, copy] })
+                announceAdded('character', [copy.id])
             },
 
             deleteCharacter: (id) => {
                 const { characters, activeId } = get()
-                if (activeId === id) writeActive(null)
+                if (activeId === id) writeActiveCharacter(null)
                 set({
                     characters: characters.filter((character) => character.id !== id),
                     activeId: activeId === id ? null : activeId,
@@ -100,6 +104,7 @@ export const useLibraryStore = create<LibraryState>()(
                     return normalizeCharacter(withId, content, { reportRemovals: true })
                 })
                 set({ characters: [...get().characters, ...added] })
+                announceAdded('character', added.map((character) => character.id))
                 return added.length
             },
 
