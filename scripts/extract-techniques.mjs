@@ -49,7 +49,12 @@ function cleanBody(lines) {
         .trim()
 }
 
-function parseSpellSection(start, end, prefix, wantedElements) {
+/**
+ * `wanted` maps the italic label under a technique's name to what it becomes:
+ * { element } for the base element, or { element, discipline } for a sub-bending that a subclass unlocks.
+ * Labels not listed are skipped (Lightningbending and the Fire-list Healing entry: see docs/RULES_QUESTIONS.md).
+ */
+function parseSpellSection(start, end, prefix, wanted) {
     const techniques = []
     let i = start
     while (i < end) {
@@ -81,12 +86,14 @@ function parseSpellSection(start, end, prefix, wantedElements) {
         while (j < end && !source[j].startsWith('#### ') && !/^<h[234] id=/.test(source[j])) j += 1
         const body = cleanBody(source.slice(bodyStart, j))
 
-        if (wantedElements.includes(elementLine)) {
+        const kind = wanted[elementLine]
+        if (kind) {
             const duration = stats.Duration ?? ''
             techniques.push({
                 id: `${prefix}-${slug(name)}`,
                 name,
-                element: prefix === 'universal' ? 'Universal' : elementLine.replace('bending', ''),
+                element: kind.element,
+                ...(kind.discipline ? { discipline: kind.discipline } : {}),
                 rare,
                 ...(prerequisite ? { prerequisite } : {}),
                 castingTime: stats['Casting Time'] ?? '',
@@ -122,7 +129,7 @@ write(
     'universal.generated.ts',
     'universalTechniques',
     'Universal techniques (any class).',
-    parseSpellSection(universalStart, universalEnd, 'universal', ['Universal']),
+    parseSpellSection(universalStart, universalEnd, 'universal', { Universal: { element: 'Universal' } }),
 )
 
 // Earthbending techniques (Metalbending and Lavabending belong to Traditions and are skipped for now)
@@ -132,8 +139,37 @@ write(
     'earth.generated.ts',
     'earthTechniques',
     'Earthbending techniques. Metalbending and Lavabending are not included yet.',
-    parseSpellSection(earthStart, earthEnd, 'earth', ['Earthbending']),
+    parseSpellSection(earthStart, earthEnd, 'earth', { Earthbending: { element: 'Earth' } }),
 )
+
+// Waterbending: the base list plus Healing and Bloodbending (unlocked by paths).
+const waterStart = find((l) => l.includes('Waterbending Techniques</div>'))
+write(
+    'water.generated.ts',
+    'waterTechniques',
+    'Waterbending techniques, including Healing and Bloodbending (tagged with a discipline).',
+    parseSpellSection(waterStart, earthStart, 'water', {
+        Waterbending: { element: 'Water' },
+        Healing: { element: 'Water', discipline: 'Healing' },
+        Bloodbending: { element: 'Water', discipline: 'Bloodbending' },
+    }),
+)
+
+// Firebending: the base list plus Combustionbending. Lightningbending (feat-gated) is skipped for now.
+const fireStart = find((l) => l.includes('Firebending Techniques</div>'))
+const airStart = find((l) => l.includes('Airbending Techniques</div>'), fireStart)
+write(
+    'fire.generated.ts',
+    'fireTechniques',
+    'Firebending techniques, including Combustionbending. Lightningbending is not included yet.',
+    parseSpellSection(fireStart, airStart, 'fire', {
+        Firebending: { element: 'Fire' },
+        Combustionbending: { element: 'Fire', discipline: 'Combustionbending' },
+    }),
+)
+
+const airEnd = find((l) => l.includes('id="items"'), airStart)
+write('air.generated.ts', 'airTechniques', 'Airbending techniques.', parseSpellSection(airStart, airEnd, 'air', { Airbending: { element: 'Air' } }))
 
 // Weaponsmaster fighting techniques: Basic, Trained, Mastered lists share names.
 function parseFighting(start, end, levelPrefix) {

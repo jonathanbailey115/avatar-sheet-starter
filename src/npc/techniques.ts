@@ -1,4 +1,4 @@
-import { learnBlocker, limitStatus } from '../engine/techniques'
+import { disciplinesOf, learnBlocker, limitStatus } from '../engine/techniques'
 import { DEFAULT_TRAINING } from '../types/schema'
 import type { Character, KnownTechnique, TechniqueLevel } from '../types/schema'
 import type { RulesContent } from '../lib/normalize'
@@ -17,6 +17,7 @@ export function learnTechniques(character: Character, content: RulesContent, rng
     const characterClass = content.classes.find((item) => item.id === character.classId)
     let current: Character = { ...character, knownTechniques: [] }
     if (!characterClass) return current
+    const disciplines = disciplinesOf(character, content.subclasses)
 
     for (let guard = 0; guard < 60; guard += 1) {
         const open = limitStatus(current, characterClass, content.techniques).filter((status) => status.used < status.max)
@@ -25,7 +26,7 @@ export function learnTechniques(character: Character, content: RulesContent, rng
         const options = shuffle(content.techniques, rng).filter(
             (technique) =>
                 open.some((status) => status.limit.kinds.includes(technique.element)) &&
-                learnBlocker(current, technique, characterClass, content.techniques) === null,
+                learnBlocker(current, technique, characterClass, content.techniques, disciplines) === null,
         )
         const pick = options[0]
         if (!pick) break

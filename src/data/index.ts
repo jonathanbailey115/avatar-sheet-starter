@@ -1,12 +1,20 @@
+import { airbendingFeatures } from './airbending'
 import { backgroundFeatures } from './backgrounds'
 import { earthbendingFeatures } from './earthbending'
 import { features as coreFeatures } from './features'
+import { firebendingFeatures, firebendingPrincipleFeatures } from './firebending'
+import { waterbendingFeatures, waterbendingPathFeatures } from './waterbending'
 import { weaponsmasterExtraFeatures } from './weaponsmasterExtras'
 import type { Feature } from '../types/schema'
 
 export const features: Feature[] = [
     ...coreFeatures,
     ...earthbendingFeatures,
+    ...waterbendingFeatures,
+    ...waterbendingPathFeatures,
+    ...firebendingFeatures,
+    ...firebendingPrincipleFeatures,
+    ...airbendingFeatures,
     ...weaponsmasterExtraFeatures,
     ...backgroundFeatures,
 ]

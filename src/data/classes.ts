@@ -1,5 +1,9 @@
 import type { CharacterClass, CharacterSubclass } from '../types/schema'
+import { airbendingClass } from './airbending'
+import { BENDER_ASI_LEVELS } from './classFeature'
 import { earthbendingSubclasses } from './earthbending'
+import { firebendingClass, firebendingSubclasses } from './firebending'
+import { waterbendingClass, waterbendingSubclasses } from './waterbending'
 import { weaponsmasterExtraGrants } from './weaponsmasterExtras'
 import {
     BENDER_TECHNIQUE_SLOTS,
@@ -92,12 +96,12 @@ export const characterClasses: CharacterClass[] = [
             { featureId: 'class-earthbending-grounded', level: 1 },
             { featureId: 'class-earthbending-move-earth', level: 1 },
             { featureId: 'class-earthbending-tradition', level: 3 },
-            { featureId: 'class-earthbending-ability-score-improvement', level: 4 },
+            ...BENDER_ASI_LEVELS.map((level) => ({ featureId: 'class-earthbending-ability-score-improvement', level })),
             { featureId: 'class-earthbending-extra-attack', level: 5 },
             { featureId: 'class-earthbending-neutral-jing', level: 5 },
             { featureId: 'class-earthbending-rare-techniques', level: 8 },
             { featureId: 'class-earthbending-resilient', level: 11 },
-        ],
+        ].sort((a, b) => a.level - b.level),
         techniqueLimits: [
             {
                 id: 'known',
@@ -112,6 +116,13 @@ export const characterClasses: CharacterClass[] = [
         basicAttack: { dice: '1d8', damageType: 'bludgeoning' },
         techniqueSlots: BENDER_TECHNIQUE_SLOTS,
     },
+    waterbendingClass,
+    firebendingClass,
+    airbendingClass,
 ]
 
-export const characterSubclasses: CharacterSubclass[] = [...earthbendingSubclasses]
+export const characterSubclasses: CharacterSubclass[] = [
+    ...earthbendingSubclasses,
+    ...waterbendingSubclasses,
+    ...firebendingSubclasses,
+]

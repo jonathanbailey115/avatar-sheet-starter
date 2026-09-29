@@ -2,9 +2,11 @@ import type {
     AbilityName,
     Character,
     CharacterClass,
+    CharacterSubclass,
     Element,
     Technique,
     TechniqueDamage,
+    TechniqueDiscipline,
     TechniqueElement,
     TechniqueLevel,
 } from '../types/schema'
@@ -89,6 +91,15 @@ export function textAtLevel(technique: Technique, level: TechniqueLevel): string
     return technique.levelText?.[level] || technique.description
 }
 
+/** Sub-bendings the character's subclass lets them use. */
+export function disciplinesOf(
+    character: Pick<Character, 'subclassId' | 'level'>,
+    subclasses: CharacterSubclass[],
+): TechniqueDiscipline[] {
+    const subclass = subclasses.find((item) => item.id === character.subclassId)
+    return subclass && subclass.unlockLevel <= character.level ? (subclass.disciplines ?? []) : []
+}
+
 export interface Prerequisite {
     techniqueId: string
     minLevel: TechniqueLevel
@@ -101,7 +112,8 @@ export function parsePrerequisite(technique: Technique, all: Technique[]): Prere
     if (!match) return null
 
     const name = match[2].trim().toLowerCase()
-    const target = all.find((item) => item.name.toLowerCase() === name)
+    // Some techniques go by two names, e.g. "Water Whip/Water Rope".
+    const target = all.find((item) => item.name.toLowerCase().split('/').some((part) => part.trim() === name))
     if (!target) return null
 
     const level = TECHNIQUE_LEVELS.find((item) => item.toLowerCase() === match[1]?.toLowerCase())
@@ -114,10 +126,16 @@ export function learnBlocker(
     technique: Technique,
     characterClass: CharacterClass | undefined,
     all: Technique[],
+    /** Sub-bendings the character's subclass grants (see disciplinesOf). */
+    disciplines: TechniqueDiscipline[] = [],
 ): string | null {
     if (character.knownTechniques.some((known) => known.techniqueId === technique.id)) return 'Already known'
 
     if (technique.rare && character.level < 8) return 'Rare techniques unlock at level 8'
+
+    if (technique.discipline && !disciplines.includes(technique.discipline)) {
+        return `Needs a path or principle that grants ${technique.discipline}`
+    }
 
     const prerequisite = parsePrerequisite(technique, all)
     if (prerequisite) {

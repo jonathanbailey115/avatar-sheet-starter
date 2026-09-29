@@ -32,6 +32,9 @@ export interface Lineage {
 /** Where a technique comes from. Fighting techniques are the Weaponsmaster's. */
 export type TechniqueElement = Element | 'Universal' | 'Fighting'
 
+/** Sub-bendings gmbinder lists inside an element's technique list. */
+export type TechniqueDiscipline = 'Bloodbending' | 'Healing' | 'Combustionbending'
+
 /** A save the target makes against the caster's Bending Save DC. */
 export interface TechniqueSave {
     /** 'affinity': the target rolls the Elemental Affinity save of its own element (gmbinder text). */
@@ -61,6 +64,8 @@ export interface Technique {
     element: TechniqueElement
     description: string
     rare?: boolean
+    /** A sub-bending this technique belongs to. Only a subclass that grants the discipline can learn it. */
+    discipline?: TechniqueDiscipline
     /** e.g. "Trained Tremors" */
     prerequisite?: string
     castingTime?: string
@@ -326,6 +331,8 @@ export interface SubclassFeatureGrant {
 export interface CharacterSubclass {
     id: string
     classId: string
+    /** Sub-bendings this subclass lets you use (their techniques become learnable). */
+    disciplines?: TechniqueDiscipline[]
     name: string
     description: string
     unlockLevel: number

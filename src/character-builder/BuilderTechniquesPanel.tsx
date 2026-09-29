@@ -2,8 +2,9 @@ import { useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
 import { getBendingElement } from '../engine/bending'
-import { learnBlocker, limitStatus } from '../engine/techniques'
+import { disciplinesOf, learnBlocker, limitStatus } from '../engine/techniques'
 import { masteredCount } from '../engine/training'
+import { useCollection } from '../store/content'
 import { DEFAULT_TRAINING, MAX_MASTERED_TECHNIQUES, TECHNIQUE_LEVELS } from '../types/schema'
 import type { Character, CharacterClass, Technique, TechniqueLevel } from '../types/schema'
 
@@ -26,6 +27,7 @@ export function BuilderTechniquesPanel({
     editableTechniques,
 }: BuilderTechniquesPanelProps) {
     const [query, setQuery] = useState('')
+    const subclasses = useCollection('subclasses')
     const selectedClass = editableClasses.find((item) => item.id === character.classId)
     const element = getBendingElement(character, editableClasses)
     const limits = limitStatus(character, selectedClass, editableTechniques)
@@ -129,7 +131,7 @@ export function BuilderTechniquesPanel({
                                     const level = levelOf(technique.id)
                                     const blocker = level
                                         ? null
-                                        : learnBlocker(character, technique, selectedClass, editableTechniques)
+                                        : learnBlocker(character, technique, selectedClass, editableTechniques, disciplinesOf(character, subclasses))
 
                                     return (
                                         <div key={technique.id} className="checkbox-item">

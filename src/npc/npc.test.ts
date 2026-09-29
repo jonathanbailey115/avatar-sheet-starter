@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { NATION_ELEMENT } from '../engine/bending'
 import { limitStatus } from '../engine/techniques'
 import { realContent } from '../lib/testFixtures'
 import { npcTemplates } from '../data/npcTemplates'
@@ -58,7 +59,8 @@ describe('quick-create', () => {
     })
 
     it('says so when the nation bends an element the app has no class for', () => {
-        const fire = { template: { ...npcTemplates[0], nationWeights: { 'Fire Nation': 1 }, bendingWeights: { Fire: 1 } }, content: realContent }
+        const withoutFire = { ...realContent, classes: realContent.classes.filter((c) => c.element !== 'Fire') }
+        const fire = { template: { ...npcTemplates[0], nationWeights: { 'Fire Nation': 1 }, bendingWeights: { Fire: 1 } }, content: withoutFire }
         const { character, warnings } = generateNpc({ ...none, level: 3 }, fire, seeded(4))
         expect(character.classId).toBe('weaponsmaster')
         expect(warnings.join(' ')).toMatch(/not in the app yet/)
@@ -92,12 +94,12 @@ describe('rerolling one part', () => {
         expect(character.weapons).toEqual(base.weapons)
     })
 
-    it('a new nation never leaves a bender with the wrong element', () => {
+    it('a new nation never leaves a bender bending the wrong element', () => {
         const earthbender = generateNpc({ nation: 'Earth Kingdom', classId: 'earthbending', level: 4 }, guard, seeded(8)).character
         for (let seed = 1; seed <= 20; seed += 1) {
             const { character } = rerollPart(earthbender, 'nation', guard, seeded(seed))
             const cls = realContent.classes.find((c) => c.id === character.classId)
-            if (cls?.element) expect(character.nation).toBe('Earth Kingdom')
+            if (cls?.element) expect(NATION_ELEMENT[character.nation]).toBe(cls.element)
         }
     })
 })

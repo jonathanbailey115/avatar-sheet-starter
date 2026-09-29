@@ -248,8 +248,28 @@ These are choices the NPC generator makes where gmbinder gives no rule. None of 
    Ability Score Improvement the class table has reached. Weaponsmasters pick Strength or Dexterity at random.
 3. **Armor and weapons.** Only what the lineage is proficient in. Armor is whichever proficient piece gives the best AC
    (Baseline 5e armor). Each role has a `combat` chance (0-1) of wearing armor and carrying a second weapon.
-4. **Missing classes.** Fire, Water and Air bending classes and Tech-Engineer are not in the app yet, so NPCs of those
-   nations are non-benders and the Studio says so.
+4. **Missing classes.** Any class not in the app yet leaves NPCs of that nation as non-benders, and the Studio says so.
+   (Waterbending, Firebending and Airbending are now in; see section L.)
 5. **Names, personality, ideals, bonds, flaws** are invented flavor text, not gmbinder content.
 6. **Sharing.** Sending an NPC to a campaign removes its notes and personality fields; the stat block is what players see
    once the GM reveals it.
+
+## L. Waterbending, Firebending, Airbending (please confirm or correct)
+
+Class and subclass wording is copied from gmbinder by `scripts/extract-class-features.mjs`; technique text by
+`scripts/extract-techniques.mjs`. These are the places where the source is unclear or disagrees with itself. Each one
+has a default so play is not blocked; tell me to change any of them.
+
+| # | Question | Default used in the app |
+|---|----------|--------------------------|
+| L1 | **Combustionbender: "Telekinetic Firebending" says "Starting at level 1"**, but the Principle is chosen at level 3. | Granted at level 3, with a note on the feature. |
+| L2 | **Airbending has no Teaching, Path or Principle**, so no subclass. Every other bender picks one at level 3. Its class text also has no Extra Attack. | No subclass and no Extra Attack for Airbenders, as written. |
+| L3 | **Airbender ability option:** "with your GM's permission" an Airbender may use Dexterity instead of Wisdom for the Elemental Affinity save, basic attack and Bending Save DC. | Wisdom only. A per-character Dexterity switch is not built. |
+| L4 | **Ability Score Improvement levels:** the Water, Fire and Air text says 4th, 8th, 12th, 16th, 19th; the Benders class table says 9th instead of 8th. | Follows the table (4, 9, 12, 16, 19), as already decided for Earthbending. All bender classes now carry all five grants. |
+| L5 | **Healing techniques** (Water Glove, Submerge) are printed in the Waterbending list. Nothing says they need Path of the Healer. | Any Waterbender can learn them. |
+| L6 | **"Energy Guidance"** (label: Healing, uses Wisdom) is printed in the Firebending list. It does not obviously belong to Firebenders. | Left out of the app until you say who can learn it. |
+| L7 | **Lightningbending techniques** (Stunning Strike, Arc Lightning, Lightning Blast) are unlocked by the *Lightning Generation* feat, not by a class. | Left out for now; needs feat prerequisites in the technique rules. |
+| L8 | **Bloodbending techniques** need Path of the Bloodbender ("you can use Bloodbending Techniques"); **Combustionbending techniques** need the Combustionbender Principle. | Enforced when learning techniques (a subclass can grant a "discipline"). |
+| L9 | **Chi:** the Healer and Bloodbender features talk about chi points and chi paths. The decision to remove Chi was about the character resource. | Feature text is kept exactly as printed; nothing tracks chi points. |
+| L10 | **Technique overlays:** where the text raises damage only at one level ("At Trained level, the damage increases by 2d8"), Mastered is not raised further. Where it says "for each level above Practiced", each step adds the dice. Shockwave says both Trained and Mastered add 2d8 without saying whether they stack. | Stacks (each level above Practiced adds 2d8). Flagged in the technique's note. |
+| L11 | **Not automated:** Flow's two-technique concentration, changing water to ice/steam, Dragon's Blessing burning, Meditation's Wisdom bonus, Spiritual Companion, Path features (Ebb, Fluidity, Energy Balancing dice pool, Positive Jing, Jet Stepping). They are shown as text. Only Quick Reflexes (Air, level 10) and Fluidity (advantage prompt) are wired into rolls. | Text only. |
