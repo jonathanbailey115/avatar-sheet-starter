@@ -153,8 +153,18 @@ describe('schema 5 to 6: species', () => {
         delete (old as Record<string, unknown>).speciesAbilityChoices
         delete (old as Record<string, unknown>).speciesSkill
         const migrated = migrateCharacter(old) as Record<string, unknown>
-        expect(migrated.schemaVersion).toBe(6)
+        expect(migrated.schemaVersion).toBe(CHARACTER_SCHEMA_VERSION)
         expect(migrated).toMatchObject({ species: 'none', speciesAbilityChoices: [], speciesSkill: null, strength: 14, constitution: 9 })
         expect(abilityScoresOf(migrated as never).strength).toBe(14)
+    })
+})
+
+describe('schema 6 to 7: alternate bending ability', () => {
+    it('adds the switch turned off, so no Save DC changes', () => {
+        const old = { ...JSON.parse(JSON.stringify(createBlankCharacter())), schemaVersion: 6 }
+        delete (old as Record<string, unknown>).abilityOption
+        const migrated = migrateCharacter(old) as Record<string, unknown>
+        expect(migrated.schemaVersion).toBe(CHARACTER_SCHEMA_VERSION)
+        expect(migrated.abilityOption).toBe(false)
     })
 })

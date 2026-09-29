@@ -84,6 +84,7 @@ export const characterSchema: z.ZodType<Character, z.ZodTypeDef, unknown> = z.ob
     ),
     notes: z.string(),
     species: z.enum(['none', 'human', 'variant-human']),
+    abilityOption: z.boolean(),
     speciesAbilityChoices: z.array(abilityName).max(2),
     speciesSkill: skillName.nullable(),
     strength: score,

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
+import { ClassNotices } from './ClassNotices'
 import type {
     Character,
     CharacterClass,
@@ -195,6 +196,7 @@ export function BuilderClassPanel({
                                 ? character.savingThrowProficiencies.join(', ')
                                 : 'None'}
                         </p>
+                        <ClassNotices character={character} setCharacter={setCharacter} selectedClass={selectedClass} />
                     </>
                 ) : (
                     <p>Select a class to begin class progression.</p>

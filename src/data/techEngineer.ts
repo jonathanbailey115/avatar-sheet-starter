@@ -198,6 +198,8 @@ export const techEngineerClass: CharacterClass = {
     hitDie: 'Lineage-based',
     primaryAbility: 'Intelligence',
     bendingAbility: 'intelligence',
+    // "with your GM's permission" a Tech-Engineer may use Wisdom instead (gmbinder, Tech-Engineer).
+    altBendingAbility: 'wisdom',
     savingThrows: [],
     skillChoices: { choose: 0, options: [] },
     featureGrants: grantsOf([

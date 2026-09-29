@@ -258,3 +258,23 @@ describe('Lightningbending', () => {
         expect(blocker(withFeat)).toBeNull()
     })
 })
+
+describe('the GM-permitted alternate bending ability', () => {
+    it('Airbenders can use Dexterity, and Tech-Engineers Wisdom, only when the switch is on', () => {
+        const air = (abilityOption: boolean) =>
+            computeSheet(build('airbending', 'Air Nomads', 5, { wisdom: 12, dexterity: 18, abilityOption }), realContent)
+        expect(air(false).bending).toMatchObject({ ability: 'wisdom', saveDc: 8 + 3 + 1 })
+        expect(air(true).bending).toMatchObject({ ability: 'dexterity', saveDc: 8 + 3 + 4 })
+        expect(air(true).attacks.find((attack) => attack.kind === 'bending')?.damageBreakdown[0].label).toBe('Dexterity')
+
+        const engineer = (abilityOption: boolean) =>
+            computeSheet(build('tech-engineer', 'Earth Kingdom', 5, { intelligence: 10, wisdom: 16, abilityOption }), realContent)
+        expect(engineer(false).bending?.ability).toBe('intelligence')
+        expect(engineer(true).bending?.ability).toBe('wisdom')
+    })
+
+    it('does nothing for classes that have no alternate', () => {
+        const sheet = computeSheet(build('firebending', 'Fire Nation', 5, { strength: 16, dexterity: 18, abilityOption: true }), realContent)
+        expect(sheet.bending?.ability).toBe('strength')
+    })
+})

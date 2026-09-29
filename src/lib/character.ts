@@ -17,6 +17,7 @@ export function createBlankCharacter(role: CharacterRole = 'Player Character'): 
         species: role === 'NPC' ? 'none' : 'human',
         speciesAbilityChoices: [],
         speciesSkill: null,
+        abilityOption: false,
         level: 1,
         maxHpOverride: null,
         maxHpAdjustment: 0,

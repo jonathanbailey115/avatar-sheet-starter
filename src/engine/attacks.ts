@@ -100,8 +100,17 @@ function attackLine(
     }
 }
 
+/** The ability behind Bending Save DC and the bending attack: the class's, or its alternate if the GM allows it. */
+export function bendingAbilityOf(
+    character: Pick<Character, 'abilityOption'>,
+    characterClass: CharacterClass | undefined,
+): AbilityName | undefined {
+    if (character.abilityOption && characterClass?.altBendingAbility) return characterClass.altBendingAbility
+    return characterClass?.bendingAbility
+}
+
 export function getBendingSummary(basis: AttackBasis): BendingSummary | null {
-    const ability = basis.characterClass?.bendingAbility
+    const ability = bendingAbilityOf(basis.character, basis.characterClass)
     if (!ability) return null
 
     const modifier = getAbilityModifier(basis.context.abilityScores[ability])
@@ -120,8 +129,9 @@ export function getAttacks(basis: AttackBasis): AttackOption[] {
     const attacks: AttackOption[] = []
 
     // Basic bending attack (no technique), for benders. Proficient in their own bending.
-    if (characterClass?.basicAttack && characterClass.bendingAbility) {
-        const ability = characterClass.bendingAbility
+    const bendingAbility = bendingAbilityOf(character, characterClass)
+    if (characterClass?.basicAttack && bendingAbility) {
+        const ability = bendingAbility
         const modifier = getAbilityModifier(scores[ability])
         attacks.push({
             id: 'basic-bending',

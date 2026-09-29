@@ -144,12 +144,18 @@ function migrate5to6(raw: Raw): Raw {
     return { ...raw, schemaVersion: 6, species: 'none', speciesAbilityChoices: [], speciesSkill: null }
 }
 
+/** v7: the per-character switch for the alternate bending ability. Off, so nothing changes. */
+function migrate6to7(raw: Raw): Raw {
+    return { ...raw, schemaVersion: 7, abilityOption: false }
+}
+
 const MIGRATIONS: Record<number, (raw: Raw) => Raw> = {
     1: migrate1to2,
     2: migrate2to3,
     3: migrate3to4,
     4: migrate4to5,
     5: migrate5to6,
+    6: migrate6to7,
 }
 
 /**

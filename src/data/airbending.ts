@@ -68,6 +68,8 @@ export const airbendingClass: CharacterClass = {
     ],
     element: 'Air',
     bendingAbility: 'wisdom',
+    // "with your GM's permission" an Airbender may use Dexterity instead (gmbinder, Airbending).
+    altBendingAbility: 'dexterity',
     basicAttack: { dice: '1d6', damageType: 'thunder' },
     techniqueSlots: BENDER_TECHNIQUE_SLOTS,
 }

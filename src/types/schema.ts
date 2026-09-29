@@ -6,7 +6,7 @@ export type BendingType = Element | 'Non-Bender'
 export type TechniqueLevel = 'Practiced' | 'Trained' | 'Mastered'
 
 export const TECHNIQUE_LEVELS: TechniqueLevel[] = ['Practiced', 'Trained', 'Mastered']
-export const CHARACTER_SCHEMA_VERSION = 6
+export const CHARACTER_SCHEMA_VERSION = 7
 
 /** gmbinder's Species. "none" means the typed ability scores are already final. */
 export type Species = 'none' | 'human' | 'variant-human'
@@ -237,6 +237,8 @@ export interface Character {
     nation: Nation
     lineageId: string
     species: Species
+    /** The GM allows the class's alternate bending ability (see CharacterClass.altBendingAbility). */
+    abilityOption: boolean
     /** Variant Human: the two abilities that get +1. */
     speciesAbilityChoices: AbilityName[]
     /** Variant Human: the one skill it grants. */
@@ -329,6 +331,8 @@ export interface CharacterClass {
     resources?: ClassResource[]
     /** The ability behind Bending Save DC and Bending Attack Modifier. */
     bendingAbility?: AbilityName
+    /** gmbinder lets the player use this instead "with your GM's permission" (Airbending, Tech-Engineer). */
+    altBendingAbility?: AbilityName
     /** Basic bending attack (no technique), rolled with the Bending Attack Modifier. */
     basicAttack?: { dice: string; damageType?: string }
 }
