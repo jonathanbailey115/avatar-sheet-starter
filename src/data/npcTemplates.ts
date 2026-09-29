@@ -3,6 +3,7 @@ import type { NpcTemplate } from '../types/schema'
 export const npcTemplates: NpcTemplate[] = [
     {
         role: 'Guard',
+        combat: 0.9,
         nationWeights: {
             'Earth Kingdom': 4,
             'Fire Nation': 3,
@@ -19,6 +20,7 @@ export const npcTemplates: NpcTemplate[] = [
     },
     {
         role: 'Scholar',
+        combat: 0.1,
         nationWeights: {
             'Earth Kingdom': 2,
             'Fire Nation': 2,
@@ -35,6 +37,7 @@ export const npcTemplates: NpcTemplate[] = [
     },
     {
         role: 'Street Fighter',
+        combat: 0.7,
         nationWeights: {
             'Earth Kingdom': 3,
             'Fire Nation': 2,

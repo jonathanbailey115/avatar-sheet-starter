@@ -268,3 +268,10 @@ button.ability-tile:hover, .vital-roll:hover { border-color: var(--accent); back
 .keep-signed-in { align-items: flex-start; }
 .keep-signed-in small { display: block; }
 .username-free { color: #3fb950; }
+
+/* NPC Studio */
+.stat-block h3 { margin: 0; }
+.stat-block h4 { margin: 0.9rem 0 0.25rem; }
+.npc-abilities { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; list-style: none; padding: 0; margin: 0.5rem 0; }
+.reroll-row { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-top: 1rem; }
+.npc-item.selected { outline: 2px solid var(--accent, #c8842b); }

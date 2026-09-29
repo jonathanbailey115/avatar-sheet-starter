@@ -1,189 +1,153 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import SectionCard from '../components/SectionCard'
-import { computeMaxHp, getHitDie } from '../engine/hitPoints'
 import { downloadText, safeFileName, serializeCharacter } from '../lib/characterIO'
-import { generateNpc } from '../lib/generator'
-import { useCollection } from '../store/content'
+import { generateNpc, rerollPart } from '../npc/generate'
+import { buildStatBlock, statBlockText } from '../npc/statBlock'
+import type { NpcContext, NpcPart, NpcSpec } from '../npc/types'
+import { QuickCreate } from '../npc/ui/QuickCreate'
+import { StatBlockView } from '../npc/ui/StatBlockView'
+import { getContent, useCollection, useContentStore } from '../store/content'
 import { useNpcStore } from '../store/npcs'
-import { bendingTypes, nations } from '../types/schema'
 import type { Character, NpcTemplate } from '../types/schema'
 import { NpcEditor } from './NpcEditor'
 
-function leadingWeights(weights: Partial<Record<string, number>>, keys: readonly string[]) {
-    return keys
-        .map((key) => [key, weights[key] ?? 0] as const)
-        .filter(([, value]) => value > 0)
-        .sort((a, b) => b[1] - a[1])
-}
-
-function summarize(entries: ReadonlyArray<readonly [string, number]>): string {
-    if (entries.length === 0) return 'No weights set (any result).'
-    if (entries.length === 1) return `Strongly favors ${entries[0][0]}.`
-    return `Leans ${entries[0][0]}, with ${entries[1][0]} as a secondary result.`
-}
-
 export function NpcScreen() {
     const templates = useCollection('npcTemplates')
-    const lineages = useCollection('lineages')
     const classes = useCollection('classes')
-    const backgrounds = useCollection('backgrounds')
-    const techniques = useCollection('techniques')
+    // Recompute the stat block when GM edits change the rules content.
+    const edits = useContentStore((state) => state.edits)
 
     const npcs = useNpcStore((state) => state.npcs)
     const quarantine = useNpcStore((state) => state.quarantine)
     const { addNpc, saveNpc, deleteNpc } = useNpcStore.getState()
 
-    const [selectedRole, setSelectedRole] = useState('')
+    const [selectedId, setSelectedId] = useState<string | null>(null)
+    const [templateRole, setTemplateRole] = useState<Record<string, string>>({})
+    const [warnings, setWarnings] = useState<string[]>([])
     const [draft, setDraft] = useState<Character | null>(null)
+    const [copied, setCopied] = useState(false)
 
-    // Always read the live template, so edited weights take effect immediately.
-    const template: NpcTemplate | undefined =
-        templates.find((item) => item.role === selectedRole) ?? templates[0]
+    const selected = npcs.find((npc) => npc.id === selectedId) ?? null
+    const block = useMemo(
+        () => (selected ? buildStatBlock(selected, getContent()) : null),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [selected, edits],
+    )
 
-    const startEditing = (npc: Character) => setDraft({ ...npc })
+    const contextFor = (role: string | undefined): NpcContext | null => {
+        const template: NpcTemplate | undefined = templates.find((item) => item.role === role) ?? templates[0]
+        return template ? { template, content: getContent() } : null
+    }
 
-    const handleSave = () => {
-        if (!draft) return
-        saveNpc(draft)
+    const handleGenerate = (template: NpcTemplate, spec: NpcSpec) => {
+        const result = generateNpc(spec, { template, content: getContent() })
+        addNpc(result.character)
+        setTemplateRole((current) => ({ ...current, [result.character.id]: template.role }))
+        setSelectedId(result.character.id)
+        setWarnings(result.warnings)
         setDraft(null)
+    }
+
+    const handleReroll = (part: NpcPart) => {
+        if (!selected) return
+        // Reroll with the role the NPC was made from, falling back to its background note.
+        const ctx = contextFor(templateRole[selected.id] ?? selected.backgroundNotes)
+        if (!ctx) return
+        const result = rerollPart(selected, part, ctx)
+        saveNpc(result.character)
+        setWarnings(result.warnings)
+    }
+
+    const copy = async () => {
+        if (!block) return
+        try {
+            await navigator.clipboard.writeText(statBlockText(block))
+            setCopied(true)
+            window.setTimeout(() => setCopied(false), 1500)
+        } catch {
+            setCopied(false)
+        }
     }
 
     return (
         <section id="panel-npc" role="tabpanel" className="tab-panel">
             {quarantine.length > 0 && (
                 <p className="status-message" role="alert">
-                    {quarantine.length} saved NPC{quarantine.length === 1 ? '' : 's'} could not be
-                    loaded and were kept aside, not deleted.
+                    {quarantine.length} saved NPC{quarantine.length === 1 ? '' : 's'} could not be loaded and were kept
+                    aside, not deleted.
                 </p>
             )}
 
             <div className="grid">
-                <SectionCard title="NPC generator starter">
-                    {templates.length === 0 ? (
-                        <p>No NPC templates. Add one under Campaign Data.</p>
-                    ) : (
-                        <>
-                            <label>
-                                NPC template
-                                <select
-                                    value={template?.role ?? ''}
-                                    onChange={(event) => setSelectedRole(event.target.value)}
-                                >
-                                    {templates.map((item) => (
-                                        <option key={item.role} value={item.role}>
-                                            {item.role}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-
-                            {template && (
-                                <article className="npc-item template-preview">
-                                    <h3>{template.role} preview</h3>
-                                    <p className="lede">
-                                        <strong>Nation profile:</strong>{' '}
-                                        {summarize(leadingWeights(template.nationWeights, nations))}
-                                        <br />
-                                        <strong>Bending profile:</strong>{' '}
-                                        {summarize(leadingWeights(template.bendingWeights, bendingTypes))}
-                                    </p>
-                                </article>
-                            )}
-
-                            <div className="actions inline-actions">
-                                <button
-                                    className="primary-button"
-                                    type="button"
-                                    disabled={!template}
-                                    onClick={() =>
-                                        template &&
-                                        addNpc(generateNpc(template, { lineages, classes }))
-                                    }
-                                >
-                                    Generate NPC
-                                </button>
-                            </div>
-                        </>
-                    )}
-                </SectionCard>
+                <QuickCreate templates={templates} classes={classes} onGenerate={handleGenerate} />
 
                 {draft ? (
                     <NpcEditor
                         draft={draft}
                         setDraft={setDraft}
-                        onSave={handleSave}
+                        onSave={() => {
+                            saveNpc(draft)
+                            setDraft(null)
+                        }}
                         onCancel={() => setDraft(null)}
                     />
                 ) : (
-                    <SectionCard title="NPC studio">
-                        <p>Select an NPC from the generated list to edit it.</p>
+                    <SectionCard title="Stat block">
+                        {block && selected ? (
+                            <>
+                                <StatBlockView block={block} warnings={warnings} onReroll={handleReroll} />
+                                <div className="actions inline-actions">
+                                    <button className="primary-button" type="button" onClick={() => setDraft({ ...selected })}>
+                                        Edit details
+                                    </button>
+                                    <button className="secondary-button" type="button" onClick={() => void copy()}>
+                                        {copied ? 'Copied' : 'Copy as text'}
+                                    </button>
+                                    <button
+                                        className="secondary-button"
+                                        type="button"
+                                        onClick={() => downloadText(serializeCharacter(selected), safeFileName(selected.name, 'npc'))}
+                                    >
+                                        Export
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <p>Generate an NPC, or pick one from your list.</p>
+                        )}
                     </SectionCard>
                 )}
 
-                <SectionCard title="Generated NPCs">
+                <SectionCard title="Your NPCs">
                     {npcs.length === 0 ? (
-                        <p>No NPCs generated yet.</p>
+                        <p>No NPCs yet.</p>
                     ) : (
                         <div className="npc-list">
                             {npcs.map((npc) => (
-                                <article key={npc.id} className="npc-item">
+                                <article key={npc.id} className={`npc-item${npc.id === selectedId ? ' selected' : ''}`}>
                                     <h3>{npc.name || 'Unnamed NPC'}</h3>
-                                    <p>
-                                        {backgrounds.find((item) => item.id === npc.backgroundId)?.name ??
-                                            'No background'}
+                                    <p className="muted">
+                                        Level {npc.level} · {classes.find((item) => item.id === npc.classId)?.name ?? 'No class'} · {npc.nation}
                                     </p>
-                                    <p>
-                                        {npc.nation} ·{' '}
-                                        {lineages.find((item) => item.id === npc.lineageId)?.name ??
-                                            'No lineage'}{' '}
-                                        · {classes.find((item) => item.id === npc.classId)?.name ?? 'No class'}
-                                    </p>
-                                    <p>HP {computeMaxHp(npc, getHitDie(npc, lineages))}</p>
-                                    {npc.knownTechniques.length > 0 && (
-                                        <>
-                                            <p>
-                                                <strong>Techniques:</strong>
-                                            </p>
-                                            <ul className="stats">
-                                                {npc.knownTechniques.map((known) => (
-                                                    <li key={known.techniqueId}>
-                                                        {techniques.find((item) => item.id === known.techniqueId)
-                                                            ?.name ?? known.techniqueId}{' '}
-                                                        — {known.level}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </>
-                                    )}
-
                                     <div className="actions inline-actions">
                                         <button
                                             className="primary-button"
                                             type="button"
-                                            onClick={() => startEditing(npc)}
+                                            onClick={() => {
+                                                setSelectedId(npc.id)
+                                                setWarnings([])
+                                                setDraft(null)
+                                            }}
                                         >
-                                            Edit
-                                        </button>
-                                        <button
-                                            className="secondary-button"
-                                            type="button"
-                                            onClick={() =>
-                                                downloadText(
-                                                    serializeCharacter(npc),
-                                                    safeFileName(npc.name, 'npc'),
-                                                )
-                                            }
-                                        >
-                                            Export
+                                            View
                                         </button>
                                         <button
                                             className="secondary-button"
                                             type="button"
                                             onClick={() => {
-                                                if (window.confirm(`Delete ${npc.name || 'this NPC'}?`)) {
-                                                    deleteNpc(npc.id)
-                                                    if (draft?.id === npc.id) setDraft(null)
-                                                }
+                                                if (!window.confirm(`Delete ${npc.name || 'this NPC'}?`)) return
+                                                deleteNpc(npc.id)
+                                                if (selectedId === npc.id) setSelectedId(null)
                                             }}
                                         >
                                             Delete

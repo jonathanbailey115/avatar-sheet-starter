@@ -54,6 +54,7 @@ const weight = z.number().min(0).optional()
 
 const npcTemplateSchema: z.ZodType<NpcTemplate, z.ZodTypeDef, unknown> = z.object({
     role: z.string().min(1),
+    combat: z.number().min(0).max(1).optional(),
     nationWeights: z.object({
         'Air Nomads': weight,
         'Water Tribe': weight,

@@ -29,3 +29,20 @@ export function pickOne<T>(items: readonly T[], rng: Rng = Math.random): T | nul
     if (items.length === 0) return null
     return items[Math.min(items.length - 1, Math.floor(rng() * items.length))]
 }
+
+/** Fisher-Yates shuffle; returns a new array. */
+export function shuffle<T>(items: readonly T[], rng: Rng = Math.random): T[] {
+    const result = [...items]
+    for (let i = result.length - 1; i > 0; i -= 1) {
+        const j = Math.min(i, Math.floor(rng() * (i + 1)))
+        const held = result[i]
+        result[i] = result[j]
+        result[j] = held
+    }
+    return result
+}
+
+/** Up to `count` distinct items. */
+export function pickMany<T>(items: readonly T[], count: number, rng: Rng = Math.random): T[] {
+    return shuffle(items, rng).slice(0, Math.max(0, count))
+}

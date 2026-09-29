@@ -356,6 +356,8 @@ export interface Background {
 }
 
 export interface NpcTemplate {
+    /** 0-1: how often this role wears armor and carries weapons. Defaults to 0.6. */
+    combat?: number
     role: string
     nationWeights: Partial<Record<Nation, number>>
     bendingWeights: Partial<Record<BendingType, number>>
