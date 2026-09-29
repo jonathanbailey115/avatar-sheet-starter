@@ -132,6 +132,8 @@ export interface CampaignBackend {
     subscribe(campaignId: string, onEvent: (event: CampaignEvent) => void): () => void
     publishRoll(campaignId: string, entry: RollEntry, visibility: Visibility, displayName: string): Promise<void>
     publishStatus(campaignId: string, summary: PlayerSummary): Promise<void>
+    /** Take your own character off the party board (you stopped playing one here). */
+    clearStatus(campaignId: string): Promise<void>
     clearRolls(campaignId: string): Promise<void>
     leave(campaignId: string): Promise<void>
     removeMember(campaignId: string, userId: string): Promise<void>

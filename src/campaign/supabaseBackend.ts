@@ -229,6 +229,11 @@ export class SupabaseBackend implements CampaignBackend {
         if (error) throw friendlyError(error)
     }
 
+    async clearStatus(campaignId: string): Promise<void> {
+        const { error } = await this.client.from('member_status').delete().eq('campaign_id', campaignId).eq('user_id', this.userId)
+        if (error) throw friendlyError(error)
+    }
+
     async publishStatus(campaignId: string, summary: PlayerSummary): Promise<void> {
         const { error } = await this.client
             .from('member_status')

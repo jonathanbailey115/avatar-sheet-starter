@@ -161,6 +161,11 @@ export class CampaignServer {
         return roll
     }
 
+    clearStatus(userId: string, campaignId: string): void {
+        this.requireMember(userId, campaignId)
+        this.state.statuses = this.state.statuses.filter((item) => !(item.campaignId === campaignId && item.userId === userId))
+    }
+
     publishStatus(userId: string, campaignId: string, summary: PlayerSummary): void {
         this.requireMember(userId, campaignId)
         const existing = this.state.statuses.find((item) => item.campaignId === campaignId && item.userId === userId)

@@ -66,6 +66,7 @@ class LazySupabaseBackend implements CampaignBackend {
     load = (campaignId: string) => this.backend().then((b) => b.load(campaignId))
     publishRoll = (campaignId: string, entry: RollEntry, visibility: Visibility, displayName: string) =>
         this.backend().then((b) => b.publishRoll(campaignId, entry, visibility, displayName))
+    clearStatus = (campaignId: string) => this.backend().then((b) => b.clearStatus(campaignId))
     publishStatus = (campaignId: string, summary: PlayerSummary) => this.backend().then((b) => b.publishStatus(campaignId, summary))
     clearRolls = (campaignId: string) => this.backend().then((b) => b.clearRolls(campaignId))
     leave = (campaignId: string) => this.backend().then((b) => b.leave(campaignId))

@@ -24,7 +24,7 @@ export function CampaignView() {
     const privateRolls = useCampaignStore((state) => state.privateRolls)
     const displayName = useCampaignStore((state) => nameFor(state))
     const gmKey = useCampaignStore((state) => (snapshot ? state.gmKeys[snapshot.campaign.id] : undefined))
-    const { closeCampaign, leaveCampaign, clearLog, removeMember, bindCharacter, setPrivateRolls, gmRoll } =
+    const { closeCampaign, leaveCampaign, clearLog, removeMember, bindCharacter, clearMyStatus, setPrivateRolls, gmRoll } =
         useCampaignStore.getState()
     const characters = useLibraryStore((state) => state.characters)
 
@@ -40,6 +40,8 @@ export function CampaignView() {
             if (bindings[character.id] === campaign.id) bindCharacter(character.id, null)
         }
         if (characterId) bindCharacter(characterId, campaign.id)
+        // Stopped playing a character here: take it off the party board instead of leaving its last stats up.
+        else clearMyStatus(campaign.id)
     }
 
     return (

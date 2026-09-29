@@ -27,6 +27,7 @@ export function CampaignSync() {
 
     useEffect(() => {
         const timers: number[] = []
+        const playing = new Set<string>()
 
         for (const character of characters) {
             const campaignId = bindings[character.id]
@@ -35,6 +36,7 @@ export function CampaignSync() {
             const summary = summarizeCharacter(character, computeSheet(character, content), content)
             const fingerprint = JSON.stringify(summary)
             const key = `${userId}:${campaignId}:${character.id}`
+            playing.add(key)
             if (lastSent.current.get(key) === fingerprint) continue
 
             timers.push(
@@ -44,6 +46,9 @@ export function CampaignSync() {
                 }, DEBOUNCE_MS),
             )
         }
+
+        // Forget characters that are no longer playing here, so playing one again sends its stats again.
+        for (const key of [...lastSent.current.keys()]) if (!playing.has(key)) lastSent.current.delete(key)
 
         return () => timers.forEach((timer) => window.clearTimeout(timer))
     }, [characters, bindings, content, publishStatus, userId])

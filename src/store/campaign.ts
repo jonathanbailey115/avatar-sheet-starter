@@ -255,6 +255,14 @@ export const useCampaignStore = create<CampaignState>()(
                     void publish(() => getBackend().publishRoll(campaignId, entry, privateRolls ? 'gm' : 'all', nameFor(get()) || 'Player'))
                 },
 
+                clearMyStatus: (campaignId) => {
+                    void publish(async () => {
+                        await getBackend().clearStatus(campaignId)
+                        // Realtime does not echo your own change back to this tab in test mode, so reload here.
+                        if (get().activeId === campaignId) await refresh()
+                    })
+                },
+
                 publishStatus: (campaignId, summary) => {
                     void publish(() => getBackend().publishStatus(campaignId, summary))
                 },

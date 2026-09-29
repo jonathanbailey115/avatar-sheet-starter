@@ -55,6 +55,8 @@ export interface CampaignState {
     bindCharacter: (characterId: string, campaignId: string | null) => void
     publishRoll: (characterId: string, entry: RollEntry) => void
     publishStatus: (campaignId: string, summary: PlayerSummary) => void
+    /** Remove your character from the party board of a campaign. */
+    clearMyStatus: (campaignId: string) => void
     gmRoll: (entry: RollEntry) => void
     dismissNotice: () => void
 }

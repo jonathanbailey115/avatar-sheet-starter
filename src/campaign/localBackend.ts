@@ -160,6 +160,10 @@ export class LocalBackend implements CampaignBackend {
         this.change(campaignId, (server) => server.publishRoll(this.userId, campaignId, entry, visibility, displayName))
     }
 
+    async clearStatus(campaignId: string): Promise<void> {
+        this.change(campaignId, (server) => server.clearStatus(this.userId, campaignId))
+    }
+
     async publishStatus(campaignId: string, summary: PlayerSummary): Promise<void> {
         this.change(campaignId, (server) => server.publishStatus(this.userId, campaignId, summary))
     }

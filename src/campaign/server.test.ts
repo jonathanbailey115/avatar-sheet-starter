@@ -272,3 +272,27 @@ describe('local test mode (two tabs)', () => {
         await expect(backend.createCampaign('Fresh', 'Me')).resolves.toBeDefined()
     })
 })
+
+describe('taking your character off the party board', () => {
+    const summary = { characterId: 'c', name: 'Ling', className: 'Earthbending', lineageName: 'Earth Kingdom', level: 3, hp: 20, maxHp: 20, tempHp: 0, armorClass: 14, lifeState: 'conscious', exhaustion: 0, initiative: 2, saveDc: 12 } as const
+
+    it('removes only your own status, and the campaign keeps working', () => {
+        const server = new CampaignServer()
+        const { campaign } = server.createCampaign(ALICE, 'Siege', 'Alice')
+        server.joinCampaign(BOB, campaign.code, 'Bob')
+        server.publishStatus(ALICE, campaign.id, summary)
+        server.publishStatus(BOB, campaign.id, { ...summary, name: 'Bob’s hero' })
+
+        server.clearStatus(BOB, campaign.id)
+        expect(server.load(ALICE, campaign.id).statuses.map((s) => s.userId)).toEqual([ALICE])
+
+        server.publishStatus(BOB, campaign.id, summary)
+        expect(server.load(ALICE, campaign.id).statuses).toHaveLength(2)
+    })
+
+    it('only members can do it', () => {
+        const server = new CampaignServer()
+        const { campaign } = server.createCampaign(ALICE, 'Siege', 'Alice')
+        expect(() => server.clearStatus(EVE, campaign.id)).toThrow(CampaignError)
+    })
+})
