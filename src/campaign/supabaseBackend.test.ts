@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { campaignFromRow, friendlyError, memberFromRow, rollFromRow, statusFromRow } from './supabaseBackend'
+import { campaignFromRow, friendlyError, memberFromRow, rollFromRow, statusFromRow } from './supabaseMap'
 
 describe('row mapping', () => {
     it('maps a campaign', () => {

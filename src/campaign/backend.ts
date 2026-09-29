@@ -1,7 +1,8 @@
 import type { RollEntry } from '../engine/rolls'
+import { rememberScope } from './authStorage'
 import { createBrowserLocalBackend } from './localBackend'
 import { normalizeSupabaseUrl } from './supabaseUrl'
-import type { Campaign, CampaignBackend, CampaignEvent, PlayerSummary, Visibility } from './types'
+import type { Campaign, CampaignBackend, CampaignEvent, PlayerSummary, SessionScope, Visibility } from './types'
 
 let instance: CampaignBackend | null = null
 
@@ -11,25 +12,51 @@ export function hasSupabaseConfig(): boolean {
 }
 
 /**
+ * The password-reset email links back here with "type=recovery" in the address. Supabase removes
+ * that from the address as soon as it starts, so remember it before anything else runs.
+ */
+const openedFromRecoveryLink = typeof window !== 'undefined' && /type=recovery/.test(window.location.hash)
+
+export function cameFromPasswordRecoveryLink(): boolean {
+    return openedFromRecoveryLink
+}
+
+/**
  * The Supabase client is large, so it is only downloaded when a project is configured, and
  * only when campaigns are first used.
  */
 class LazySupabaseBackend implements CampaignBackend {
     readonly kind = 'supabase' as const
+    readonly accounts = true
     private inner: Promise<CampaignBackend> | null = null
+    private loaded: CampaignBackend | null = null
 
     private backend(): Promise<CampaignBackend> {
-        this.inner ??= import('./supabaseBackend').then(
-            (module) =>
-                new module.SupabaseBackend(
-                    normalizeSupabaseUrl(import.meta.env.VITE_SUPABASE_URL as string),
-                    import.meta.env.VITE_SUPABASE_ANON_KEY as string,
-                ),
-        )
+        this.inner ??= import('./supabaseBackend').then((module) => {
+            const created = new module.SupabaseBackend(
+                normalizeSupabaseUrl(import.meta.env.VITE_SUPABASE_URL as string),
+                import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+            )
+            this.loaded = created
+            return created
+        })
         return this.inner
     }
 
+    /** Chosen at sign-in. If the client is not created yet it reads the choice when it is. */
+    setSessionScope(scope: SessionScope): void {
+        rememberScope(scope)
+        this.loaded?.setSessionScope(scope)
+    }
+
     init = () => this.backend().then((b) => b.init())
+    signUp = (input: { email: string; password: string; username: string }) => this.backend().then((b) => b.signUp(input))
+    signIn = (email: string, password: string) => this.backend().then((b) => b.signIn(email, password))
+    signOut = () => this.backend().then((b) => b.signOut())
+    usernameAvailable = (username: string) => this.backend().then((b) => b.usernameAvailable(username))
+    setUsername = (username: string) => this.backend().then((b) => b.setUsername(username))
+    changePassword = (newPassword: string) => this.backend().then((b) => b.changePassword(newPassword))
+    requestPasswordReset = (email: string) => this.backend().then((b) => b.requestPasswordReset(email))
     createCampaign = (name: string, displayName: string) => this.backend().then((b) => b.createCampaign(name, displayName))
     joinCampaign = (code: string, displayName: string) => this.backend().then((b) => b.joinCampaign(code, displayName))
     claimGm = (code: string, gmKey: string, displayName: string) => this.backend().then((b) => b.claimGm(code, gmKey, displayName))

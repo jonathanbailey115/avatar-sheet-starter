@@ -72,7 +72,7 @@ else {
     problems.push('anonymous')
 }
 
-const COLUMN = { campaigns: 'id', campaign_members: 'campaign_id', campaign_rolls: 'id', member_status: 'campaign_id', campaign_npcs: 'id' }
+const COLUMN = { campaigns: 'id', campaign_members: 'campaign_id', campaign_rolls: 'id', member_status: 'campaign_id', campaign_npcs: 'id', profiles: 'user_id' }
 for (const table of Object.keys(COLUMN)) {
     const result = await get(`/rest/v1/${table}?select=${COLUMN[table]}&limit=1`)
     if (result.status === 404 && result.body.includes('PGRST205')) {
@@ -82,6 +82,29 @@ for (const table of Object.keys(COLUMN)) {
         // 401/403 "permission denied" is the correct answer for a signed-out visitor: the table exists and is locked.
         console.log(`  [ok]   Table "${table}" exists and is locked to signed-in campaign members (HTTP ${result.status}).`)
     }
+}
+
+// Accounts: the username check function (asks a yes/no question, changes nothing)
+const usernameCheck = await fetch(`${base}/rest/v1/rpc/username_available`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_username: 'setup-check-not-a-real-user' }),
+    signal: AbortSignal.timeout(20000),
+}).then(async (r) => ({ status: r.status, body: await r.text() })).catch((e) => ({ status: 0, body: String(e) }))
+if (usernameCheck.status === 200) console.log('  [ok]   Account functions are installed (username check works).')
+else {
+    console.log('  [TODO] Account functions are missing. Run the latest supabase/schema.sql in the SQL Editor (it is safe to re-run).')
+    problems.push('accounts')
+}
+
+// Email confirmation: with it on, new players must click an emailed link before they can play.
+const confirmRequired = JSON.parse(settings.body)?.mailer_autoconfirm === false
+if (confirmRequired) {
+    console.log('  [note] "Confirm email" is ON: new players must click a link in an email before signing in. The built-in')
+    console.log('         email sender only sends a few emails an hour, which can block a group from signing up. Turning it off')
+    console.log('         (Authentication > Sign In / Providers > Email > Confirm email) lets players in immediately.')
+} else {
+    console.log('  [ok]   "Confirm email" is OFF: players can sign up and play straight away.')
 }
 
 console.log(problems.length === 0 ? '\nAll set. Run "npm run dev" and open the Campaigns tab.' : '\nFinish the [TODO] steps above, then run this again.')

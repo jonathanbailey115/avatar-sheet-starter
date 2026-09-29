@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import SectionCard from '../components/SectionCard'
-import { useCampaignStore } from '../store/campaign'
+import { nameFor, useCampaignStore } from '../store/campaign'
 import { formatCode, isPlausibleCode } from './code'
 import type { Campaign } from './types'
 
@@ -27,7 +27,7 @@ function useAction() {
 }
 
 export function Lobby({ onOpen }: { onOpen: (campaign: Campaign) => void }) {
-    const displayName = useCampaignStore((state) => state.displayName)
+    const displayName = useCampaignStore((state) => nameFor(state))
     const campaigns = useCampaignStore((state) => state.campaigns)
     const { createCampaign, joinCampaign, claimGm, openCampaign } = useCampaignStore.getState()
 

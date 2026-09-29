@@ -59,10 +59,33 @@ export interface CampaignSnapshot {
 /** 'roll' carries a new roll to append; 'changed' means reload the snapshot. */
 export type CampaignEvent = { type: 'roll'; roll: CampaignRoll } | { type: 'changed' }
 
+/** Who is signed in. Local test mode has no accounts, so email and username are null there. */
+export interface AccountSession {
+    userId: string
+    email: string | null
+    /** The name other players see. Null until an account has chosen one. */
+    username: string | null
+}
+
+export type SignUpResult = { status: 'signed-in'; session: AccountSession } | { status: 'confirm-email' }
+
+/** 'device' remembers you here. 'tab' keeps this tab's sign-in separate, so another tab can be someone else. */
+export type SessionScope = 'device' | 'tab'
+
 export interface CampaignBackend {
     readonly kind: 'supabase' | 'local'
-    /** Sign in (anonymously) and return this device's user id. */
-    init(): Promise<string>
+    /** True when players sign in with accounts. Local test mode has none. */
+    readonly accounts: boolean
+    /** The current session, or null if nobody is signed in. */
+    init(): Promise<AccountSession | null>
+    setSessionScope(scope: SessionScope): void
+    signUp(input: { email: string; password: string; username: string }): Promise<SignUpResult>
+    signIn(email: string, password: string): Promise<AccountSession>
+    signOut(): Promise<void>
+    usernameAvailable(username: string): Promise<boolean>
+    setUsername(username: string): Promise<string>
+    changePassword(newPassword: string): Promise<void>
+    requestPasswordReset(email: string): Promise<void>
     createCampaign(name: string, displayName: string): Promise<{ campaign: Campaign; gmKey: string }>
     joinCampaign(code: string, displayName: string): Promise<Campaign>
     claimGm(code: string, gmKey: string, displayName: string): Promise<Campaign>

@@ -1,6 +1,6 @@
 import SectionCard from '../components/SectionCard'
 import { characterDisplayName } from '../lib/character'
-import { useCampaignStore } from '../store/campaign'
+import { myBindings, nameFor, useCampaignStore } from '../store/campaign'
 import { useLibraryStore } from '../store/library'
 import { CampaignLog } from './CampaignLog'
 import { formatCode } from './code'
@@ -18,9 +18,9 @@ async function copy(text: string): Promise<void> {
 export function CampaignView() {
     const snapshot = useCampaignStore((state) => state.snapshot)
     const userId = useCampaignStore((state) => state.userId)
-    const bindings = useCampaignStore((state) => state.bindings)
+    const bindings = useCampaignStore(myBindings)
     const privateRolls = useCampaignStore((state) => state.privateRolls)
-    const displayName = useCampaignStore((state) => state.displayName)
+    const displayName = useCampaignStore((state) => nameFor(state))
     const gmKey = useCampaignStore((state) => (snapshot ? state.gmKeys[snapshot.campaign.id] : undefined))
     const { closeCampaign, leaveCampaign, clearLog, removeMember, bindCharacter, setPrivateRolls, gmRoll } =
         useCampaignStore.getState()

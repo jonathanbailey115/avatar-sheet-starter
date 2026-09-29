@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useCampaignStore } from '../store/campaign'
+import { boundCampaign, useCampaignStore } from '../store/campaign'
 import { useRollLog } from '../store/rollLog'
 import type { RollMode } from '../engine/rolls'
 import { RollResult } from './RollResult'
@@ -17,7 +17,7 @@ export function RollBar({ characterId }: { characterId: string }) {
     const { nextMode, setNextMode, rollCustom } = useRoll()
     const latest = useRollLog((state) => state.entries.find((entry) => entry.characterId === characterId))
     const [expression, setExpression] = useState('')
-    const campaignId = useCampaignStore((state) => state.bindings[characterId])
+    const campaignId = useCampaignStore((state) => boundCampaign(state, characterId))
     const campaignName = useCampaignStore((state) => state.campaigns.find((item) => item.id === campaignId)?.name)
     const privateRolls = useCampaignStore((state) => state.privateRolls)
     const setPrivateRolls = useCampaignStore((state) => state.setPrivateRolls)

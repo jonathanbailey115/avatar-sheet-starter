@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { computeSheet } from '../engine/sheet'
-import { useCampaignStore } from '../store/campaign'
+import { myBindings, useCampaignStore } from '../store/campaign'
 import { useLibraryStore } from '../store/library'
 import { useRulesContent } from '../store/rules'
 import { summarizeCharacter } from './summary'
@@ -13,10 +13,17 @@ const DEBOUNCE_MS = 600
  */
 export function CampaignSync() {
     const characters = useLibraryStore((state) => state.characters)
-    const bindings = useCampaignStore((state) => state.bindings)
+    const bindings = useCampaignStore(myBindings)
+    const connect = useCampaignStore((state) => state.connect)
+    const userId = useCampaignStore((state) => state.userId)
     const publishStatus = useCampaignStore((state) => state.publishStatus)
     const content = useRulesContent()
     const lastSent = useRef(new Map<string, string>())
+
+    // Restore the sign-in when the app opens, so this tab knows who it is before anything is sent.
+    useEffect(() => {
+        void connect().catch(() => undefined)
+    }, [connect])
 
     useEffect(() => {
         const timers: number[] = []
@@ -27,7 +34,7 @@ export function CampaignSync() {
 
             const summary = summarizeCharacter(character, computeSheet(character, content), content)
             const fingerprint = JSON.stringify(summary)
-            const key = `${campaignId}:${character.id}`
+            const key = `${userId}:${campaignId}:${character.id}`
             if (lastSent.current.get(key) === fingerprint) continue
 
             timers.push(
@@ -39,7 +46,7 @@ export function CampaignSync() {
         }
 
         return () => timers.forEach((timer) => window.clearTimeout(timer))
-    }, [characters, bindings, content, publishStatus])
+    }, [characters, bindings, content, publishStatus, userId])
 
     return null
 }

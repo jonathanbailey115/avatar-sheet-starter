@@ -261,3 +261,10 @@ button.ability-tile:hover, .vital-roll:hover { border-color: var(--accent); back
 .campaign-log .roll-custom { margin-bottom: 12px; flex-wrap: wrap; }
 .campaign-log .roll-custom input { width: 200px; }
 .gm-key code { background: var(--panel-2); padding: 3px 8px; border-radius: 6px; user-select: all; word-break: break-all; }
+
+/* Accounts */
+.account-bar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; }
+.account-settings { flex-basis: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; padding-top: 12px; border-top: 1px dashed var(--border); }
+.keep-signed-in { align-items: flex-start; }
+.keep-signed-in small { display: block; }
+.username-free { color: #3fb950; }

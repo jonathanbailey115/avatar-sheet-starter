@@ -1,7 +1,18 @@
 import type { RollEntry } from '../engine/rolls'
 import { CampaignServer, emptyServerState } from './server'
 import type { ServerState } from './server'
-import type { Campaign, CampaignBackend, CampaignEvent, CampaignSnapshot, PlayerSummary, Visibility } from './types'
+import { CampaignError } from './types'
+import type {
+    AccountSession,
+    Campaign,
+    CampaignBackend,
+    CampaignEvent,
+    CampaignSnapshot,
+    PlayerSummary,
+    SessionScope,
+    SignUpResult,
+    Visibility,
+} from './types'
 
 /**
  * Local test mode: every browser tab is a separate player, and the "server" is this browser's
@@ -37,6 +48,7 @@ interface ChangeMessage {
 
 export class LocalBackend implements CampaignBackend {
     readonly kind = 'local' as const
+    readonly accounts = false
     private userId = ''
     private channel: ChannelLike
     private listeners = new Set<(message: ChangeMessage) => void>()
@@ -49,7 +61,8 @@ export class LocalBackend implements CampaignBackend {
         }
     }
 
-    async init(): Promise<string> {
+    /** Test mode has no accounts: each tab is simply its own player. */
+    async init(): Promise<AccountSession | null> {
         const saved = this.deps.session.getItem(USER_KEY)
         if (saved) {
             this.userId = saved
@@ -57,7 +70,33 @@ export class LocalBackend implements CampaignBackend {
             this.userId = globalThis.crypto.randomUUID()
             this.deps.session.setItem(USER_KEY, this.userId)
         }
-        return this.userId
+        return { userId: this.userId, email: null, username: null }
+    }
+
+    setSessionScope(_scope: SessionScope): void {}
+
+    private noAccounts(): never {
+        throw new CampaignError('Accounts need Supabase. Test mode has none.')
+    }
+
+    async signUp(): Promise<SignUpResult> {
+        return this.noAccounts()
+    }
+    async signIn(): Promise<AccountSession> {
+        return this.noAccounts()
+    }
+    async signOut(): Promise<void> {}
+    async usernameAvailable(): Promise<boolean> {
+        return true
+    }
+    async setUsername(): Promise<string> {
+        return this.noAccounts()
+    }
+    async changePassword(): Promise<void> {
+        return this.noAccounts()
+    }
+    async requestPasswordReset(): Promise<void> {
+        return this.noAccounts()
     }
 
     private read(): CampaignServer {

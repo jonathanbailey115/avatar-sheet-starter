@@ -1,118 +1,131 @@
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { RollEntry } from '../engine/rolls'
-import { CampaignError } from './types'
+import { authStorageFor, currentScope, projectRefOf, rememberScope, storageKeyFor } from './authStorage'
+import {
+    CAMPAIGN_COLUMNS,
+    ROLL_LIMIT,
+    campaignFromRow,
+    friendlyError,
+    memberFromRow,
+    rollFromRow,
+    statusFromRow,
+    unwrap,
+} from './supabaseMap'
+import type { CampaignRow, MemberRow, RollRow, StatusRow } from './supabaseMap'
 import type {
+    AccountSession,
     Campaign,
     CampaignBackend,
     CampaignEvent,
-    CampaignMember,
-    CampaignRoll,
     CampaignSnapshot,
-    MemberStatus,
     PlayerSummary,
+    SessionScope,
+    SignUpResult,
     Visibility,
 } from './types'
 
-/** Row shapes as Postgres returns them. */
-export interface CampaignRow {
-    id: string
-    code: string
-    name: string
-    gm_id: string
-}
-export interface MemberRow {
-    user_id: string
-    display_name: string
-    role: 'gm' | 'player'
-}
-export interface StatusRow {
-    user_id: string
-    summary: PlayerSummary
-    updated_at: string
-}
-export interface RollRow {
-    id: string
-    user_id: string
-    display_name: string
-    visibility: Visibility
-    entry: RollEntry
-    created_at: string
-}
-
-export const campaignFromRow = (row: CampaignRow): Campaign => ({
-    id: row.id,
-    code: row.code,
-    name: row.name,
-    gmId: row.gm_id,
-})
-
-export const memberFromRow = (row: MemberRow): CampaignMember => ({
-    userId: row.user_id,
-    displayName: row.display_name,
-    role: row.role,
-})
-
-export const statusFromRow = (row: StatusRow): MemberStatus => ({
-    userId: row.user_id,
-    summary: row.summary,
-    updatedAt: Date.parse(row.updated_at),
-})
-
-export const rollFromRow = (row: RollRow): CampaignRoll => ({
-    id: row.id,
-    userId: row.user_id,
-    displayName: row.display_name,
-    visibility: row.visibility,
-    entry: row.entry,
-    createdAt: Date.parse(row.created_at),
-})
-
-const CAMPAIGN_COLUMNS = 'id, code, name, gm_id'
-const ROLL_LIMIT = 200
-
-/** Turn a Supabase error into something a player can read. */
-export function friendlyError(error: { message?: string; code?: string } | null | undefined): CampaignError {
-    const message = error?.message ?? 'Something went wrong.'
-    if (/Anonymous sign-ins are disabled/i.test(message)) {
-        return new CampaignError('Anonymous sign-ins are off in your Supabase project. Turn them on under Authentication > Providers.')
-    }
-    if (/Failed to fetch|NetworkError|network/i.test(message)) {
-        return new CampaignError('Could not reach the campaign server. Check your connection.')
-    }
-    if (/row-level security|permission denied/i.test(message)) {
-        return new CampaignError('You are not allowed to do that in this campaign.')
-    }
-    // The database functions raise readable messages ("No campaign with that code").
-    return new CampaignError(message)
-}
-
-function unwrap<T>(result: { data: T | null; error: { message?: string; code?: string } | null }): T {
-    if (result.error) throw friendlyError(result.error)
-    if (result.data === null) throw new CampaignError('The server returned nothing.')
-    return result.data
-}
+type ClientFactory = typeof createClient
 
 export class SupabaseBackend implements CampaignBackend {
     readonly kind = 'supabase' as const
+    readonly accounts = true
     private client: SupabaseClient
     private userId = ''
 
-    constructor(url: string, anonKey: string) {
-        this.client = createClient(url, anonKey, { auth: { persistSession: true, autoRefreshToken: true } })
+    constructor(
+        private url: string,
+        private anonKey: string,
+        scope: SessionScope = currentScope(),
+        private factory: ClientFactory = createClient,
+    ) {
+        this.client = this.build(scope)
     }
 
-    async init(): Promise<string> {
-        const existing = await this.client.auth.getSession()
-        if (existing.data.session) {
-            this.userId = existing.data.session.user.id
-            return this.userId
-        }
+    private build(scope: SessionScope): SupabaseClient {
+        return this.factory(this.url, this.anonKey, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                storage: authStorageFor(scope),
+                storageKey: storageKeyFor(projectRefOf(this.url), scope),
+            },
+        })
+    }
 
-        const created = await this.client.auth.signInAnonymously()
-        if (created.error || !created.data.user) throw friendlyError(created.error)
-        this.userId = created.data.user.id
-        return this.userId
+    setSessionScope(scope: SessionScope): void {
+        rememberScope(scope)
+        this.client = this.build(scope)
+    }
+
+    private async describe(user: { id: string; email?: string | null }): Promise<AccountSession> {
+        this.userId = user.id
+        const profile = await this.client.from('profiles').select('username').maybeSingle<{ username: string }>()
+        return { userId: user.id, email: user.email ?? null, username: profile.data?.username ?? null }
+    }
+
+    async init(): Promise<AccountSession | null> {
+        const existing = await this.client.auth.getSession()
+        const user = existing.data.session?.user
+        if (!user) return null
+
+        // Guest sign-ins from earlier versions have no account to come back to.
+        if (user.is_anonymous) {
+            await this.client.auth.signOut({ scope: 'local' })
+            return null
+        }
+        return this.describe(user)
+    }
+
+    async signUp(input: { email: string; password: string; username: string }): Promise<SignUpResult> {
+        const { data, error } = await this.client.auth.signUp({
+            email: input.email.trim(),
+            password: input.password,
+            options: { data: { username: input.username.trim() } },
+        })
+        if (error) throw friendlyError(error)
+        if (!data.session || !data.user) return { status: 'confirm-email' }
+
+        const session = await this.describe(data.user)
+        if (!session.username) {
+            // The username was taken or invalid at sign-up; try to claim it now and report if it fails.
+            session.username = await this.setUsername(input.username).catch(() => null)
+        }
+        return { status: 'signed-in', session }
+    }
+
+    async signIn(email: string, password: string): Promise<AccountSession> {
+        const { data, error } = await this.client.auth.signInWithPassword({ email: email.trim(), password })
+        if (error || !data.user) throw friendlyError(error)
+        return this.describe(data.user)
+    }
+
+    async signOut(): Promise<void> {
+        await this.client.auth.signOut({ scope: 'local' })
+        this.userId = ''
+    }
+
+    async usernameAvailable(username: string): Promise<boolean> {
+        const result = await this.client.rpc('username_available', { p_username: username })
+        // If the check itself fails, do not block sign-up; the server re-checks.
+        return result.error ? true : Boolean(result.data)
+    }
+
+    async setUsername(username: string): Promise<string> {
+        const result = await this.client.rpc('claim_username', { p_username: username })
+        return unwrap(result) as string
+    }
+
+    async changePassword(newPassword: string): Promise<void> {
+        const { error } = await this.client.auth.updateUser({ password: newPassword })
+        if (error) throw friendlyError(error)
+    }
+
+    async requestPasswordReset(email: string): Promise<void> {
+        const { error } = await this.client.auth.resetPasswordForEmail(email.trim(), {
+            redirectTo: `${window.location.origin}${window.location.pathname}`,
+        })
+        if (error) throw friendlyError(error)
     }
 
     private async fetchCampaign(id: string): Promise<Campaign> {

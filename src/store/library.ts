@@ -8,6 +8,26 @@ import type { Character } from '../types/schema'
 import { getContent, useContentStore } from './content'
 import { jsonStorage } from './storage'
 
+const ACTIVE_KEY = 'avatar-dnd:active-character'
+
+/** Which character is open belongs to this tab, not the device: another tab may have a different one open. */
+function readActive(): string | null {
+    try {
+        return sessionStorage.getItem(ACTIVE_KEY)
+    } catch {
+        return null
+    }
+}
+
+function writeActive(id: string | null): void {
+    try {
+        if (id) sessionStorage.setItem(ACTIVE_KEY, id)
+        else sessionStorage.removeItem(ACTIVE_KEY)
+    } catch {
+        // private mode: the open character just is not remembered across reloads
+    }
+}
+
 interface LibraryState {
     characters: Character[]
     activeId: string | null
@@ -28,16 +48,20 @@ export const useLibraryStore = create<LibraryState>()(
     persist(
         (set, get) => ({
             characters: [],
-            activeId: null,
+            activeId: readActive(),
             quarantine: [],
 
             createCharacter: () => {
                 const character = normalizeCharacter(createBlankCharacter(), getContent())
+                writeActive(character.id)
                 set({ characters: [...get().characters, character], activeId: character.id })
                 return character.id
             },
 
-            selectCharacter: (id) => set({ activeId: id }),
+            selectCharacter: (id) => {
+                writeActive(id)
+                set({ activeId: id })
+            },
 
             updateCharacter: (id, updater) => {
                 const content = getContent()
@@ -58,6 +82,7 @@ export const useLibraryStore = create<LibraryState>()(
 
             deleteCharacter: (id) => {
                 const { characters, activeId } = get()
+                if (activeId === id) writeActive(null)
                 set({
                     characters: characters.filter((character) => character.id !== id),
                     activeId: activeId === id ? null : activeId,
@@ -102,15 +127,14 @@ export const useLibraryStore = create<LibraryState>()(
             storage: jsonStorage,
             partialize: (state) => ({
                 characters: state.characters,
-                activeId: state.activeId,
                 quarantine: state.quarantine,
             }),
             merge: (persisted, current) => {
                 const saved = (persisted ?? {}) as Partial<LibraryState>
                 const loaded = loadStoredCharacters(saved.characters, getContent())
-                const activeId = loaded.characters.some((c) => c.id === saved.activeId)
-                    ? (saved.activeId ?? null)
-                    : null
+                // Keep this tab's open character if it still exists (another tab may have deleted it).
+                const wanted = current.activeId ?? readActive()
+                const activeId = loaded.characters.some((c) => c.id === wanted) ? wanted : null
 
                 return {
                     ...current,

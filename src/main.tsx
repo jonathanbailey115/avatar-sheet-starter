@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './styles.css'
 import './play.css'
+import { startCrossTabSync } from './store/crossTab'
+
+startCrossTabSync()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
