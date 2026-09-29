@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { useCampaignStore } from '../store/campaign'
 import { useRollLog } from '../store/rollLog'
 import type { RollMode } from '../engine/rolls'
 import { RollResult } from './RollResult'
@@ -16,6 +17,10 @@ export function RollBar({ characterId }: { characterId: string }) {
     const { nextMode, setNextMode, rollCustom } = useRoll()
     const latest = useRollLog((state) => state.entries.find((entry) => entry.characterId === characterId))
     const [expression, setExpression] = useState('')
+    const campaignId = useCampaignStore((state) => state.bindings[characterId])
+    const campaignName = useCampaignStore((state) => state.campaigns.find((item) => item.id === campaignId)?.name)
+    const privateRolls = useCampaignStore((state) => state.privateRolls)
+    const setPrivateRolls = useCampaignStore((state) => state.setPrivateRolls)
     const [error, setError] = useState('')
 
     const submit = (event: FormEvent) => {
@@ -57,6 +62,22 @@ export function RollBar({ characterId }: { characterId: string }) {
                     </button>
                 </form>
             </div>
+
+            {campaignId && (
+                <div className="roll-share">
+                    <span>
+                        Sharing rolls with <strong>{campaignName ?? 'your campaign'}</strong>
+                    </span>
+                    <label className="inline-check">
+                        <input
+                            type="checkbox"
+                            checked={privateRolls}
+                            onChange={(event) => setPrivateRolls(event.target.checked)}
+                        />
+                        GM only
+                    </label>
+                </div>
+            )}
 
             <p className="muted roll-hint">
                 Click any modifier to roll it. Shift-click for advantage, Alt-click for disadvantage.

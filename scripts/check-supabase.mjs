@@ -1,0 +1,87 @@
+// Read-only check of your Supabase setup for Avatar DND.
+//
+//   npm run check:supabase
+//
+// It reads VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY from .env.local and only makes GET
+// requests. It creates nothing in your project.
+
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+const envPath = join(root, '.env.local')
+
+if (!existsSync(envPath)) {
+    console.log('No .env.local found. Copy .env.example to .env.local and fill it in (docs/SUPABASE_SETUP.md).')
+    process.exit(1)
+}
+
+const env = Object.fromEntries(
+    readFileSync(envPath, 'utf8')
+        .split(/\r?\n/)
+        .filter((line) => line.trim() && !line.trim().startsWith('#') && line.includes('='))
+        .map((line) => {
+            const index = line.indexOf('=')
+            return [line.slice(0, index).trim(), line.slice(index + 1).trim()]
+        }),
+)
+
+let base
+try {
+    base = new URL(env.VITE_SUPABASE_URL).origin
+} catch {
+    console.log('VITE_SUPABASE_URL in .env.local is not a valid URL.')
+    process.exit(1)
+}
+const key = env.VITE_SUPABASE_ANON_KEY
+if (!key) {
+    console.log('VITE_SUPABASE_ANON_KEY is missing from .env.local.')
+    process.exit(1)
+}
+if (/service_role|sb_secret_/.test(key)) {
+    console.log('That looks like a SECRET key. Use the publishable (or anon) key instead. Never put the secret key in this app.')
+    process.exit(1)
+}
+
+const headers = { apikey: key, Authorization: `Bearer ${key}` }
+const problems = []
+
+async function get(path) {
+    try {
+        const response = await fetch(`${base}${path}`, { headers, signal: AbortSignal.timeout(20000) })
+        return { status: response.status, body: await response.text() }
+    } catch (error) {
+        return { status: 0, body: String(error) }
+    }
+}
+
+console.log(`Project: ${base}`)
+
+const settings = await get('/auth/v1/settings')
+if (settings.status !== 200) {
+    console.log(`  [FAIL] Could not reach the project (HTTP ${settings.status}). Check the URL and that the project is not paused.`)
+    process.exit(1)
+}
+console.log('  [ok]   Project reachable and the key is accepted.')
+
+const anonymous = JSON.parse(settings.body)?.external?.anonymous_users === true
+if (anonymous) console.log('  [ok]   Anonymous sign-ins are ON.')
+else {
+    console.log('  [TODO] Anonymous sign-ins are OFF. Turn them on: Authentication > Sign In / Providers > Anonymous.')
+    problems.push('anonymous')
+}
+
+for (const table of ['campaigns', 'campaign_members', 'campaign_rolls', 'member_status', 'campaign_npcs']) {
+    const result = await get(`/rest/v1/${table}?select=id&limit=1`)
+    if (result.status === 404 && result.body.includes('PGRST205')) {
+        console.log(`  [TODO] Table "${table}" is missing. Run supabase/schema.sql in the SQL Editor.`)
+        problems.push(table)
+    } else {
+        // 401/403 "permission denied" is the correct answer for a signed-out visitor: the table exists and is locked.
+        console.log(`  [ok]   Table "${table}" exists and is locked to signed-in campaign members (HTTP ${result.status}).`)
+    }
+}
+
+console.log(problems.length === 0 ? '\nAll set. Run "npm run dev" and open the Campaigns tab.' : '\nFinish the [TODO] steps above, then run this again.')
+process.exit(problems.length === 0 ? 0 : 2)

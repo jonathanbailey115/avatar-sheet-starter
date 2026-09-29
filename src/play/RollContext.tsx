@@ -8,6 +8,7 @@ import type { RollEntry, RollKind, RollMode } from '../engine/rolls'
 import type { SituationalOption } from '../engine/effects'
 import type { Sheet } from '../engine/sheet'
 import type { StatLine } from '../engine/statLine'
+import { useCampaignStore } from '../store/campaign'
 import { useRollLog } from '../store/rollLog'
 import type { Character } from '../types/schema'
 import { mergeSources, signed } from './rollHelpers'
@@ -75,13 +76,16 @@ export function RollProvider({ character, sheet, onChange, children }: RollProvi
 
     const log = useCallback(
         (entry: Omit<RollEntry, 'id' | 'at' | 'characterId' | 'characterName'>) => {
-            add({
+            const full: RollEntry = {
                 ...entry,
                 id: newRollId(),
                 at: Date.now(),
                 characterId: character.id,
                 characterName: character.name.trim() || 'Unnamed character',
-            })
+            }
+            add(full)
+            // If this character is playing in a campaign, the table sees the roll too.
+            useCampaignStore.getState().publishRoll(character.id, full)
         },
         [add, character.id, character.name],
     )

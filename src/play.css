@@ -239,3 +239,25 @@ button.ability-tile:hover, .vital-roll:hover { border-color: var(--accent); back
 .technique-training { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
 .technique-summary { margin-top: 0; }
 .technique-group h3 { margin: 18px 0 6px; font-size: 1rem; }
+
+/* Campaigns */
+.status-test { border-color: #d29922; }
+.roll-tag-private { background: #555d70; color: #fff; }
+.roll-share { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 0.9rem; }
+.roll-share .inline-check { margin: 0; }
+.campaign-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.join-code { display: flex; align-items: center; gap: 12px; font-size: 1.6rem; letter-spacing: 0.1em; }
+.join-code-big { font-size: 1.6rem; letter-spacing: 0.12em; }
+.campaign-view { display: grid; gap: 16px; }
+.campaign-grid { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.3fr); gap: 16px; align-items: start; }
+@media (max-width: 900px) { .campaign-grid { grid-template-columns: 1fr; } }
+.party-board { display: grid; gap: 10px; }
+.party-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; }
+.party-card header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.party-dying, .party-dead { border-color: #c93c37; }
+.party-dead { opacity: 0.75; }
+.party-sub { margin: 4px 0 8px; }
+.party-stats { display: flex; gap: 14px; flex-wrap: wrap; }
+.campaign-log .roll-custom { margin-bottom: 12px; flex-wrap: wrap; }
+.campaign-log .roll-custom input { width: 200px; }
+.gm-key code { background: var(--panel-2); padding: 3px 8px; border-radius: 6px; user-select: all; word-break: break-all; }

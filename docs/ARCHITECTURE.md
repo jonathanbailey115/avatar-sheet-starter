@@ -40,6 +40,17 @@ In the UI, `play/RollContext.tsx` turns a `StatLine` into a roll: it merges auto
 
 Classes cap known techniques with `techniqueLimits`. A class gets technique slots from `techniqueSlots` (benders) or spends a `resources` pool (Weaponsmaster).
 
+## Campaigns
+
+`src/campaign/types.ts` defines a small `CampaignBackend` interface. Two implementations exist and `campaign/backend.ts` picks one:
+
+- **Supabase** (`supabaseBackend.ts`, lazy-loaded) when `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set. Setup: `docs/SUPABASE_SETUP.md`. The database rules live in `supabase/schema.sql` and are tested on a real Postgres (PGlite) in `campaign/schema.test.ts`.
+- **Local test mode** (`localBackend.ts`) otherwise: each browser tab is a separate player, `localStorage` is the server, `BroadcastChannel` carries live updates.
+
+`campaign/server.ts` is the same rules written in TypeScript. It powers test mode and reads as the specification of the SQL. If you change a rule, change both, and both test files.
+
+`store/campaign.ts` holds your display name, which character is playing in which campaign, and the open campaign's live data. `play/RollContext.tsx` publishes each roll to the bound campaign, and `campaign/CampaignSync.tsx` keeps the party board current. Only a small summary of a character (name, class, HP, AC, state) is ever shared, never the whole sheet.
+
 ## Persistence
 
 | localStorage key        | Contents |
@@ -48,6 +59,7 @@ Classes cap known techniques with `techniqueLimits`. A class gets technique slot
 | `avatar-dnd:npcs`       | Saved NPCs and quarantined records |
 | `avatar-dnd:content`    | Only the user's *edits* to built-in rules content |
 | `avatar-dnd:rolls`      | The last 200 rolls |
+| `avatar-dnd:campaigns`  | Display name, which character plays in which campaign, GM recovery keys |
 
 - **Characters carry their own `schemaVersion`.** On load every record goes through `migrateCharacter` (lib/migrations.ts), zod validation, then `normalizeCharacter`. A record that fails is moved to `quarantine` and can be downloaded. Nothing is silently deleted.
 - **Content is stored as edits** (upserts + removed ids) over the built-in seed, so shipping new rules in an app update reaches existing users while their own changes are kept.

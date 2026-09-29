@@ -1,7 +1,18 @@
 import type { RollEntry } from '../engine/rolls'
 
 /** One roll, shown the same way in the "latest roll" banner and in the log. */
-export function RollResult({ entry, showWho = false }: { entry: RollEntry; showWho?: boolean }) {
+export function RollResult({
+    entry,
+    showWho = false,
+    who,
+    gmOnly = false,
+}: {
+    entry: RollEntry
+    showWho?: boolean
+    /** Overrides the name shown (the campaign log shows the player's name). */
+    who?: string
+    gmOnly?: boolean
+}) {
     const className = [
         'roll-result',
         entry.crit || entry.critical ? 'roll-crit' : '',
@@ -14,7 +25,8 @@ export function RollResult({ entry, showWho = false }: { entry: RollEntry; showW
         <article className={className}>
             <div className="roll-result-head">
                 <strong>{entry.label}</strong>
-                {showWho && <small className="muted"> · {entry.characterName}</small>}
+                {(showWho || who) && <small className="muted"> · {who ?? entry.characterName}</small>}
+                {gmOnly && <span className="roll-tag roll-tag-private">GM ONLY</span>}
                 {entry.mode === 'advantage' && <span className="roll-badge roll-badge-adv">A</span>}
                 {entry.mode === 'disadvantage' && <span className="roll-badge roll-badge-dis">D</span>}
                 {entry.kind === 'attack' && entry.crit && <span className="roll-tag roll-tag-crit">CRIT</span>}
