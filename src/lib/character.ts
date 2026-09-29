@@ -53,6 +53,7 @@ export function createBlankCharacter(role: CharacterRole = 'Player Character'): 
         armorName: '',
         armorId: '',
         hasShield: false,
+        weapons: [],
         weaponNotes: '',
         inventoryItems: [],
         currency: '',

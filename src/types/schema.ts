@@ -6,7 +6,7 @@ export type BendingType = Element | 'Non-Bender'
 export type TechniqueLevel = 'Practiced' | 'Trained' | 'Mastered'
 
 export const TECHNIQUE_LEVELS: TechniqueLevel[] = ['Practiced', 'Trained', 'Mastered']
-export const CHARACTER_SCHEMA_VERSION = 3
+export const CHARACTER_SCHEMA_VERSION = 4
 
 export interface Lineage {
     id: string
@@ -45,6 +45,8 @@ export interface KnownTechnique {
 
 export type HitDie = 6 | 8 | 10 | 12
 
+export type AttackKind = 'weapon' | 'bending' | 'unarmed'
+
 export type Recharge = 'Short Rest' | 'Long Rest' | 'Manual'
 
 /** What an effect applies to. Skill and save targets are per-ability/skill. */
@@ -75,6 +77,8 @@ export type FeatureEffect =
     | (EffectBase & { kind: 'advantage' })
     | (EffectBase & { kind: 'disadvantage'; tag?: string })
     | (EffectBase & { kind: 'suppressDisadvantage'; tag: string })
+    /** Attacks of these kinds score a critical hit on a natural roll of `min` or higher. */
+    | (EffectBase & { kind: 'critRange'; min: number; attackKinds: AttackKind[] })
 
 export interface TechniqueSlotRow {
     known: number
@@ -139,6 +143,13 @@ export interface ChoiceSet<T> {
     options: T[]
 }
 
+/** A weapon on a character sheet. `bonus` is a flat +attack/+damage (e.g. Weapons Specialist upgrades). */
+export interface EquippedWeapon {
+    id: string
+    weaponId: string
+    bonus: number
+}
+
 export interface Character {
     schemaVersion: number
     id: string
@@ -198,6 +209,8 @@ export interface Character {
     /** Worn armor from the armor table (empty for none). */
     armorId: string
     hasShield: boolean
+    /** Weapons carried, chosen from the weapon table. Attacks are rolled from these. */
+    weapons: EquippedWeapon[]
     weaponNotes: string
     inventoryItems: string[]
     currency: string
@@ -227,6 +240,10 @@ export interface CharacterClass {
     /** Bender technique slot table by level; index 0 is level 1. */
     techniqueSlots?: TechniqueSlotRow[]
     resources?: ClassResource[]
+    /** The ability behind Bending Save DC and Bending Attack Modifier. */
+    bendingAbility?: AbilityName
+    /** Basic bending attack (no technique), rolled with the Bending Attack Modifier. */
+    basicAttack?: { dice: string; damageType?: string }
 }
 
 export interface SubclassFeatureGrant {

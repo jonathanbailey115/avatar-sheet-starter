@@ -97,3 +97,26 @@ describe('schema 2 -> 3 migration', () => {
         expect(c.migrationNotes.join(' ')).toMatch(/Leather/)
     })
 })
+
+describe('schema 3 -> 4 migration', () => {
+    const v3 = (overrides: Record<string, unknown> = {}) => {
+        const { weapons: _weapons, ...rest } = migrateCharacter(legacyCharacterV1()) as Record<string, unknown>
+        return { ...rest, schemaVersion: 3, ...overrides }
+    }
+
+    it('adds an empty weapon list', () => {
+        const c = parseCharacterRecord(v3())
+        expect(c.weapons).toEqual([])
+        expect(c.schemaVersion).toBe(CHARACTER_SCHEMA_VERSION)
+    })
+
+    it('keeps typed weapon notes and asks the player to pick weapons', () => {
+        const c = parseCharacterRecord(v3({ weaponNotes: 'A dao sword' }))
+        expect(c.weaponNotes).toBe('A dao sword')
+        expect(c.migrationNotes.join(' ')).toMatch(/weapon list/)
+    })
+
+    it('does not nag when there were no weapon notes', () => {
+        expect(parseCharacterRecord(v3()).migrationNotes.join(' ')).not.toMatch(/weapon list/)
+    })
+})

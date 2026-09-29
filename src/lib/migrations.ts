@@ -10,6 +10,7 @@ type Raw = Record<string, unknown>
  *   3  Play state: hpLost, tempHp, hitDiceUsed, deathSaves, exhaustion, resourcesUsed, hpRolls,
  *      maxHpAdjustment, armorId, hasShield. `hp` became `maxHpOverride` (NPCs only; player
  *      sheets never had a way to enter it, so their value was placeholder data).
+ *   4  `weapons` (equipped weapons chosen from the weapon table). Typed weapon notes stay as notes.
  *
  * To change the schema: bump CHARACTER_SCHEMA_VERSION, add an `n -> n+1` function below, add a test.
  */
@@ -110,9 +111,20 @@ function migrate2to3(raw: Raw): Raw {
     }
 }
 
+function migrate3to4(raw: Raw): Raw {
+    const notes = stringList(raw.migrationNotes)
+    if (typeof raw.weaponNotes === 'string' && raw.weaponNotes.trim() !== '') {
+        notes.push(
+            'Add your weapons from the weapon list on the Equipment tab so their attacks can be rolled. Your typed weapon notes were kept.',
+        )
+    }
+    return { ...raw, schemaVersion: 4, weapons: [], migrationNotes: notes }
+}
+
 const MIGRATIONS: Record<number, (raw: Raw) => Raw> = {
     1: migrate1to2,
     2: migrate2to3,
+    3: migrate3to4,
 }
 
 /**

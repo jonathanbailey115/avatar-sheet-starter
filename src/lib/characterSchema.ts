@@ -93,6 +93,13 @@ export const characterSchema: z.ZodType<Character, z.ZodTypeDef, unknown> = z.ob
     armorName: z.string(),
     armorId: z.string(),
     hasShield: z.boolean(),
+    weapons: z.array(
+        z.object({
+            id: z.string().min(1),
+            weaponId: z.string(),
+            bonus: z.number().int().min(-5).max(10),
+        }),
+    ),
     weaponNotes: z.string(),
     inventoryItems: strings,
     currency: z.string(),
