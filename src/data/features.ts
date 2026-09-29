@@ -143,6 +143,7 @@ export const features: Feature[] = [
         featureType: 'Passive',
         levelRequirement: 11,
         isActiveByDefault: true,
+        effects: [{ kind: 'critRange', target: 'attack', min: 18, attackKinds: ['weapon'] }],
         uses: undefined,
         recharge: null,
     },

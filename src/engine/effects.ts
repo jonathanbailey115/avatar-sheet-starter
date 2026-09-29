@@ -4,6 +4,7 @@ import type { ArmorPiece } from '../data/armor'
 import type { GrantedFeature } from './features'
 import type {
     AbilityName,
+    AttackKind,
     BonusValue,
     Character,
     EffectTarget,
@@ -24,11 +25,28 @@ export interface EffectContext {
     proficiencyBonus: number
 }
 
+/** A rule that applies only in some situation. The player confirms it when rolling. */
+export interface SituationalOption {
+    kind: 'advantage' | 'disadvantage' | 'bonus'
+    source: string
+    situation: string
+    /** For bonuses: how much it adds. */
+    value: number
+}
+
 export interface RollModifiers {
     advantage: string[]
     disadvantage: string[]
     /** 5e: advantage and disadvantage cancel to a normal roll no matter how many of each. */
     net: 'advantage' | 'disadvantage' | 'normal'
+    /** Effects with a "situation": not applied until the player says they apply. */
+    situational: SituationalOption[]
+}
+
+export function netMode(advantageCount: number, disadvantageCount: number): RollModifiers['net'] {
+    if (advantageCount > 0 && disadvantageCount === 0) return 'advantage'
+    if (disadvantageCount > 0 && advantageCount === 0) return 'disadvantage'
+    return 'normal'
 }
 
 export function collectFeatureEffects(granted: GrantedFeature[]): Effect[] {
@@ -120,7 +138,13 @@ export function bonusesFor(
     context: EffectContext,
 ): Array<{ label: string; value: number }> {
     return effects
-        .filter((effect) => effect.kind === 'bonus' && targets.includes(effect.target) && isActive(effect, context))
+        .filter(
+            (effect) =>
+                effect.kind === 'bonus' &&
+                !effect.situation &&
+                targets.includes(effect.target) &&
+                isActive(effect, context),
+        )
         .map((effect) => ({
             label: effect.source,
             value: effect.kind === 'bonus' ? resolveValue(effect.value, context) : 0,
@@ -137,22 +161,43 @@ export function rollModifiersFor(
         active.flatMap((effect) => (effect.kind === 'suppressDisadvantage' ? [effect.tag] : [])),
     )
 
-    const advantage = active.filter((effect) => effect.kind === 'advantage').map((effect) => effect.source)
-    const disadvantage = active
-        .filter(
-            (effect) =>
-                effect.kind === 'disadvantage' && !(effect.tag && suppressed.has(effect.tag)),
-        )
+    const always = active.filter((effect) => !effect.situation)
+    const advantage = always.filter((effect) => effect.kind === 'advantage').map((effect) => effect.source)
+    const disadvantage = always
+        .filter((effect) => effect.kind === 'disadvantage' && !(effect.tag && suppressed.has(effect.tag)))
         .map((effect) => effect.source)
 
-    const net =
-        advantage.length > 0 && disadvantage.length === 0
-            ? 'advantage'
-            : disadvantage.length > 0 && advantage.length === 0
-              ? 'disadvantage'
-              : 'normal'
+    const situational: SituationalOption[] = active.flatMap((effect): SituationalOption[] => {
+        if (!effect.situation) return []
+        if (effect.kind === 'advantage' || effect.kind === 'disadvantage') {
+            return [{ kind: effect.kind, source: effect.source, situation: effect.situation, value: 0 }]
+        }
+        if (effect.kind === 'bonus') {
+            return [
+                {
+                    kind: 'bonus',
+                    source: effect.source,
+                    situation: effect.situation,
+                    value: resolveValue(effect.value, context),
+                },
+            ]
+        }
+        return []
+    })
 
-    return { advantage, disadvantage, net }
+    return { advantage, disadvantage, net: netMode(advantage.length, disadvantage.length), situational }
+}
+
+/** The lowest natural roll that is a critical hit for this kind of attack (20 unless a feature lowers it). */
+export function critMinFor(effects: Effect[], attackKind: AttackKind, context: EffectContext): number {
+    return effects
+        .filter(
+            (effect) =>
+                effect.kind === 'critRange' &&
+                effect.attackKinds.includes(attackKind) &&
+                isActive(effect, context),
+        )
+        .reduce((lowest, effect) => (effect.kind === 'critRange' ? Math.min(lowest, effect.min) : lowest), 20)
 }
 
 export function armorClassFor(

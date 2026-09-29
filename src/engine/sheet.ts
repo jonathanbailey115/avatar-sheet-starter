@@ -10,9 +10,14 @@ import {
     exhaustionEffects,
     rollModifiersFor,
 } from './effects'
-import type { EffectContext, RollModifiers } from './effects'
+import type { EffectContext } from './effects'
+import type { StatLine } from './statLine'
+
+export type { StatLine }
 import { getGrantedFeatures } from './features'
 import type { GrantedFeature } from './features'
+import { getAttacks, getBendingSummary } from './attacks'
+import type { AttackOption, BendingSummary } from './attacks'
 import { computeMaxHp, getCurrentHp, getHitDie, getLifeState } from './hitPoints'
 import type { LifeState } from './hitPoints'
 import { hitDiceRemaining } from './rests'
@@ -25,12 +30,6 @@ import type { AbilityName, Character, HitDie, SkillName } from '../types/schema'
  * The computed play sheet. Pure: everything the UI shows comes from here, with the
  * reason for every number in `breakdown` and every advantage/disadvantage in `roll`.
  */
-
-export interface StatLine {
-    total: number
-    breakdown: Array<{ label: string; value: number }>
-    roll: RollModifiers
-}
 
 export interface ResourceView extends ResourceDef {
     used: number
@@ -54,6 +53,8 @@ export interface Sheet {
     armor: ArmorPiece | null
     resources: ResourceView[]
     features: GrantedFeature[]
+    attacks: AttackOption[]
+    bending: BendingSummary | null
 }
 
 function passive(line: StatLine): number {
@@ -132,6 +133,14 @@ export function computeSheet(character: Character, content: RulesContent): Sheet
         remaining: remainingOf(character, def),
     }))
 
+    const attackBasis = {
+        character,
+        characterClass: content.classes.find((item) => item.id === character.classId),
+        lineage,
+        effects,
+        context,
+    }
+
     return {
         proficiencyBonus,
         maxHp,
@@ -153,5 +162,7 @@ export function computeSheet(character: Character, content: RulesContent): Sheet
         armor,
         resources,
         features,
+        attacks: getAttacks(attackBasis),
+        bending: getBendingSummary(attackBasis),
     }
 }

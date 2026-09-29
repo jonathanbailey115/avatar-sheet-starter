@@ -14,6 +14,7 @@ export const characterClasses: CharacterClass[] = [
             'A versatile and clever non-bending fighter who uses weapons, discipline, and combat expertise to strike down opponents in a world where bending rules the battlefield.',
         hitDie: 'Lineage-based',
         primaryAbility: 'Strength or Dexterity',
+        bendingAbility: 'dexterity',
         savingThrows: [],
         skillChoices: {
             choose: 0,
@@ -71,6 +72,8 @@ export const characterClasses: CharacterClass[] = [
         featureGrants: [],
         subclassName: 'Earthbending Tradition',
         element: 'Earth',
+        bendingAbility: 'constitution',
+        basicAttack: { dice: '1d8', damageType: 'bludgeoning' },
         techniqueSlots: BENDER_TECHNIQUE_SLOTS,
     },
 ]
