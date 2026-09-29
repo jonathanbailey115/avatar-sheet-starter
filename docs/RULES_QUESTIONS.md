@@ -169,3 +169,11 @@ Water: Community (max damage die), Oceanic Master rerolls. Fire: Positive Jing (
 - Down-cast costs agree in both statements (1 Trained = 2 Practiced; 1 Mastered = 2 Trained = 4 Practiced, GB L116-121, L1092).
 - Weaponsmaster Combat Expertise Points and Universal slot counts in the seed's prose match the table.
 - Earth Kingdom lineage data in the seed matches gmbinder (D14). Typos in gmbinder ("Aracana", "Thieve's Tools", "Motiavtional") are ignored and normalized.
+
+---
+
+## H. Phase 1 status (branch `overhaul`)
+
+Fixed: **C1** Guardian removed. **C2** Chi removed. **C3** three technique levels (`Practiced/Trained/Mastered`). **C4** `bendingType`/`style` and Styles removed; bending derives from `CharacterClass.element` (no bender classes exist yet, so Earth/Fire NPCs show "No class" until Phase 4). **D5** `Mixed` removed (old data migrates with an explanatory note). **D6, D7** placeholder techniques and the invented Brave feature removed. **D9** Religion uses Wisdom. **D17** shared ability math in `engine/abilities.ts`. **E1** template edits now take effect. **E2** all-zero weights no longer crash the generator. **E3** NPC lineage follows nation and benders only get their nation's element. **E5** everything persists. **E6** dead code deleted. **E8** effect chain replaced by `normalizeCharacter`. **E9** campaign import is validated with zod. **E10** `App.tsx` is 60 lines.
+
+Still open (by design, later phases): **A2/D8** the two invented backgrounds remain until SRD + custom backgrounds are built. **D10/D11** AC and initiative (Phase 4 engine). **D12-D16** Weaponsmaster grants, lineage mechanics, missing classes (Phase 4). **E4/E7** stat-block NPCs and HP structure (Phases 2 and 6). Three older files exceed 300 lines: `FeaturesPanel.tsx` (413), `NpcTemplatesPanel.tsx` (380), `BuilderPreviewPanel.tsx` (497, replaced by the play sheet in Phase 2).
