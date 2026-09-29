@@ -165,6 +165,8 @@ write(
     'Firebending techniques, including Combustionbending and Lightningbending (tagged with a discipline).',
     parseSpellSection(fireStart, airStart, 'fire', {
         Firebending: { element: 'Fire' },
+        // Printed in the Firebending list; the owner decided Firebenders can learn it (docs/RULES_QUESTIONS.md L6).
+        Healing: { element: 'Fire' },
         Combustionbending: { element: 'Fire', discipline: 'Combustionbending' },
         // Unlocked by the Lightning Generation feat (docs/RULES_QUESTIONS.md L7).
         Lightningbending: { element: 'Fire', discipline: 'Lightningbending' },

@@ -206,12 +206,26 @@ describe('campaign data round trip', () => {
 })
 
 describe('feats', () => {
-    const feats = realContent.features.filter((feature) => feature.source === 'Feat')
+    const feats = realContent.features.filter((feature) => feature.source === 'Feat' && !feature.id.startsWith('feat-srd-'))
 
     it('brings in the 24 feats gmbinder changes or adds, as optional features', () => {
         expect(feats).toHaveLength(24)
         expect(feats.every((feat) => !feat.isActiveByDefault && feat.levelRequirement === 1)).toBe(true)
         expect(new Set(feats.map((feat) => feat.id)).size).toBe(feats.length)
+    })
+
+    it('renames the misprinted Mage Slayer feat to Bender Slayer', () => {
+        expect(feats.some((feat) => feat.name === 'Bender Slayer')).toBe(true)
+        expect(feats.some((feat) => feat.name === 'Bender Bender')).toBe(false)
+    })
+
+    it('adds the SRD feats, labelled Baseline 5e, and Alert adds proficiency to initiative', () => {
+        const srd = realContent.features.filter((feature) => feature.id.startsWith('feat-srd-'))
+        expect(srd.map((feat) => feat.name).sort()).toEqual(['Alert', 'Grappler', 'Savage Attacker', 'Skilled'])
+        expect(srd.every((feat) => feat.description.startsWith('Baseline 5e'))).toBe(true)
+        const plain = build('earthbending', 'Earth Kingdom', 5, { dexterity: 14 })
+        const alert = { ...plain, selectedFeatureIds: ['feat-srd-alert'] }
+        expect(computeSheet(alert, realContent).initiative.total - computeSheet(plain, realContent).initiative.total).toBe(3)
     })
 
     it('uses the setting names, keeping the 5e name in the text', () => {

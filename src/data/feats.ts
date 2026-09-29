@@ -13,6 +13,9 @@ const GRANTS: Record<string, TechniqueDiscipline> = {
     'Lightning Generation': 'Lightningbending',
 }
 
+/** Names the owner corrected from the printed text (docs/RULES_QUESTIONS.md M8). */
+const RENAMES: Record<string, string> = { 'Bender Bender': 'Bender Slayer' }
+
 /** "Precise Bender (Spell Sniper)" -> name "Precise Bender", 5e origin "Spell Sniper". */
 function splitAlias(heading: string): { name: string; alias: string | null } {
     const match = /^(.*?)\s*\((.+)\)\s*$/.exec(heading)
@@ -22,7 +25,9 @@ function splitAlias(heading: string): { name: string; alias: string | null } {
 export const featFeatures: Feature[] = classText.feats
     .filter((entry) => entry.name !== 'Introduction')
     .map((entry) => {
-        const { name, alias } = splitAlias(entry.name)
+        const split = splitAlias(entry.name)
+        const name = RENAMES[split.name] ?? split.name
+        const alias = split.alias
         const grants = GRANTS[name]
         return {
             id: `feat-${slug(name)}`,

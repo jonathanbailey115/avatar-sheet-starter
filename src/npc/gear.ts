@@ -23,8 +23,9 @@ function shieldAllowed(lineage: Lineage | undefined): boolean {
 }
 
 function weaponPool(lineage: Lineage | undefined): Weapon[] {
-    const proficient = weaponTable.filter((weapon) => weaponProficient(weapon, lineage?.weaponProficiencies))
-    return proficient.length > 0 ? proficient : weaponTable.filter((weapon) => weapon.category === 'simple')
+    // Nets deal no damage, so a generated NPC does not carry one as a weapon.
+    const proficient = weaponTable.filter((weapon) => !weapon.noDamage && weaponProficient(weapon, lineage?.weaponProficiencies))
+    return proficient.length > 0 ? proficient : weaponTable.filter((weapon) => !weapon.noDamage && weapon.category === 'simple')
 }
 
 /**

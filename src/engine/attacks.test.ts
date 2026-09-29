@@ -52,7 +52,25 @@ describe('weapon proficiency from lineage lists (gmbinder)', () => {
     it('every weapon has a positive die and a unique id', () => {
         const ids = weaponTable.map((weapon) => weapon.id)
         expect(new Set(ids).size).toBe(ids.length)
-        for (const weapon of weaponTable) expect(weapon.damage).toMatch(/^\d+d\d+$/)
+        for (const weapon of weaponTable.filter((item) => !item.noDamage)) expect(weapon.damage).toMatch(/^\d+d\d+$/)
+        expect(weaponTable.filter((item) => item.noDamage).map((item) => item.id)).toEqual(['net'])
+    })
+
+    it('Water Tribe and Air Nomad weapon proficiencies now match real weapons', () => {
+        const water = realContent.lineages.find((item) => item.nation === 'Water Tribe')
+        const air = realContent.lineages.find((item) => item.nation === 'Air Nomads')
+        expect(weaponProficient(findWeapon('net')!, water?.weaponProficiencies)).toBe(true)
+        expect(weaponProficient(findWeapon('bolas')!, water?.weaponProficiencies)).toBe(true)
+        expect(weaponProficient(findWeapon('war-fan')!, air?.weaponProficiencies)).toBe(true)
+        expect(weaponProficient(findWeapon('war-fan')!, water?.weaponProficiencies)).toBe(false)
+    })
+
+    it('a Net attack rolls to hit but deals no damage', () => {
+        const sheet = computeSheet(hero({ weapons: [withWeapon('net')] }), realContent)
+        const net = attack(sheet, 'Net')
+        expect(net.noDamage).toBe(true)
+        expect(net.damageFlat).toBe(0)
+        expect(net.damageBreakdown).toEqual([])
     })
 })
 

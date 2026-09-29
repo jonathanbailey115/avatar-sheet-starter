@@ -30,6 +30,7 @@ function AttackRow({ attack }: { attack: AttackOption }) {
                     {!attack.proficient && ' · not proficient'}
                 </small>
                 {details && <div className="muted attack-details">{details}</div>}
+                {attack.note && <div className="muted attack-details">{attack.note}</div>}
             </div>
 
             <div className="attack-buttons">
@@ -43,14 +44,18 @@ function AttackRow({ attack }: { attack: AttackOption }) {
                     <RollBadge roll={attack.attack.roll} />
                 </button>
 
-                <button
-                    className={critical ? 'btn-roll btn-roll-crit' : 'btn-roll'}
-                    type="button"
-                    title={attack.damageBreakdown.map((part) => `${part.label} ${formatModifier(part.value)}`).join(', ')}
-                    onClick={() => rollDamage(attack, { critical, twoHanded })}
-                >
-                    {critical ? 'Critical damage' : 'Damage'} {damageFormula(attack, twoHanded)}
-                </button>
+                {attack.noDamage ? (
+                    <small className="muted">No damage.</small>
+                ) : (
+                    <button
+                        className={critical ? 'btn-roll btn-roll-crit' : 'btn-roll'}
+                        type="button"
+                        title={attack.damageBreakdown.map((part) => `${part.label} ${formatModifier(part.value)}`).join(', ')}
+                        onClick={() => rollDamage(attack, { critical, twoHanded })}
+                    >
+                        {critical ? 'Critical damage' : 'Damage'} {damageFormula(attack, twoHanded)}
+                    </button>
+                )}
             </div>
 
             <div className="attack-options">

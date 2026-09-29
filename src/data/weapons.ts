@@ -22,6 +22,10 @@ export interface Weapon {
     versatileDamage?: string
     properties: WeaponProperty[]
     range?: string
+    /** Deals no damage (a Net restrains instead). */
+    noDamage?: boolean
+    /** Rules text the attack line cannot show. */
+    note?: string
     /**
      * Names lineages use in their weapon proficiency lists ("Longswords", "Axes", ...),
      * matched case-insensitively ignoring plurals and spaces.
@@ -39,7 +43,7 @@ const w = (
     damageType: string,
     properties: WeaponProperty[],
     groups: string[],
-    extra: Partial<Pick<Weapon, 'versatileDamage' | 'range'>> = {},
+    extra: Partial<Pick<Weapon, 'versatileDamage' | 'range' | 'noDamage' | 'note'>> = {},
 ): Weapon => ({ id, name, category, kind, damage, damageType, properties, groups, source: 'Baseline 5e', ...extra })
 
 /** Items gmbinder defines itself (Items section). */
@@ -100,6 +104,20 @@ export const weaponTable: Weapon[] = [
     w('whip', 'Whip', 'martial', 'melee', '1d4', 'slashing', ['finesse', 'reach'], ['Whips']),
     w('hand-crossbow', 'Hand crossbow', 'martial', 'ranged', '1d6', 'piercing', ['ammunition', 'light', 'loading'], ['Crossbows'], { range: '30/120' }),
     w('heavy-crossbow', 'Heavy crossbow', 'martial', 'ranged', '1d10', 'piercing', ['ammunition', 'heavy', 'loading', 'two-handed'], ['Crossbows'], { range: '100/400' }),
+    // gmbinder gives Water Tribe and Air Nomads proficiency in these but no stats. Owner decision: Baseline 5e-style
+    // stand-ins (only the Net is a 5e SRD weapon; Bolas and War Fan values are this app's, see RULES_QUESTIONS.md M1).
+    w('net', 'Net', 'martial', 'ranged', '', 'none', ['thrown'], ['Nets'], {
+        range: '5/15',
+        noDamage: true,
+        note: 'A Large or smaller creature hit is restrained until freed (5e Net).',
+    }),
+    w('bolas', 'Bolas', 'martial', 'ranged', '1d4', 'bludgeoning', ['thrown'], ['Bolas'], {
+        range: '20/60',
+        note: 'Stand-in stats; a Large or smaller target may be tripped or slowed at the GM’s call.',
+    }),
+    w('war-fan', 'War fan', 'martial', 'melee', '1d6', 'slashing', ['finesse', 'light'], ['War Fans'], {
+        note: 'Stand-in stats. Airbenders can use a war fan as an extension of their airbending (+10 ft range).',
+    }),
     w('longbow', 'Longbow', 'martial', 'ranged', '1d8', 'piercing', ['ammunition', 'heavy', 'two-handed'], ['Bows', 'Longbows'], { range: '150/600' }),
 ]
 

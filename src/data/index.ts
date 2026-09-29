@@ -2,6 +2,7 @@ import { airbendingFeatures } from './airbending'
 import { backgroundFeatures } from './backgrounds'
 import { earthbendingFeatures } from './earthbending'
 import { featFeatures } from './feats'
+import { srdFeatFeatures } from './srdFeats'
 import { features as coreFeatures } from './features'
 import { firebendingFeatures, firebendingPrincipleFeatures } from './firebending'
 import {
@@ -23,6 +24,7 @@ export const features: Feature[] = [
     ...firebendingPrincipleFeatures,
     ...airbendingFeatures,
     ...featFeatures,
+    ...srdFeatFeatures,
     ...techEngineerFeatures,
     ...specializationFeatures,
     ...contraptionFeatures,

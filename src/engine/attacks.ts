@@ -27,6 +27,10 @@ export interface AttackOption {
     damageType: string
     /** Damage dice when a Versatile weapon is held in two hands. */
     versatileDice?: string
+    /** Deals no damage (a Net): the roll only shows whether it hits. */
+    noDamage?: boolean
+    /** Rules text for this attack. */
+    note?: string
     /** Natural roll needed for a critical hit. */
     critMin: number
     range?: string
@@ -151,12 +155,16 @@ export function getAttacks(basis: AttackBasis): AttackOption[] {
             source: weapon.source === 'gmbinder' ? 'gmbinder' : 'Baseline 5e',
             attack: attackLine(basis, ability, proficient, bonus ? [{ label: 'Weapon bonus', value: bonus }] : []),
             damageDice: weapon.damage,
-            damageFlat: modifier + bonus,
-            damageBreakdown: [
-                { label: capitalize(ability), value: modifier },
-                ...(bonus ? [{ label: 'Weapon bonus', value: bonus }] : []),
-            ],
+            damageFlat: weapon.noDamage ? 0 : modifier + bonus,
+            damageBreakdown: weapon.noDamage
+                ? []
+                : [
+                      { label: capitalize(ability), value: modifier },
+                      ...(bonus ? [{ label: 'Weapon bonus', value: bonus }] : []),
+                  ],
             damageType: weapon.damageType,
+            noDamage: weapon.noDamage,
+            note: weapon.note,
             versatileDice: weapon.versatileDamage,
             critMin: critMinFor(effects, 'weapon', context),
             range: weapon.range,

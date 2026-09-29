@@ -284,6 +284,18 @@ export const fireTechniques: Technique[] = [
         "description": "Launch a massive blast with twin fireballs circling each other as they hurtle toward your target. When you use this technique, you bend two massive fireballs that travel in a 100ft line with 10ft width that impact and explode in a 30ft diameter on the first target hit. Creatures affected by the technique must make a Dexterity Saving Throw. On a fail, they take 10d10 fire damage and are knocked back 30ft and fall prone. The creature that the fireballs impact against are knocked back in the direction the fireballs were traveling. The creatures in the explosion zone are knocked back away from the impact zone. This technique deals double damage to objects and structures. This is considered a Mastered technique."
     },
     {
+        "id": "fire-energy-guidance",
+        "name": "Energy Guidance",
+        "element": "Fire",
+        "rare": false,
+        "castingTime": "1 Bonus Action",
+        "range": "Touch",
+        "components": "S",
+        "duration": "Instantaneous <br/>",
+        "concentration": false,
+        "description": "Bend the energy paths in the body of a creature to heal a wound faster than normal. When you use this technique, you touch a creature’s wound and bend the energy within it to heal the creature. When you use healing, make a Wisdom Check of DC 15. On a success, you heal the creature 5d4 + your Wisdom Modifier HP and on a fail you deal 2d4 damage to the creature. At Trained level, you no longer damage the creature. At Mastered level the healing increases to 8d4.\nWhen you use Energy Guidance as a ritual, you can heal a creature completely over the course of 4 hours."
+    },
+    {
         "id": "fire-stunning-strike",
         "name": "Stunning Strike",
         "element": "Fire",
