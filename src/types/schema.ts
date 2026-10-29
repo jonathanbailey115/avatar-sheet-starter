@@ -6,7 +6,7 @@ export type BendingType = Element | 'Non-Bender'
 export type TechniqueLevel = 'Practiced' | 'Trained' | 'Mastered'
 
 export const TECHNIQUE_LEVELS: TechniqueLevel[] = ['Practiced', 'Trained', 'Mastered']
-export const CHARACTER_SCHEMA_VERSION = 8
+export const CHARACTER_SCHEMA_VERSION = 9
 
 /** gmbinder's Species. "none" means the typed ability scores are already final. */
 export type Species = 'none' | 'human' | 'variant-human'
@@ -33,7 +33,7 @@ export interface Lineage {
 }
 
 /** Where a technique comes from. Fighting techniques are the Weaponsmaster's. */
-export type TechniqueElement = Element | 'Universal' | 'Fighting'
+export type TechniqueElement = Element | 'Universal' | 'Fighting' | 'Dragon'
 
 /** Sub-bendings gmbinder lists inside an element's technique list. */
 export type TechniqueDiscipline = 'Bloodbending' | 'Combustionbending' | 'Lightningbending'
@@ -84,6 +84,8 @@ export interface Technique {
     damage?: TechniqueDamage[]
     /** A short reminder shown beside the rolls. */
     mechanicsNote?: string
+    /** Needs this many levels in a class (Dragon Techniques: "Dragon Trainer Level 10"). */
+    requiresClassLevel?: { classId: string; level: number }
 }
 
 /** Training Points progress toward the next technique level (gmbinder, Training). */
@@ -269,6 +271,15 @@ export interface Character {
     levelCapLifted: boolean
     /** Epic Boons earned by reaching level 20 in a class. */
     epicBoons: EpicBoonPick[]
+    /** Dragon Trainer: the dragon companion's ancestry id (see data/dragonAncestry), or empty. */
+    dragonAncestry: string
+    /** Damage the dragon companion has taken. Its HP is its maximum minus this. */
+    dragonHpLost: number
+    dragonTempHp: number
+    /** The dragon has died (it can be revived within 24 hours, or replaced after 8 hours). */
+    dragonDead: boolean
+    /** The Avatar: begins with every element (otherwise elements unlock through masters). */
+    avatarAllElements: boolean
     /** Sets max HP directly (GM-set NPCs). Null means derive from lineage, level and Constitution. */
     maxHpOverride: number | null
     /** Manual +/- to max HP (feats, items). */
@@ -342,6 +353,13 @@ export interface CharacterClass {
     primaryAbility: string
     /** Abilities, any one of which must be 13+ to multiclass into this class (gmbinder). Defaults to the bending or key ability. */
     multiclassAbilities?: AbilityName[]
+    /** Armor and weapon proficiencies the class grants, in the lineage's wording ("Light Armor", "Simple Weapons"). */
+    armorProficiencies?: string[]
+    weaponProficiencies?: string[]
+    /** The Avatar: may take any bending class without it counting as a bender taking another element. */
+    anyElement?: boolean
+    /** Needs the player's own setup (a companion, the Avatar), so the NPC generator never rolls it. */
+    playerOnly?: boolean
     /** The same as `primaryAbility`, as data, when a class has more than one. Otherwise the bending ability is the key ability. */
     keyAbilities?: AbilityName[]
     savingThrows: AbilityName[]
@@ -380,6 +398,10 @@ export interface CharacterSubclass {
     description: string
     unlockLevel: number
     featureGrants: ClassFeatureGrant[]
+    armorProficiencies?: string[]
+    weaponProficiencies?: string[]
+    /** Technique slots this subclass adds by level (Dragon Mage); the element follows the dragon's ancestry. */
+    techniqueSlots?: TechniqueSlotRow[]
 }
 
 /** A player-made background (D&D Beyond style "custom background"). */

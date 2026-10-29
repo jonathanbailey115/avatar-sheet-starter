@@ -7,6 +7,7 @@ import type { RulesContent } from '../lib/normalize'
 import { characterDisplayName } from '../lib/character'
 import { AttackPanel } from '../play/AttackPanel'
 import { DetailsPanel } from '../play/DetailsPanel'
+import { DragonPanel } from '../play/DragonPanel'
 import { HitPointSetup } from '../play/HitPointSetup'
 import { HpPanel } from '../play/HpPanel'
 import { PlayHeader } from '../play/PlayHeader'
@@ -171,10 +172,12 @@ function PlaySheet({ character, sheet, content, change, onEdit }: PlaySheetProps
                         <AttackPanel sheet={sheet} />
                     </div>
                     <div className="play-col" data-pane="techniques">
+                        <DragonPanel character={character} sheet={sheet} onChange={change} />
                         <TechniquesPanel
                             character={character}
                             sheet={sheet}
                             classes={content.classes}
+                            subclasses={content.subclasses}
                             techniques={content.techniques}
                             onChange={change}
                         />
@@ -191,8 +194,8 @@ function PlaySheet({ character, sheet, content, change, onEdit }: PlaySheetProps
                         character={character}
                         sheet={sheet}
                         lineageProficiencies={{
-                            armor: lineage?.armorProficiencies ?? [],
-                            weapons: lineage?.weaponProficiencies ?? [],
+                            armor: sheet.armorProficiencies,
+                            weapons: sheet.weaponProficiencies,
                         }}
                     />
                     <RollLog />

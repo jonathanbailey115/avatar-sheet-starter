@@ -1,4 +1,4 @@
-import { bendingClassOf, classLevelsOf } from './classLevels'
+import { bendingClassOf, classEntries, classLevelsOf } from './classLevels'
 import { getGrantedFeatures } from './features'
 import type { RulesContent } from '../lib/normalize'
 import type { Character, Recharge, TechniqueLevel } from '../types/schema'
@@ -42,12 +42,23 @@ export function getResources(
     const bending = bendingClassOf(classLevels)
     const characterClass = bending?.characterClass
     const slotRow = characterClass?.techniqueSlots?.[Math.min(20, Math.max(1, bending?.level ?? 1)) - 1]
-    if (characterClass && slotRow) {
-        const counts: SlotCounts = {
-            Practiced: slotRow.practiced,
-            Trained: slotRow.trained,
-            Mastered: slotRow.mastered,
-        }
+    const counts: SlotCounts = {
+        Practiced: slotRow?.practiced ?? 0,
+        Trained: slotRow?.trained ?? 0,
+        Mastered: slotRow?.mastered ?? 0,
+    }
+    const origins: string[] = slotRow && characterClass ? [characterClass.name] : []
+    // A subclass can add slots of its own (Dragon Mage), added to the bending class's.
+    for (const entry of classEntries(character)) {
+        const subclass = content.subclasses.find((item) => item.id === entry.subclassId && item.classId === entry.classId)
+        const row = subclass?.techniqueSlots?.[Math.min(20, Math.max(1, entry.level)) - 1]
+        if (!subclass || !row) continue
+        counts.Practiced += row.practiced
+        counts.Trained += row.trained
+        counts.Mastered += row.mastered
+        if (row.practiced + row.trained + row.mastered > 0) origins.push(subclass.name)
+    }
+    {
         for (const level of TECHNIQUE_LEVELS) {
             if (counts[level] > 0) {
                 resources.push({
@@ -56,7 +67,7 @@ export function getResources(
                     kind: 'slot',
                     max: counts[level],
                     recharge: 'Long Rest',
-                    origin: characterClass.name,
+                    origin: origins.join(' + '),
                     slotLevel: level,
                 })
             }

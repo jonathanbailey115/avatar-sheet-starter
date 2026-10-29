@@ -33,7 +33,7 @@ function classFits(characterClass: CharacterClass, nation: Nation): boolean {
 
 function pickClass(ctx: NpcContext, nation: Nation, rng: Rng, avoid?: string): CharacterClass | null {
     const weights = ctx.template.bendingWeights
-    const fitting = ctx.content.classes.filter((item) => classFits(item, nation))
+    const fitting = ctx.content.classes.filter((item) => classFits(item, nation) && !item.playerOnly)
     const options = fitting.filter((item) => item.id !== avoid)
     const pool = options.length > 0 ? options : fitting
     const kindOf = (item: CharacterClass) => item.element ?? 'Non-Bender'

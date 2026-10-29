@@ -1,5 +1,6 @@
 import { ABILITY_NAMES } from './abilities'
-import { bendingClassOf, classEntries } from './classLevels'
+import { findAncestry } from '../data/dragonAncestry'
+import { bendingClassOf, classEntries, levelInClass } from './classLevels'
 import type { ClassLevel } from './classLevels'
 import type {
     AbilityName,
@@ -12,6 +13,7 @@ import type {
     TechniqueDamage,
     TechniqueDiscipline,
     TechniqueElement,
+    TechniqueLimit,
     TechniqueLevel,
 } from '../types/schema'
 import { TECHNIQUE_LEVELS } from '../types/schema'
@@ -138,6 +140,8 @@ export function learnBlocker(
     all: Technique[],
     /** Sub-bendings the character's subclass grants (see disciplinesOf). */
     disciplines: TechniqueDiscipline[] = [],
+    /** Limits that come from a subclass (see subclassLimits). */
+    extraLimits: ExtraLimit[] = [],
 ): string | null {
     if (character.knownTechniques.some((known) => known.techniqueId === technique.id)) return 'Already known'
 
@@ -147,6 +151,14 @@ export function learnBlocker(
 
     if (technique.discipline && !disciplines.includes(technique.discipline)) {
         return `Needs a path or principle that grants ${technique.discipline}`
+    }
+
+    if (technique.requiresClassLevel) {
+        const { classId, level } = technique.requiresClassLevel
+        if (levelInClass(classLevels, classId) < level) {
+            const name = classLevels.find((item) => item.characterClass.id === classId)?.characterClass.name ?? 'the class'
+            return `Needs ${name} level ${level}`
+        }
     }
 
     const prerequisite = parsePrerequisite(technique, all)
@@ -160,13 +172,38 @@ export function learnBlocker(
     }
 
     // Several classes can each count this kind; it only counts as full when every one of them is full.
-    const statuses = limitStatus(character, classLevels, all).filter((entry) => entry.limit.kinds.includes(technique.element))
+    const statuses = limitStatus(character, classLevels, all, extraLimits).filter((entry) => entry.limit.kinds.includes(technique.element))
     const full = statuses.find((entry) => entry.used >= entry.max)
     if (full && statuses.every((entry) => entry.used >= entry.max)) {
         return `${full.limit.label} full (${full.used}/${full.max})`
     }
 
     return null
+}
+
+/** A technique limit that belongs to a subclass entry, at the levels put into it. */
+export interface ExtraLimit {
+    limit: TechniqueLimit
+    level: number
+}
+
+/** Dragon Mage: techniques of the dragon's element, as many as its table allows. Empty until an ancestry is chosen. */
+export function subclassLimits(
+    character: Pick<Character, 'classId' | 'subclassId' | 'level' | 'dragonAncestry'> & Partial<Pick<Character, 'extraClasses'>>,
+    subclasses: CharacterSubclass[],
+): ExtraLimit[] {
+    const element = findAncestry(character.dragonAncestry)?.element
+    if (!element) return []
+    return classEntries(character).flatMap((entry) => {
+        const subclass = subclasses.find((item) => item.id === entry.subclassId)
+        if (!subclass?.techniqueSlots) return []
+        return [
+            {
+                limit: { id: `${subclass.id}-known`, label: `${subclass.name} techniques`, kinds: [element], maxByLevel: subclass.techniqueSlots.map((row) => row.known) },
+                level: entry.level,
+            },
+        ]
+    })
 }
 
 export interface LimitStatus {
@@ -180,18 +217,27 @@ export function limitStatus(
     character: Pick<Character, 'knownTechniques'>,
     classLevels: ClassLevel[],
     all: Technique[],
+    extraLimits: ExtraLimit[] = [],
 ): LimitStatus[] {
     const kindOf = (techniqueId: string): TechniqueElement | undefined =>
         all.find((technique) => technique.id === techniqueId)?.element
 
-    return classLevels.flatMap(({ characterClass, level }) =>
+    const count = (limit: TechniqueLimit) =>
+        character.knownTechniques.filter((known) => {
+            const kind = kindOf(known.techniqueId)
+            return kind !== undefined && limit.kinds.includes(kind)
+        }).length
+    const fromClasses = classLevels.flatMap(({ characterClass, level }) =>
         (characterClass.techniqueLimits ?? []).map((limit) => ({
             limit,
             max: limit.maxByLevel[Math.min(20, Math.max(1, level)) - 1] ?? 0,
-            used: character.knownTechniques.filter((known) => {
-                const kind = kindOf(known.techniqueId)
-                return kind !== undefined && limit.kinds.includes(kind)
-            }).length,
+            used: count(limit),
         })),
     )
+    const fromSubclasses = extraLimits.map(({ limit, level }) => ({
+        limit,
+        max: limit.maxByLevel[Math.min(20, Math.max(1, level)) - 1] ?? 0,
+        used: count(limit),
+    }))
+    return [...fromClasses, ...fromSubclasses]
 }

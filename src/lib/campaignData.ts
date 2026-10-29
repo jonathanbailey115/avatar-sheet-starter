@@ -43,7 +43,7 @@ const techniqueDamage = z.object({
 const techniqueSchema: z.ZodType<Technique, z.ZodTypeDef, unknown> = z.object({
     id: z.string().min(1),
     name: z.string(),
-    element: z.union([element, z.literal('Universal'), z.literal('Fighting')]),
+    element: z.union([element, z.literal('Universal'), z.literal('Fighting'), z.literal('Dragon')]),
     description: z.string(),
     rare: z.boolean().optional(),
     discipline: z.enum(['Bloodbending', 'Combustionbending', 'Lightningbending']).optional(),
@@ -58,6 +58,7 @@ const techniqueSchema: z.ZodType<Technique, z.ZodTypeDef, unknown> = z.object({
     save: z.object({ ability: z.union([abilityName, z.literal('affinity')]), fallback: abilityName.optional() }).optional(),
     damage: z.array(techniqueDamage).optional(),
     mechanicsNote: z.string().optional(),
+    requiresClassLevel: z.object({ classId: z.string(), level: z.number() }).optional(),
 })
 
 const EFFECT_TARGET = /^(ac|initiative|attack|saves|skills|save:[a-z]+|skill:[A-Za-z ]+|check:[a-z]+)$/

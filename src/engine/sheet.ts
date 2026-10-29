@@ -14,7 +14,11 @@ import type { EffectContext } from './effects'
 import type { StatLine } from './statLine'
 
 export type { StatLine }
-import { bendingClassOf, classLevelsOf } from './classLevels'
+import { bendingClassOf, classLevelsOf, levelInClass } from './classLevels'
+import { classProficiencies, withClassProficiencies } from './classProficiencies'
+import { computeDragon } from './dragon'
+import type { DragonSheet } from './dragon'
+import { DRAGON_TRAINER_ID } from '../data/dragonTrainer'
 import { getGrantedFeatures } from './features'
 import type { GrantedFeature } from './features'
 import { getAttacks, getBendingSummary } from './attacks'
@@ -59,6 +63,11 @@ export interface Sheet {
     features: GrantedFeature[]
     attacks: AttackOption[]
     bending: BendingSummary | null
+    /** The Dragon Trainer's companion, when the character has the class. */
+    dragon: DragonSheet | null
+    /** The lineage's armor and weapon proficiencies plus what classes and subclasses add. */
+    armorProficiencies: string[]
+    weaponProficiencies: string[]
 }
 
 function passive(line: StatLine): number {
@@ -71,7 +80,9 @@ export function computeSheet(character: Character, baseContent: RulesContent): S
     const proficiencyBonus = getProficiencyBonus(character.level)
     const abilityScores = abilityScoresOf(character)
     const armor = findArmor(character.armorId)
-    const lineage = content.lineages.find((item) => item.id === character.lineageId) ?? null
+    const baseLineage = content.lineages.find((item) => item.id === character.lineageId) ?? null
+    const granted = classProficiencies(character, content)
+    const lineage = withClassProficiencies(baseLineage, granted)
 
     const features = getGrantedFeatures(character, content)
     const effects = [
@@ -176,5 +187,8 @@ export function computeSheet(character: Character, baseContent: RulesContent): S
         features,
         attacks: getAttacks(attackBasis),
         bending: getBendingSummary(attackBasis),
+        dragon: computeDragon(character, levelInClass(classLevels, DRAGON_TRAINER_ID), abilityScores.wisdom, proficiencyBonus),
+        armorProficiencies: lineage?.armorProficiencies ?? granted.armor,
+        weaponProficiencies: lineage?.weaponProficiencies ?? granted.weapons,
     }
 }

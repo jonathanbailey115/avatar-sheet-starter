@@ -1,4 +1,5 @@
 import type { Technique } from '../../types/schema'
+import { dragonTechniques } from '../dragonTechniques'
 import { airTechniques } from './air.generated'
 import { earthTechniques } from './earth.generated'
 import { fireTechniques } from './fire.generated'
@@ -15,6 +16,7 @@ const extracted: Technique[] = [
     ...fireTechniques,
     ...airTechniques,
     ...fightingTechniques,
+    ...dragonTechniques,
 ]
 
 const allMechanics = { ...techniqueMechanics, ...waterMechanics, ...fireMechanics, ...airMechanics }

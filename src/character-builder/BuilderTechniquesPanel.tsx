@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
 import { getBendingElement } from '../engine/bending'
 import { bendingClassOf, classLevelsOf } from '../engine/classLevels'
-import { disciplinesOf, learnBlocker, limitStatus } from '../engine/techniques'
+import { disciplinesOf, learnBlocker, limitStatus, subclassLimits } from '../engine/techniques'
 import { masteredCount, masteredLimit } from '../engine/training'
 import { useCollection } from '../store/content'
 import { DEFAULT_TRAINING, TECHNIQUE_LEVELS } from '../types/schema'
@@ -19,6 +19,7 @@ type BuilderTechniquesPanelProps = {
 const GROUP_TITLES: Record<string, string> = {
     Universal: 'Universal techniques',
     Fighting: 'Weaponsmaster fighting techniques',
+    Dragon: 'Dragon techniques (spend a Training Die)',
 }
 
 export function BuilderTechniquesPanel({
@@ -35,7 +36,8 @@ export function BuilderTechniquesPanel({
     const classLevels = classLevelsOf(character, editableClasses)
     const bending = bendingClassOf(classLevels)
     const bendingLevel = bending?.level ?? character.level
-    const limits = limitStatus(character, classLevels, editableTechniques)
+    const extraLimits = subclassLimits(character, subclasses)
+    const limits = limitStatus(character, classLevels, editableTechniques, extraLimits)
 
     // A class only offers the kinds its limits mention; custom techniques for the bender's element also show.
     const allowedKinds = new Set(limits.flatMap((entry) => entry.limit.kinds))
@@ -79,7 +81,8 @@ export function BuilderTechniquesPanel({
 
     // The class's own element first, then Universal, then Fighting techniques.
     const elements = [...new Set(classLevels.map((item) => item.characterClass.element))]
-    const kinds = [...elements, 'Universal', 'Fighting'].filter((kind): kind is string => Boolean(kind))
+    const dragonElements = extraLimits.flatMap((item) => item.limit.kinds)
+    const kinds = [...new Set([...elements, ...dragonElements]), 'Universal', 'Fighting', 'Dragon'].filter((kind): kind is string => Boolean(kind))
     const groups = kinds
         .map((kind) => ({
             kind,
@@ -174,7 +177,7 @@ export function BuilderTechniquesPanel({
                                     const level = levelOf(technique.id)
                                     const blocker = level
                                         ? null
-                                        : learnBlocker(character, technique, classLevels, editableTechniques, disciplines)
+                                        : learnBlocker(character, technique, classLevels, editableTechniques, disciplines, extraLimits)
 
                                     return (
                                         <div key={technique.id} className="technique-item">
@@ -197,23 +200,25 @@ export function BuilderTechniquesPanel({
 
                                             {level ? (
                                                 <span className="actions inline-actions">
-                                                    <select
-                                                        value={level}
-                                                        aria-label={`${technique.name} level`}
-                                                        onChange={(event) =>
-                                                            setLevel(technique.id, event.target.value as TechniqueLevel)
-                                                        }
-                                                    >
-                                                        {TECHNIQUE_LEVELS.map((option) => (
-                                                            <option
-                                                                key={option}
-                                                                value={option}
-                                                                disabled={option === 'Mastered' && level !== 'Mastered' && capReached}
-                                                            >
-                                                                {option}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                    {technique.element !== 'Dragon' && (
+                                                        <select
+                                                            value={level}
+                                                            aria-label={`${technique.name} level`}
+                                                            onChange={(event) =>
+                                                                setLevel(technique.id, event.target.value as TechniqueLevel)
+                                                            }
+                                                        >
+                                                            {TECHNIQUE_LEVELS.map((option) => (
+                                                                <option
+                                                                    key={option}
+                                                                    value={option}
+                                                                    disabled={option === 'Mastered' && level !== 'Mastered' && capReached}
+                                                                >
+                                                                    {option}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    )}
                                                     <button
                                                         className="secondary-button"
                                                         type="button"

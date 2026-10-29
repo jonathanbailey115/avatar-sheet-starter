@@ -1,4 +1,5 @@
 import { boonSlots, fitLevels } from '../engine/classLevels'
+import { DRAGON_ANCESTRIES } from '../data/dragonAncestry'
 import { findBoon } from '../data/epicBoons'
 import { computeMaxHp, getHitDie } from '../engine/hitPoints'
 import { getResources, usedOf } from '../engine/resources'
@@ -102,6 +103,8 @@ export function normalizeCharacter(
     }
     next.level = fitted.level
     next.extraClasses = fitted.extraClasses
+
+    if (next.dragonAncestry && !DRAGON_ANCESTRIES.some((item) => item.id === next.dragonAncestry)) next.dragonAncestry = ''
 
     // Epic Boons: only real ones, no repeats except Boon of the Element, with an ability where needed, and no more than earned.
     const earned = boonSlots(next, content.classes)

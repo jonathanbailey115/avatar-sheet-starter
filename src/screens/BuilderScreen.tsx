@@ -8,6 +8,7 @@ import { BuilderHomePanel } from '../character-builder/BuilderHomePanel'
 import { BuilderLineagePanel } from '../character-builder/BuilderLineagePanel'
 import { BuilderProficienciesPanel } from '../character-builder/BuilderProficienciesPanel'
 import { BuilderTechniquesPanel } from '../character-builder/BuilderTechniquesPanel'
+import { classProficiencies, withClassProficiencies } from '../engine/classProficiencies'
 import { characterDisplayName } from '../lib/character'
 import { withCustomBackground } from '../lib/customBackground'
 import { useActiveCharacter } from '../store/active'
@@ -207,7 +208,10 @@ export function BuilderScreen({
                 <BuilderEquipmentPanel
                     character={character}
                     setCharacter={setCharacter}
-                    lineage={lineages.find((item) => item.id === character.lineageId) ?? null}
+                    lineage={withClassProficiencies(
+                        lineages.find((item) => item.id === character.lineageId) ?? null,
+                        classProficiencies(character, { classes, subclasses }),
+                    )}
                 />
             )}
 
