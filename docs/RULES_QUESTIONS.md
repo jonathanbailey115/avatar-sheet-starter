@@ -35,6 +35,15 @@ Status legend: **OPEN** = needs your decision, **DECIDED** = already settled in 
 | M7 | **SRD feats** are added (Alert, Savage Attacker, Skilled, Grappler; written as short summaries, labelled Baseline 5e). More can be added later from the owner's D&D Beyond books. |
 | M8 | The misprinted "Bender Bender (Mage Slayer)" feat is named **Bender Slayer**. |
 | NPC levels | Any technique can be Trained or Mastered; only the number of Mastered / Trained techniques is capped by the class table's slots. The NPC generator's approach (as many as the slots) stays. |
+| DT1 | **Dragon Trainer** (Gamingbrew, `reference/GB_DragonTrainer_Class_V2.pdf`) is added as a homebrew class for the owner's campaign. Not part of gmbinder. The app carries a **condensed paraphrase** with the PDF's numbers and tables, credited to Gamingbrew; the PDF stays local. gmbinder wins any conflict. |
+| DT2 | **Theme:** Far Eastern dragons, ancestry by element. The PDF's five damage types stay; colours become this app's stand-in names: Ember (fire), Tide (cold), Stone (acid), Storm (lightning), Jade (poison). Draconic stays as the language. Subclass names stay Dragon Herald / Knight / Mage, with Avatar flavour text. |
+| DT3 | **Hit die:** lineage-based like every Avatar class (gmbinder wins over the PDF's d8). **Proficiencies:** all the PDF's (Wisdom and Charisma saves, 2 skills, simple weapons, light and medium armor) are added on top of the lineage. |
+| DT4 | **Dragon Mage** replaces Druid spells with technique slots of the dragon's element. Stand-in table in the section below, **owner approved the mapping**. Heroic Inspiration, Guidance and the Epic Boon feat are converted to what the app has, labelled as stand-ins. |
+| DT5 | **Dragon Techniques** are a separate technique kind (one level, spend a Training Die), learned up to the class's Techniques Known. The play sheet has a **full dragon companion panel** (stat block from level/Wisdom/proficiency, its own HP/temp HP/state, Breath uses, Rend/Tail/Breath rolls, Training Dice). |
+| MC1 | **Multiclassing** is a level per class; total level is the sum. Features, technique slots and resources come from each class's own levels. Saves and skills only from the first class; armor and weapon proficiencies from every class. |
+| MC2 | **Own-class multiclass** follows gmbinder (L219-229): another subclass of the same class, effective class level = the most levels in any one subclass. Applies to Dragon Trainer too (Wisdom 13 as the prerequisite score, a warning only). Extra subclasses need a **master**: the player records the master's name and ticks "my GM approved"; it shows on the sheet. |
+| MC3 | **Conflict GB L114 vs L229** (can a bender multiclass into another bending class?): ruled **GM approval only**. The builder warns and never blocks. Prerequisites are warnings only. |
+| AV1 | **The Avatar** is a new class, **stand-in draft** until the owner approves it: Avatar State, Energybending, past-life guidance, spirit connection, and a very late, GM-approved way to master the Avatar State (nearly permanent). A switch on the class chooses "starts with every element" or "unlocks elements through masters". |
 
 Still open: A11-A13 (defaults assumed: no Mixed nation with optional GM-approved extra lineage feature, Species step Human/Variant Human, gmbinder stays local). A10 is superseded by A6.
 
@@ -317,3 +326,15 @@ from the Feats section.
 | M7 | **Feats:** the source lists 30 removed feats and 24 homebrew or changed ones, and says the rest are unchanged 5e feats without printing them. | Only the 24 printed feats are in the app, as optional features you add in the builder. Standard 5e feats (Alert, Athlete, Resilient, Observant ...) that the Firebending and Airbending build notes recommend are missing until you decide whether to add the SRD versions. |
 | M8 | **"Bender Bender (Mage Slayer)"** looks like a typo in the source. | Kept as "Bender Bender". Tell me the intended name. |
 | M9 | **Feat effects:** ability score increases, expertise picks, extra techniques and the like are shown as text; nothing is applied to the sheet automatically. | Text only. |
+
+---
+
+## Dragon Mage table (proposed stand-in, mapping approved)
+
+The PDF's Dragon Mage casts Druid spells from 3rd level. This app has no spell system, so the same progression becomes technique slots of the dragon's element: the PDF's cantrips known = Practiced techniques known, prepared spells = techniques known in total, 1st / 2nd / 3rd-and-4th level slots = Practiced / Trained / Mastered slots. Element by ancestry: Ember = Fire, Tide = Water, Stone = Earth, Storm = Air, Jade = Water.
+
+## gmbinder conflict: bender into bender (resolved MC3)
+
+- GB L114: benders can multiclass into non-bending fighting styles; non-benders cannot take bending ones; classes with sub-classes can multiclass into their own class.
+- GB L229: benders can multiclass into "both Bending and Non-Bending classes".
+- Ruling: GM approval only (warn, never block).
