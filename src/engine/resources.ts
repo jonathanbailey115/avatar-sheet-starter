@@ -1,4 +1,4 @@
-import { bendingClassOf, classEntries, classLevelsOf } from './classLevels'
+import { classEntries, classLevelsOf } from './classLevels'
 import { getGrantedFeatures } from './features'
 import type { RulesContent } from '../lib/normalize'
 import type { Character, Recharge, TechniqueLevel } from '../types/schema'
@@ -39,15 +39,17 @@ export function getResources(
     const resources: ResourceDef[] = []
     const classLevels = classLevelsOf(character, content.classes)
     // Technique slots come from the one bending class; every class's own pools come from its own level.
-    const bending = bendingClassOf(classLevels)
-    const characterClass = bending?.characterClass
-    const slotRow = characterClass?.techniqueSlots?.[Math.min(20, Math.max(1, bending?.level ?? 1)) - 1]
-    const counts: SlotCounts = {
-        Practiced: slotRow?.practiced ?? 0,
-        Trained: slotRow?.trained ?? 0,
-        Mastered: slotRow?.mastered ?? 0,
+    const counts: SlotCounts = { Practiced: 0, Trained: 0, Mastered: 0 }
+    const origins: string[] = []
+    // Every class with a technique slot table adds its row (a character has one bending class; only the Avatar has several).
+    for (const { characterClass: owner, level } of classLevels) {
+        const row = owner.techniqueSlots?.[Math.min(20, Math.max(1, level)) - 1]
+        if (!row) continue
+        counts.Practiced += row.practiced
+        counts.Trained += row.trained
+        counts.Mastered += row.mastered
+        origins.push(owner.name)
     }
-    const origins: string[] = slotRow && characterClass ? [characterClass.name] : []
     // A subclass can add slots of its own (Dragon Mage), added to the bending class's.
     for (const entry of classEntries(character)) {
         const subclass = content.subclasses.find((item) => item.id === entry.subclassId && item.classId === entry.classId)

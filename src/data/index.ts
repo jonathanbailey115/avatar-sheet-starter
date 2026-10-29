@@ -1,6 +1,7 @@
 import { airbendingFeatures } from './airbending'
 import { backgroundFeatures } from './backgrounds'
 import { earthbendingFeatures } from './earthbending'
+import { avatarFeatures } from './avatar'
 import { dragonSubclassFeatures, dragonTrainerFeatures } from './dragonTrainer'
 import { epicBoonFeatures } from './epicBoons'
 import { featFeatures } from './feats'
@@ -36,6 +37,7 @@ export const features: Feature[] = [
     ...epicBoonFeatures,
     ...dragonTrainerFeatures,
     ...dragonSubclassFeatures,
+    ...avatarFeatures,
 ]
 
 export { backgrounds } from './backgrounds'

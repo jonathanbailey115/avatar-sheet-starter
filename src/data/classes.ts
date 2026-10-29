@@ -1,6 +1,7 @@
 import type { CharacterClass, CharacterSubclass } from '../types/schema'
 import { airbendingClass } from './airbending'
 import { BENDER_ASI_LEVELS } from './classFeature'
+import { avatarClass } from './avatar'
 import { dragonTrainerClass, dragonTrainerSubclasses } from './dragonTrainer'
 import { earthbendingSubclasses } from './earthbending'
 import { firebendingClass, firebendingSubclasses } from './firebending'
@@ -126,6 +127,7 @@ export const characterClasses: CharacterClass[] = [
     firebendingClass,
     airbendingClass,
     dragonTrainerClass,
+    avatarClass,
 ]
 
 export const characterSubclasses: CharacterSubclass[] = [

@@ -205,3 +205,52 @@ describe('what each class gives a multiclass character', () => {
         expect(learnBlocker(multi, rare, levels, realContent.techniques)).toMatch(/level 8/)
     })
 })
+
+describe('the Avatar', () => {
+    const avatar = (overrides: Partial<Character> = {}) =>
+        character({
+            classId: 'avatar',
+            subclassId: undefined,
+            level: 6,
+            wisdom: 16,
+            constitution: 14,
+            charisma: 14,
+            strength: 14,
+            extraClasses: [extra({ classId: 'earthbending', level: 1 }), extra({ id: 'x2', classId: 'waterbending', level: 1 })],
+            ...overrides,
+        })
+    const warn = (c: Character) => multiclassWarnings(c, characterClasses, characterSubclasses)
+
+    it('starting with every element needs no masters', () => {
+        expect(warn(avatar({ avatarAllElements: true }))).toEqual([])
+    })
+
+    it('otherwise each new element needs a master and approval', () => {
+        const notes = warn(avatar()).join(' ')
+        expect(notes).toContain('learns a new element from a master')
+        expect(notes).toContain('approve this element')
+        const ready = avatar({
+            extraClasses: [
+                extra({ classId: 'earthbending', level: 1, master: 'Master Bei', gmApproved: true }),
+                extra({ id: 'x2', classId: 'waterbending', level: 1, master: 'Master Pakku', gmApproved: true }),
+            ],
+        })
+        expect(warn(ready)).toEqual([])
+    })
+
+    it('technique slots add up across the bending classes it has', () => {
+        const c = avatar({ level: 12, extraClasses: [extra({ classId: 'earthbending', level: 5 }), extra({ id: 'x2', classId: 'waterbending', level: 5 })] })
+        const slots = getResources(c, realContent).find((item) => item.id === 'slots:Practiced')
+        const earth = characterClasses.find((item) => item.id === 'earthbending')!.techniqueSlots![4].practiced
+        const water = characterClasses.find((item) => item.id === 'waterbending')!.techniqueSlots![4].practiced
+        expect(slots?.max).toBe(earth + water)
+        expect(slots?.origin).toBe('Earthbending + Waterbending')
+    })
+
+    it('Avatar State and Past Life Guidance are pools that follow level', () => {
+        const at = (level: number) => Object.fromEntries(getResources(avatar({ level, extraClasses: [] }), realContent).map((item) => [item.id, item.max]))
+        expect(at(1)).toEqual({ 'avatar:past-lives': 2 })
+        expect(at(8)).toMatchObject({ 'avatar:past-lives': 3, 'avatar:avatar-state': 1 })
+        expect(at(17)['avatar:avatar-state']).toBe(2)
+    })
+})

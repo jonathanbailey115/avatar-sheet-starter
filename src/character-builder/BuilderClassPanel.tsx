@@ -1,5 +1,6 @@
 import { fitLevels, primaryLevelOf } from '../engine/classLevels'
 import { ClassPicker } from './ClassPicker'
+import { AvatarCard } from './AvatarCard'
 import { BoonsCard } from './BoonsCard'
 import { DragonCard } from './DragonCard'
 import { MulticlassCard } from './MulticlassCard'
@@ -201,6 +202,8 @@ export function BuilderClassPanel({
             </SectionCard>
 
             <MulticlassCard character={character} setCharacter={setCharacter} classes={editableClasses} subclasses={editableSubclasses} />
+
+            <AvatarCard character={character} setCharacter={setCharacter} classes={editableClasses} />
 
             <DragonCard character={character} setCharacter={setCharacter} classes={editableClasses} />
 

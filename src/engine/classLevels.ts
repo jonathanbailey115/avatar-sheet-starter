@@ -141,7 +141,8 @@ export const MULTICLASS_MINIMUM = 13
  * anything: the GM decides in play (owner decision MC3).
  */
 export function multiclassWarnings(
-    character: Pick<Character, AbilityName | 'level' | 'classId' | 'subclassId' | 'extraClasses' | 'species' | 'speciesAbilityChoices'>,
+    character: Pick<Character, AbilityName | 'level' | 'classId' | 'subclassId' | 'extraClasses' | 'species' | 'speciesAbilityChoices'> &
+        Partial<Pick<Character, 'avatarAllElements'>>,
     classes: CharacterClass[],
     subclasses: CharacterSubclass[],
 ): string[] {
@@ -149,6 +150,11 @@ export function multiclassWarnings(
     const scores = abilityScoresOf(character)
     const seen: Array<{ classId: string; subclassId?: string }> = []
     if (character.classId) seen.push({ classId: character.classId, subclassId: character.subclassId })
+    // The Avatar bends every element, so bending classes are not "another element": they need a master unless the GM lets the Avatar start with all of them.
+    const isAvatar = [character.classId, ...character.extraClasses.map((extra) => extra.classId)].some(
+        (id) => classes.find((item) => item.id === id)?.anyElement,
+    )
+    const startsWithEverything = Boolean(character.avatarAllElements)
 
     for (const extra of character.extraClasses) {
         const characterClass = classes.find((item) => item.id === extra.classId)
@@ -163,6 +169,11 @@ export function multiclassWarnings(
             }
             if (!extra.master.trim()) warnings.push(`${label}: a second ${characterClass.subclassName ?? 'subclass'} needs a master who taught it (GM rule).`)
             if (!extra.gmApproved) warnings.push(`${label}: waiting for the GM to approve this extra ${characterClass.subclassName ?? 'subclass'}.`)
+        } else if (isAvatar && characterClass.element) {
+            if (!startsWithEverything) {
+                if (!extra.master.trim()) warnings.push(`${label}: the Avatar learns a new element from a master. Record who taught it.`)
+                if (!extra.gmApproved) warnings.push(`${label}: waiting for the GM to approve this element.`)
+            }
         } else if (!extra.gmApproved) {
             if (characterClass.element && !havingBending) {
                 warnings.push(`${label}: non-benders can't take bending classes (gmbinder). Needs GM approval.`)
