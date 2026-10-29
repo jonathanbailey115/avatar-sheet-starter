@@ -52,6 +52,9 @@ Status legend: **OPEN** = needs your decision, **DECIDED** = already settled in 
 | UI1 | **Techniques tab:** a separate slot summary (bending slots and Dragon Mage slots) and the technique library split into one section per bending style, so you do not scroll through all of Airbending to reach Earthbending. |
 | UI2 | **Masters and approvals** appear on the campaign screen for the GM only, as a note in a new section below the important parts. |
 | NPC1 | **Random NPCs** can include Dragon Trainers (an option, off by default: lore says they are rare, like the Sun Warriors) and can be multiclassed (an option, off by default). |
+| AV3 | **Avatar State Exhaustion:** the Avatar who has **not** mastered it gains one level of Exhaustion whenever it ends. The Avatar who has mastered it gains none, unless they took damage equal to half their maximum Hit Points or more while in it (owner approved the threshold). |
+| NPC2 | **Multiclass NPCs** may take a second subclass of their own class (gmbinder own-class multiclass) as well as another non-bending class. **Dragon Trainer odds** in random NPCs stay at about a third of other non-bending classes (owner approved). |
+| UI3 | The play sheet groups known techniques by style. **The Avatar and Dragon Trainer are visible to every player** (no hiding switch). |
 
 Still open: A11-A13 (defaults assumed: no Mixed nation with optional GM-approved extra lineage feature, Species step Human/Variant Human, gmbinder stays local). A10 is superseded by A6.
 

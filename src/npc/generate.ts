@@ -86,22 +86,47 @@ function withClass(character: Character, characterClass: CharacterClass | null, 
 }
 
 /**
- * A second class for a multiclassed NPC. A bender takes a non-bending class (gmbinder), a non-bender another
- * non-bending class. The extra class gets between 1 and half the NPC's levels.
+ * A second class for a multiclassed NPC. A bender takes a non-bending class (gmbinder) or takes their own
+ * class again for a second subclass; a non-bender takes another non-bending class. The extra class gets
+ * between 1 and half the NPC's levels (enough levels to reach its subclass when it is a second subclass).
  */
 function withExtraClass(character: Character, ctx: NpcContext, rng: Rng): Character {
     if (character.level < 2) return character
-    const options = ctx.content.classes.filter(
-        (item) => !item.element && item.id !== character.classId && randomClass(item, ctx),
-    )
-    const picked = pickOne(options, rng)
+    const others = ctx.content.classes.filter((item) => !item.element && item.id !== character.classId && randomClass(item, ctx))
+    const own = ownClassOption(character, ctx)
+    const choices: Array<CharacterClass | 'own'> = [...others, ...(own ? (['own'] as const) : [])]
+    const picked = pickOne(choices, rng)
     if (!picked) return character
+
+    if (picked === 'own' && own) {
+        const room = Math.floor(character.level / 2) - own.unlock
+        const level = own.unlock + Math.floor(rng() * (Math.max(0, room) + 1))
+        const subclass = pickOne(own.others, rng)
+        if (!subclass) return character
+        return {
+            ...character,
+            extraClasses: [{ id: newId(), classId: character.classId, subclassId: subclass.id, level, master: 'a travelling master', gmApproved: true }],
+        }
+    }
+
+    const characterClass = picked as CharacterClass
     const level = 1 + Math.floor(rng() * Math.max(1, Math.floor(character.level / 2)))
-    const subclasses = ctx.content.subclasses.filter((item) => item.classId === picked.id && item.unlockLevel <= level)
+    const subclasses = ctx.content.subclasses.filter((item) => item.classId === characterClass.id && item.unlockLevel <= level)
     return {
         ...character,
-        extraClasses: [{ id: newId(), classId: picked.id, subclassId: pickOne(subclasses, rng)?.id, level, master: '', gmApproved: true }],
+        extraClasses: [{ id: newId(), classId: characterClass.id, subclassId: pickOne(subclasses, rng)?.id, level, master: '', gmApproved: true }],
     }
+}
+
+/** A second subclass of the NPC's own class: possible when the class has another subclass and the levels can reach both. */
+function ownClassOption(character: Character, ctx: NpcContext) {
+    if (!character.subclassId) return null
+    const subclasses = ctx.content.subclasses.filter((item) => item.classId === character.classId)
+    const others = subclasses.filter((item) => item.id !== character.subclassId)
+    const unlock = Math.min(...subclasses.map((item) => item.unlockLevel))
+    // The first subclass must still be reachable with the levels the extra entry leaves.
+    if (others.length === 0 || Math.floor(character.level / 2) < unlock || character.level - Math.floor(character.level / 2) < unlock) return null
+    return { others, unlock }
 }
 
 function withAbilities(character: Character, ctx: NpcContext, rng: Rng): Character {

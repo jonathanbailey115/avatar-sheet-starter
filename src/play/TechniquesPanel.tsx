@@ -24,6 +24,17 @@ export function TechniquesPanel({ character, sheet, classes, subclasses, techniq
         return technique ? [{ known, technique }] : []
     })
 
+    // One section per style, bending styles first, so a long list is easy to read.
+    const order = ['Air', 'Water', 'Earth', 'Fire', 'Universal', 'Fighting', 'Dragon']
+    const titles: Record<string, string> = { Universal: 'Universal', Fighting: 'Fighting', Dragon: 'Dragon' }
+    const groups = order
+        .map((kind) => ({
+            kind,
+            title: titles[kind] ?? `${kind}bending`,
+            items: shown.filter(({ technique }) => technique.element === kind),
+        }))
+        .filter((group) => group.items.length > 0)
+
     return (
         <SectionCard title="Techniques">
             <p className="muted technique-summary">
@@ -38,20 +49,25 @@ export function TechniquesPanel({ character, sheet, classes, subclasses, techniq
                 </p>
             ) : (
                 <div className="detail-list">
-                    {shown.map(({ known, technique }) =>
-                        technique.element === 'Dragon' ? (
-                            <DragonTechniqueCard key={known.techniqueId} character={character} sheet={sheet} technique={technique} onChange={onChange} />
-                        ) : (
-                            <TechniqueCard
-                                key={known.techniqueId}
-                                character={character}
-                                sheet={sheet}
-                                technique={technique}
-                                known={known}
-                                onChange={onChange}
-                            />
-                        ),
-                    )}
+                    {groups.map((group) => (
+                        <div key={group.kind} className="technique-group">
+                            {groups.length > 1 && <h3>{group.title}</h3>}
+                            {group.items.map(({ known, technique }) =>
+                                technique.element === 'Dragon' ? (
+                                    <DragonTechniqueCard key={known.techniqueId} character={character} sheet={sheet} technique={technique} onChange={onChange} />
+                                ) : (
+                                    <TechniqueCard
+                                        key={known.techniqueId}
+                                        character={character}
+                                        sheet={sheet}
+                                        technique={technique}
+                                        known={known}
+                                        onChange={onChange}
+                                    />
+                                ),
+                            )}
+                        </div>
+                    ))}
                 </div>
             )}
         </SectionCard>

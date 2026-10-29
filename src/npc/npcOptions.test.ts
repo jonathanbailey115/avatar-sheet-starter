@@ -46,6 +46,7 @@ describe('random NPC options', () => {
 
     it('multiclass NPCs get a second non-bending class that uses part of their levels', () => {
         let withExtra = 0
+        let ownClass = 0
         for (let seed = 1; seed <= 60; seed += 1) {
             const level = 4 + (seed % 12)
             const { character } = generateNpc({ ...any, level, multiclass: true }, context, seeded(seed))
@@ -56,11 +57,22 @@ describe('random NPC options', () => {
             expect(entries).toHaveLength(2)
             expect(entries.reduce((sum, entry) => sum + entry.level, 0)).toBe(level)
             expect(entries.every((entry) => entry.level >= 1)).toBe(true)
-            const extraClass = realContent.classes.find((item) => item.id === character.extraClasses[0].classId)
-            expect(extraClass?.element).toBeUndefined()
+            const extra = character.extraClasses[0]
+            const extraClass = realContent.classes.find((item) => item.id === extra.classId)
+            if (extra.classId === character.classId) {
+                // A second subclass of the same class: a different one, with enough levels to have it.
+                expect(extra.subclassId).toBeDefined()
+                expect(extra.subclassId).not.toBe(character.subclassId)
+                const subclass = realContent.subclasses.find((item) => item.id === extra.subclassId)
+                expect(extra.level).toBeGreaterThanOrEqual(subclass!.unlockLevel)
+                ownClass += 1
+            } else {
+                expect(extraClass?.element).toBeUndefined()
+            }
             expect(buildStatBlock(character, realContent).subtitle).toContain('/')
         }
         expect(withExtra).toBeGreaterThan(40)
+        expect(ownClass).toBeGreaterThan(0)
     })
 
     it('stays single-classed by default, and rerolling the class keeps following the option', () => {
