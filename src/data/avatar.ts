@@ -43,7 +43,7 @@ export const avatarFeatures: Feature[] = [
         uses: 1,
         recharge: 'Long Rest',
     }),
-    feature('mastered-avatar-state', 'Mastering the Avatar State (GM approved)', 20, 'Very late game, and only when your GM approves (a story milestone). You can hold the Avatar State without a time limit: it no longer ends after 1 minute and you can choose when to end it. It still ends if you drop to 0 Hit Points, and ending it by choice costs no Exhaustion.'),
+    feature('mastered-avatar-state', 'Mastering the Avatar State (GM approved)', 20, 'Very late game, and only when your GM approves (a story milestone). You can hold the Avatar State without a time limit: it no longer ends after 1 minute and you can choose when to end it. It still ends if you drop to 0 Hit Points. Ending it costs no Exhaustion unless you took damage equal to half your maximum Hit Points or more while in it.'),
 ]
 
 export const avatarClass: CharacterClass = {
