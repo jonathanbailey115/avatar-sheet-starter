@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { HpBar } from '../components/HpBar'
 import SectionCard from '../components/SectionCard'
 import {
     applyDamage,
@@ -18,14 +19,6 @@ type HpPanelProps = {
     onChange: (update: (current: Character) => Character) => void
 }
 
-function healthClass(current: number, max: number): string {
-    if (max <= 0) return 'hp-bar-fill'
-    const ratio = current / max
-    if (ratio > 0.5) return 'hp-bar-fill hp-healthy'
-    if (ratio > 0.25) return 'hp-bar-fill hp-hurt'
-    return 'hp-bar-fill hp-critical'
-}
-
 const LIFE_LABEL = {
     conscious: '',
     dying: 'Unconscious and dying. Make death saving throws.',
@@ -40,7 +33,6 @@ export function HpPanel({ character, sheet, onChange }: HpPanelProps) {
 
     const value = Math.max(0, Math.floor(Number(amount) || 0))
     const { maxHp, currentHp, lifeState } = sheet
-    const percent = maxHp > 0 ? Math.round((currentHp / maxHp) * 100) : 0
     const noMax = maxHp <= 0
     const dead = lifeState === 'dead'
 
@@ -58,16 +50,7 @@ export function HpPanel({ character, sheet, onChange }: HpPanelProps) {
                 {character.tempHp > 0 && <span className="hp-temp">+{character.tempHp} temp</span>}
             </div>
 
-            <div
-                className="hp-bar"
-                role="progressbar"
-                aria-label="Hit points"
-                aria-valuemin={0}
-                aria-valuemax={maxHp}
-                aria-valuenow={currentHp}
-            >
-                <div className={healthClass(currentHp, maxHp)} style={{ width: `${percent}%` }} />
-            </div>
+            <HpBar current={currentHp} max={maxHp} label="Hit points" />
 
             {noMax && (
                 <p className="status-message">

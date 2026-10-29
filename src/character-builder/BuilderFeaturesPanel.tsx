@@ -137,23 +137,6 @@ export function BuilderFeaturesPanel({
         }
     }, [selectedFeatureId, visibleFeatures])
 
-    useEffect(() => {
-        setCharacter((current) => {
-            const validSelectedFeatureIds = current.selectedFeatureIds.filter((featureId) =>
-                editableFeatures.some((feature) => feature.id === featureId),
-            )
-
-            if (validSelectedFeatureIds.length === current.selectedFeatureIds.length) {
-                return current
-            }
-
-            return {
-                ...current,
-                selectedFeatureIds: validSelectedFeatureIds,
-            }
-        })
-    }, [editableFeatures, setCharacter])
-
     const selectedFeature =
         visibleFeatures.find((feature) => feature.id === selectedFeatureId) ??
         editableFeatures.find((feature) => feature.id === selectedFeatureId) ??

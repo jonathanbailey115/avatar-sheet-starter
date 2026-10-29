@@ -174,7 +174,7 @@ export function BuilderClassPanel({
                                 ...current,
                                 level: Number.isNaN(event.target.valueAsNumber)
                                     ? 1
-                                    : event.target.valueAsNumber,
+                                    : Math.min(20, Math.max(1, Math.round(event.target.valueAsNumber))),
                             }))
                         }
                     />

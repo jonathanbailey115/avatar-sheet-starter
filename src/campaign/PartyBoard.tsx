@@ -1,4 +1,5 @@
 import { ConfirmButton } from '../components/ConfirmButton'
+import { HpBar } from '../components/HpBar'
 import type { CampaignMember, MemberStatus } from './types'
 
 type PartyBoardProps = {
@@ -11,14 +12,6 @@ type PartyBoardProps = {
 
 const STATE_LABEL = { conscious: '', dying: 'Dying', stable: 'Stable at 0', dead: 'Dead' } as const
 
-function healthClass(hp: number, maxHp: number): string {
-    if (maxHp <= 0) return 'hp-bar-fill'
-    const ratio = hp / maxHp
-    if (ratio > 0.5) return 'hp-bar-fill hp-healthy'
-    if (ratio > 0.25) return 'hp-bar-fill hp-hurt'
-    return 'hp-bar-fill hp-critical'
-}
-
 /** Everyone at the table with their current HP and state. This is the GM's view of the party. */
 export function PartyBoard({ members, statuses, myUserId, isGm, onKick }: PartyBoardProps) {
     const statusOf = (userId: string) => statuses.find((item) => item.userId === userId)?.summary
@@ -28,7 +21,6 @@ export function PartyBoard({ members, statuses, myUserId, isGm, onKick }: PartyB
         <div className="party-board">
             {ordered.map((member) => {
                 const summary = statusOf(member.userId)
-                const percent = summary && summary.maxHp > 0 ? Math.round((summary.hp / summary.maxHp) * 100) : 0
 
                 return (
                     <article key={member.userId} className={`party-card party-${summary?.lifeState ?? 'none'}`}>
@@ -46,9 +38,7 @@ export function PartyBoard({ members, statuses, myUserId, isGm, onKick }: PartyB
                                 <p className="muted party-sub">
                                     {summary.name} · {summary.className} {summary.level} · {summary.lineageName}
                                 </p>
-                                <div className="hp-bar" role="progressbar" aria-label={`${summary.name} hit points`} aria-valuemin={0} aria-valuemax={summary.maxHp} aria-valuenow={summary.hp}>
-                                    <div className={healthClass(summary.hp, summary.maxHp)} style={{ width: `${percent}%` }} />
-                                </div>
+                                <HpBar current={summary.hp} max={summary.maxHp} label={`${summary.name} hit points`} />
                                 <div className="party-stats">
                                     <span>
                                         <b>{summary.hp}</b>/{summary.maxHp}

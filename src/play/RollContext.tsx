@@ -72,7 +72,6 @@ type RollProviderProps = {
 }
 
 export function RollProvider({ character, sheet, onChange, children }: RollProviderProps) {
-    const entries = useRollLog((state) => state.entries)
     const add = useRollLog((state) => state.add)
     const [nextMode, setNextMode] = useState<RollMode>('normal')
     const [pending, setPending] = useState<PendingRoll | null>(null)
@@ -283,7 +282,7 @@ export function RollProvider({ character, sheet, onChange, children }: RollProvi
             lastAttack: (attackId) => {
                 // Newest first: the latest roll tied to this attack decides. If damage was
                 // already rolled for it, the attack has been "used up".
-                const latest = entries.find(
+                const latest = useRollLog.getState().entries.find(
                     (entry) =>
                         entry.attackId === attackId &&
                         entry.characterId === character.id &&
@@ -293,7 +292,7 @@ export function RollProvider({ character, sheet, onChange, children }: RollProvi
             },
         }),
         // `character` and `sheet` must be listed: training rolls read the current techniques and bending.
-        [nextMode, start, log, onChange, sheet, entries, character],
+        [nextMode, start, log, onChange, sheet, character],
     )
 
     return (

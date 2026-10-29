@@ -76,9 +76,13 @@ export function LibraryScreen({ onPlay, onEdit }: { onPlay: () => void; onEdit: 
                         >
                             Download the raw data
                         </button>
-                        <button className="secondary-button" type="button" onClick={dismissQuarantine}>
+                        <ConfirmButton
+                            className="secondary-button"
+                            question="Delete the unloaded characters for good? Download the raw data first if you want a copy."
+                            onConfirm={dismissQuarantine}
+                        >
                             Dismiss (deletes it)
-                        </button>
+                        </ConfirmButton>
                     </div>
                 </div>
             )}

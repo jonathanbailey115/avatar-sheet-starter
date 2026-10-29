@@ -141,7 +141,7 @@ export function BuilderEquipmentPanel({
                 ) : (
                     <div className="npc-list">
                         {character.inventoryItems.map((item, index) => (
-                            <article key={`${item}-${index}`} className="npc-item">
+                            <article key={index} className="npc-item">
                                 <label>
                                     Item
                                     <input

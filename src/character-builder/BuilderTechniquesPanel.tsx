@@ -43,6 +43,8 @@ export function BuilderTechniquesPanel({
             technique.name.toLowerCase().includes(query.trim().toLowerCase()),
     )
 
+    const disciplines = disciplinesOf(character, subclasses, features)
+
     const levelOf = (techniqueId: string): TechniqueLevel | null =>
         character.knownTechniques.find((known) => known.techniqueId === techniqueId)?.level ?? null
 
@@ -164,7 +166,7 @@ export function BuilderTechniquesPanel({
                                     const level = levelOf(technique.id)
                                     const blocker = level
                                         ? null
-                                        : learnBlocker(character, technique, selectedClass, editableTechniques, disciplinesOf(character, subclasses, features))
+                                        : learnBlocker(character, technique, selectedClass, editableTechniques, disciplines)
 
                                     return (
                                         <div key={technique.id} className="technique-item">

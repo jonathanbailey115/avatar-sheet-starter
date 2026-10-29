@@ -1,3 +1,4 @@
+import { netMode } from '../engine/effects'
 import type { SituationalOption } from '../engine/effects'
 import type { RollMode } from '../engine/rolls'
 import type { StatLine } from '../engine/statLine'
@@ -15,12 +16,7 @@ export function mergeSources(line: StatLine, forced: RollMode, chosen: Situation
         ...(forced === 'disadvantage' ? ['Chosen when rolling'] : []),
     ]
 
-    const mode: RollMode =
-        advantage.length > 0 && disadvantage.length === 0
-            ? 'advantage'
-            : disadvantage.length > 0 && advantage.length === 0
-              ? 'disadvantage'
-              : 'normal'
+    const mode: RollMode = netMode(advantage.length, disadvantage.length)
 
     const notes = [
         ...advantage.map((source) => `Advantage: ${source}`),

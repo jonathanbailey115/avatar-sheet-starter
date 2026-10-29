@@ -202,10 +202,19 @@ export function AbilityMethods({ character, setCharacter }: Props) {
                     </button>
                 ))}
             </div>
-            {method === 'manual' && <Manual character={character} setCharacter={setCharacter} />}
-            {method === 'array' && <StandardArray character={character} setCharacter={setCharacter} />}
-            {method === 'pointbuy' && <PointBuy character={character} setCharacter={setCharacter} />}
-            {method === 'roll' && <RolledScores character={character} setCharacter={setCharacter} />}
+            {/* All four stay mounted so a half-finished assignment survives switching tabs. */}
+            <div hidden={method !== 'manual'}>
+                <Manual character={character} setCharacter={setCharacter} />
+            </div>
+            <div hidden={method !== 'array'}>
+                <StandardArray character={character} setCharacter={setCharacter} />
+            </div>
+            <div hidden={method !== 'pointbuy'}>
+                <PointBuy character={character} setCharacter={setCharacter} />
+            </div>
+            <div hidden={method !== 'roll'}>
+                <RolledScores character={character} setCharacter={setCharacter} />
+            </div>
         </div>
     )
 }

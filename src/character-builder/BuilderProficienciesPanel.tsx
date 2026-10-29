@@ -1,5 +1,7 @@
 import { abilityScoresOf } from '../engine/abilityScores'
 import {
+    ABILITIES,
+    ABILITY_NAMES,
     SKILL_ABILITIES,
     formatModifier,
     getAbilityModifier,
@@ -38,39 +40,7 @@ type BuilderProficienciesPanelProps = {
     editableBackgrounds: Background[]
 }
 
-const savingThrowOptions: Array<{ key: AbilityName; label: string }> = [
-    { key: 'strength', label: 'Strength' },
-    { key: 'dexterity', label: 'Dexterity' },
-    { key: 'constitution', label: 'Constitution' },
-    { key: 'intelligence', label: 'Intelligence' },
-    { key: 'wisdom', label: 'Wisdom' },
-    { key: 'charisma', label: 'Charisma' },
-]
-
-const skillOptions: SkillName[] = [
-    'Acrobatics',
-    'Animal Handling',
-    'Arcana',
-    'Athletics',
-    'Deception',
-    'History',
-    'Insight',
-    'Intimidation',
-    'Investigation',
-    'Medicine',
-    'Nature',
-    'Perception',
-    'Performance',
-    'Persuasion',
-    'Religion',
-    'Sleight of Hand',
-    'Stealth',
-    'Survival',
-]
-
-function formatAbilityName(ability: AbilityName) {
-    return ability.charAt(0).toUpperCase() + ability.slice(1)
-}
+const SKILLS = Object.keys(SKILL_ABILITIES) as SkillName[]
 
 export function BuilderProficienciesPanel({
     character,
@@ -80,6 +50,7 @@ export function BuilderProficienciesPanel({
     editableBackgrounds,
 }: BuilderProficienciesPanelProps) {
     const proficiencyBonus = getProficiencyBonus(character.level)
+    const scores = abilityScoresOf(character)
 
     const toggleSavingThrow = (ability: AbilityName) => {
         setCharacter((current) => {
@@ -174,8 +145,7 @@ export function BuilderProficienciesPanel({
     }
 
     const getSaveTotal = (ability: AbilityName) => {
-        const score = abilityScoresOf(character)[ability]
-        const modifier = getAbilityModifier(score)
+        const modifier = getAbilityModifier(scores[ability])
         const proficient = character.savingThrowProficiencies.includes(ability)
 
         return modifier + (proficient ? proficiencyBonus : 0)
@@ -183,8 +153,7 @@ export function BuilderProficienciesPanel({
 
     const getSkillTotal = (skill: SkillName) => {
         const ability = SKILL_ABILITIES[skill]
-        const score = abilityScoresOf(character)[ability]
-        const modifier = getAbilityModifier(score)
+        const modifier = getAbilityModifier(scores[ability])
         const proficient = character.skillProficiencies.includes(skill)
 
         return modifier + (proficient ? proficiencyBonus : 0)
@@ -212,22 +181,20 @@ export function BuilderProficienciesPanel({
 
             <SectionCard title="Saving Throws">
                 <div className="checkbox-list">
-                    {savingThrowOptions.map((option) => {
-                        const score = Number(character[option.key] ?? 0)
-                        const baseModifier = getAbilityModifier(score)
-                        const isProficient =
-                            character.savingThrowProficiencies.includes(option.key)
-                        const total = getSaveTotal(option.key)
+                    {ABILITIES.map((ability) => {
+                        const baseModifier = getAbilityModifier(scores[ability])
+                        const isProficient = character.savingThrowProficiencies.includes(ability)
+                        const total = getSaveTotal(ability)
 
                         return (
-                            <label key={option.key} className="checkbox-item">
+                            <label key={ability} className="checkbox-item">
                                 <input
                                     type="checkbox"
                                     checked={isProficient}
-                                    onChange={() => toggleSavingThrow(option.key)}
+                                    onChange={() => toggleSavingThrow(ability)}
                                 />
                                 <span>
-                                    <strong>{option.label}</strong> — {formatModifier(total)}
+                                    <strong>{ABILITY_NAMES[ability]}</strong> — {formatModifier(total)}
                                     <br />
                                     <small>
                                         Base {formatModifier(baseModifier)}
@@ -242,10 +209,9 @@ export function BuilderProficienciesPanel({
 
             <SectionCard title="Skills">
                 <div className="checkbox-list">
-                    {skillOptions.map((skill) => {
+                    {SKILLS.map((skill) => {
                         const ability = SKILL_ABILITIES[skill]
-                        const score = abilityScoresOf(character)[ability]
-                        const baseModifier = getAbilityModifier(score)
+                        const baseModifier = getAbilityModifier(scores[ability])
                         const isProficient = character.skillProficiencies.includes(skill)
                         const total = getSkillTotal(skill)
 
@@ -260,7 +226,7 @@ export function BuilderProficienciesPanel({
                                     <strong>{skill}</strong> — {formatModifier(total)}
                                     <br />
                                     <small>
-                                        {formatAbilityName(ability)} · Base {formatModifier(baseModifier)}
+                                        {ABILITY_NAMES[ability]} · Base {formatModifier(baseModifier)}
                                         {isProficient ? ` + proficiency (+${proficiencyBonus})` : ''}
                                     </small>
                                 </span>

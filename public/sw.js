@@ -30,7 +30,7 @@ async function networkFirst(request) {
         if (fresh.ok) cache.put(request, fresh.clone())
         return fresh
     } catch (error) {
-        const saved = (await cache.match(request)) || (await cache.match('/'))
+        const saved = (await cache.match(request)) || (request.mode === 'navigate' ? await cache.match('/') : undefined)
         if (saved) return saved
         throw error
     }

@@ -133,7 +133,23 @@ export function BuilderScreen({
                     nations={nations}
                     filteredLineages={filteredLineages}
                     handleNationChange={(nation) =>
-                        setCharacter((current) => ({ ...current, nation }))
+                        setCharacter((current) => {
+                            // A lineage from another nation would keep granting things without showing in the picker.
+                            const keep = lineages.some(
+                                (item) => item.id === current.lineageId && (item.nation === 'Any' || item.nation === nation),
+                            )
+                            return keep
+                                ? { ...current, nation }
+                                : {
+                                      ...current,
+                                      nation,
+                                      lineageId: '',
+                                      lineageSavingThrowChoices: [],
+                                      lineageSkillChoices: [],
+                                      lineageToolChoices: [],
+                                      lineageFavoredTerrains: [],
+                                  }
+                        })
                     }
                     editableFeatures={features}
                 />

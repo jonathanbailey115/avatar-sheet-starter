@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
+import { ABILITY_NAMES } from '../engine/abilities'
 import {
     applyChoiceLimit,
     isSavesMigrated,
@@ -13,7 +14,6 @@ import type {
     Feature,
     Lineage,
     Nation,
-    SkillName,
 } from '../types/schema'
 
 const LAY_OF_THE_LAND_FEATURE_ID = 'lineage-earth-kingdom-lay-of-the-land'
@@ -46,8 +46,59 @@ type BuilderLineagePanelProps = {
     editableFeatures: Feature[]
 }
 
-function formatAbilityLabel(ability: AbilityName) {
-    return ability.charAt(0).toUpperCase() + ability.slice(1)
+type ChoiceField = 'lineageSavingThrowChoices' | 'lineageSkillChoices' | 'lineageToolChoices'
+
+/** "Choose N" checkboxes for a lineage grant, with the count and the caption about what it feeds. */
+function ChoiceList({
+    title,
+    noun,
+    options,
+    selected,
+    cap,
+    caption,
+    labelOf = (option) => option,
+    onToggle,
+}: {
+    title: string
+    noun: string
+    options: string[]
+    selected: string[]
+    cap: number
+    caption?: string
+    labelOf?: (option: string) => string
+    onToggle: (option: string) => void
+}) {
+    return (
+        <SectionCard title={title}>
+            <p>
+                Choose {cap} {noun} option{cap === 1 ? '' : 's'}:
+            </p>
+            <p>
+                Selected: {selected.length} / {cap}
+            </p>
+            {caption && (
+                <p>
+                    <small>{caption}</small>
+                </p>
+            )}
+            <div className="checkbox-list">
+                {options.map((option) => {
+                    const isChecked = selected.includes(option)
+                    return (
+                        <label key={option} className="checkbox-item">
+                            <input
+                                type="checkbox"
+                                checked={isChecked}
+                                disabled={!isChecked && selected.length >= cap}
+                                onChange={() => onToggle(option)}
+                            />
+                            <span>{labelOf(option)}</span>
+                        </label>
+                    )
+                })}
+            </div>
+        </SectionCard>
+    )
 }
 
 export function BuilderLineagePanel({
@@ -157,72 +208,14 @@ export function BuilderLineagePanel({
         }))
     }
 
-    const toggleLineageSavingThrowChoice = (ability: AbilityName) => {
-        const choiceSet = selectedLineage?.savingThrowChoices
-
-        if (!choiceSet) {
-            return
-        }
-
+    const toggleChoice = (field: ChoiceField, choiceSet: { choose: number; options: string[] } | undefined, choice: string) => {
+        if (!choiceSet) return
         setCharacter((current) => {
-            const currentSelections = applyChoiceLimit(
-                current.lineageSavingThrowChoices,
-                choiceSet,
-            )
-
-            if (currentSelections.includes(ability)) {
-                return {
-                    ...current,
-                    lineageSavingThrowChoices: (current.lineageSavingThrowChoices ?? []).filter(
-                        (item) => item !== ability,
-                    ),
-                }
-            }
-
-            if (currentSelections.length >= choiceSet.choose) {
-                return current
-            }
-
-            return {
-                ...current,
-                lineageSavingThrowChoices: [
-                    ...(current.lineageSavingThrowChoices ?? []),
-                    ability,
-                ],
-            }
-        })
-    }
-
-    const toggleLineageSkillChoice = (skill: SkillName) => {
-        const choiceSet = selectedLineage?.skillChoices
-
-        if (!choiceSet) {
-            return
-        }
-
-        setCharacter((current) => {
-            const currentSelections = applyChoiceLimit(
-                current.lineageSkillChoices,
-                choiceSet,
-            )
-
-            if (currentSelections.includes(skill)) {
-                return {
-                    ...current,
-                    lineageSkillChoices: (current.lineageSkillChoices ?? []).filter(
-                        (item) => item !== skill,
-                    ),
-                }
-            }
-
-            if (currentSelections.length >= choiceSet.choose) {
-                return current
-            }
-
-            return {
-                ...current,
-                lineageSkillChoices: [...(current.lineageSkillChoices ?? []), skill],
-            }
+            const stored = (current[field] ?? []) as string[]
+            const valid = applyChoiceLimit(stored, choiceSet)
+            if (valid.includes(choice)) return { ...current, [field]: stored.filter((item) => item !== choice) }
+            if (valid.length >= choiceSet.choose) return current
+            return { ...current, [field]: [...stored, choice] }
         })
     }
 
@@ -244,39 +237,6 @@ export function BuilderLineagePanel({
     const toolsCaption = isToolsMigrated(character)
         ? 'These selections are included in your current tool proficiencies.'
         : 'Lineage tool choices are recorded here. Tool proficiency integration begins after you edit tools in the Proficiencies panel.'
-
-    const toggleLineageToolChoice = (tool: string) => {
-        const choiceSet = selectedLineage?.toolChoices
-
-        if (!choiceSet) {
-            return
-        }
-
-        setCharacter((current) => {
-            const currentSelections = applyChoiceLimit(
-                current.lineageToolChoices,
-                choiceSet,
-            )
-
-            if (currentSelections.includes(tool)) {
-                return {
-                    ...current,
-                    lineageToolChoices: (current.lineageToolChoices ?? []).filter(
-                        (item) => item !== tool,
-                    ),
-                }
-            }
-
-            if (currentSelections.length >= choiceSet.choose) {
-                return current
-            }
-
-            return {
-                ...current,
-                lineageToolChoices: [...(current.lineageToolChoices ?? []), tool],
-            }
-        })
-    }
 
     const toggleFavoredTerrain = (terrain: string) => {
         if (!FAVORED_TERRAINS.includes(terrain as typeof FAVORED_TERRAINS[number])) return
@@ -353,125 +313,50 @@ export function BuilderLineagePanel({
                 )}
             </SectionCard>
 
-            {(lineageSavingThrows.length > 0 || hasSavingThrowChoices) && (
+            {lineageSavingThrows.length > 0 && (
                 <SectionCard title="Lineage Saving Throws">
-                    {lineageSavingThrows.length > 0 && (
-                        <p>
-                            <strong>Lineage-granted saving throws:</strong>{' '}
-                            {lineageSavingThrows.map(formatAbilityLabel).join(', ')}
-                        </p>
-                    )}
-
-                    {hasSavingThrowChoices && (
-                        <>
-                            <p>
-                                Choose {savingThrowChoiceCap} saving throw option
-                                {savingThrowChoiceCap === 1 ? '' : 's'}:
-                            </p>
-                            <p>
-                                Selected: {selectedLineageSaveChoices.length} /{' '}
-                                {savingThrowChoiceCap}
-                            </p>
-                            <p>
-                                <small>{savesCaption}</small>
-                            </p>
-                            <div className="checkbox-list">
-                                {savingThrowChoiceOptions.map((ability) => {
-                                    const isChecked =
-                                        selectedLineageSaveChoices.includes(ability)
-                                    const disableUnchecked =
-                                        !isChecked &&
-                                        selectedLineageSaveChoices.length >=
-                                            savingThrowChoiceCap
-
-                                    return (
-                                        <label key={ability} className="checkbox-item">
-                                            <input
-                                                type="checkbox"
-                                                checked={isChecked}
-                                                disabled={disableUnchecked}
-                                                onChange={() =>
-                                                    toggleLineageSavingThrowChoice(ability)
-                                                }
-                                            />
-                                            <span>{formatAbilityLabel(ability)}</span>
-                                        </label>
-                                    )
-                                })}
-                            </div>
-                        </>
-                    )}
+                    <p>
+                        <strong>Lineage-granted saving throws:</strong>{' '}
+                        {lineageSavingThrows.map((ability) => ABILITY_NAMES[ability]).join(', ')}
+                    </p>
                 </SectionCard>
+            )}
+
+            {hasSavingThrowChoices && (
+                <ChoiceList
+                    title="Lineage Saving Throw Choices"
+                    noun="saving throw"
+                    options={savingThrowChoiceOptions}
+                    selected={selectedLineageSaveChoices}
+                    cap={savingThrowChoiceCap}
+                    caption={savesCaption}
+                    labelOf={(ability) => ABILITY_NAMES[ability as AbilityName]}
+                    onToggle={(ability) => toggleChoice('lineageSavingThrowChoices', savingThrowChoiceSet, ability)}
+                />
             )}
 
             {hasSkillChoices && (
-                <SectionCard title="Lineage Skill Choices">
-                    <p>
-                        Choose {skillChoiceCap} skill option
-                        {skillChoiceCap === 1 ? '' : 's'}:
-                    </p>
-                    <p>
-                        Selected: {selectedLineageSkillChoices.length} / {skillChoiceCap}
-                    </p>
-                    <p>
-                        <small>{skillsCaption}</small>
-                    </p>
-                    <div className="checkbox-list">
-                        {skillChoiceOptions.map((skill) => {
-                            const isChecked = selectedLineageSkillChoices.includes(skill)
-                            const disableUnchecked =
-                                !isChecked &&
-                                selectedLineageSkillChoices.length >= skillChoiceCap
-
-                            return (
-                                <label key={skill} className="checkbox-item">
-                                    <input
-                                        type="checkbox"
-                                        checked={isChecked}
-                                        disabled={disableUnchecked}
-                                        onChange={() => toggleLineageSkillChoice(skill)}
-                                    />
-                                    <span>{skill}</span>
-                                </label>
-                            )
-                        })}
-                    </div>
-                </SectionCard>
+                <ChoiceList
+                    title="Lineage Skill Choices"
+                    noun="skill"
+                    options={skillChoiceOptions}
+                    selected={selectedLineageSkillChoices}
+                    cap={skillChoiceCap}
+                    caption={skillsCaption}
+                    onToggle={(skill) => toggleChoice('lineageSkillChoices', skillChoiceSet, skill)}
+                />
             )}
 
             {hasToolChoices && (
-                <SectionCard title="Lineage Tool Choices">
-                    <p>
-                        Choose {toolChoiceCap} tool option
-                        {toolChoiceCap === 1 ? '' : 's'}:
-                    </p>
-                    <p>
-                        Selected: {selectedLineageToolChoices.length} / {toolChoiceCap}
-                    </p>
-                    <p>
-                        <small>{toolsCaption}</small>
-                    </p>
-                    <div className="checkbox-list">
-                        {toolChoiceOptions.map((tool) => {
-                            const isChecked = selectedLineageToolChoices.includes(tool)
-                            const disableUnchecked =
-                                !isChecked &&
-                                selectedLineageToolChoices.length >= toolChoiceCap
-
-                            return (
-                                <label key={tool} className="checkbox-item">
-                                    <input
-                                        type="checkbox"
-                                        checked={isChecked}
-                                        disabled={disableUnchecked}
-                                        onChange={() => toggleLineageToolChoice(tool)}
-                                    />
-                                    <span>{tool}</span>
-                                </label>
-                            )
-                        })}
-                    </div>
-                </SectionCard>
+                <ChoiceList
+                    title="Lineage Tool Choices"
+                    noun="tool"
+                    options={toolChoiceOptions}
+                    selected={selectedLineageToolChoices}
+                    cap={toolChoiceCap}
+                    caption={toolsCaption}
+                    onToggle={(tool) => toggleChoice('lineageToolChoices', toolChoiceSet, tool)}
+                />
             )}
 
             {(lineageLanguages.length > 0 || lineageFeatures.length > 0) && (
