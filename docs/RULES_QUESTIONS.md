@@ -46,7 +46,7 @@ Status legend: **OPEN** = needs your decision, **DECIDED** = already settled in 
 | AV1 | **The Avatar** is a new class, **stand-in draft** until the owner approves it: Avatar State, Energybending, past-life guidance, spirit connection, and a very late, GM-approved way to master the Avatar State (nearly permanent). A switch on the class chooses "starts with every element" or "unlocks elements through masters". |
 | LC1 | **Level cap lift (GM approved).** A per-character tick, off by default. Off: total level 1-20. On: up to 20 levels in every class, so total level can pass 20, and after finishing a class the character can multiclass into another. Reaching class level 20 gives that class's features only; **other subclasses still need own-class multiclassing (MC2) with a master**. Shown as a GM-approved badge. |
 | LC2 | **Balance past total level 20:** proficiency bonus +1 per 8 levels above 20 (+6 until level 27, +7 at 28, +8 at 36, and so on). Ability scores still stop at 20 from normal sources. The same feature from two classes does not stack (one Extra Attack, and so on). **Hit points** keep growing every level, but each level above 20 adds **a quarter of the normal gain, rounded down, at least 1** (owner decision). |
-| LC3 | **Epic Boons (Avatar themed, stand-in drafts).** One boon per class taken to class level 20, no repeats. Ability-score boon: +2 to one ability, limit 30. Boons drafted: Boon of the Element (ability +2), Boon of the Spirit World (step into the spirit world for a turn once per day), Boon of Past Lives (a skill proficiency and a d10 advice die once per short rest), and Boon of the Master Technique (one Mastered technique costs a slot level less and ignores the Mastered cap of 6). Boon of the Balance was **not** chosen. Owner to approve the wording. |
+| LC3 | **Epic Boons (Avatar themed, stand-in drafts).** One boon per class taken to class level 20. **Only Boon of the Element can be taken more than once**; every other boon once per character (owner decision). Ability-score boon: +2 to one ability, limit 30. Boons drafted: Boon of the Element (ability +2), Boon of the Spirit World (step into the spirit world for a turn once per day), Boon of Past Lives (a skill proficiency and a d10 advice die once per short rest), and Boon of the Master Technique (one Mastered technique costs a slot level less and ignores the Mastered cap of 6). Boon of the Balance was **not** chosen. Owner to approve the wording. |
 
 Still open: A11-A13 (defaults assumed: no Mixed nation with optional GM-approved extra lineage feature, Species step Human/Variant Human, gmbinder stays local). A10 is superseded by A6.
 
@@ -341,3 +341,9 @@ The PDF's Dragon Mage casts Druid spells from 3rd level. This app has no spell s
 - GB L114: benders can multiclass into non-bending fighting styles; non-benders cannot take bending ones; classes with sub-classes can multiclass into their own class.
 - GB L229: benders can multiclass into "both Bending and Non-Bending classes".
 - Ruling: GM approval only (warn, never block).
+
+---
+
+## To do later (not started)
+
+- **Items that raise ability scores past 20 without being level 20** (owner request): armor, weapons and special items, for example a belt of hill giant strength that sets or raises an ability score above the normal cap of 20. Needs an item system (the app only has armor, shield and weapon tables so far), an "ability score" effect with a source label, and a rule for how it combines with the Epic Boon ceiling of 30. Nothing has been built for this.
