@@ -114,5 +114,6 @@ export function downloadText(contents: string, filename: string): void {
     anchor.href = url
     anchor.download = filename
     anchor.click()
-    URL.revokeObjectURL(url)
+    // Revoking straight away can cancel the download in some browsers.
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }

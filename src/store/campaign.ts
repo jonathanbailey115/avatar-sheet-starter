@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { cameFromPasswordRecoveryLink, getBackend } from '../campaign/backend'
-import { CampaignError } from '../campaign/types'
+import { CampaignError, UNREACHABLE_MESSAGE } from '../campaign/types'
 import type { AccountSession, CampaignEvent, CampaignRoll } from '../campaign/types'
 import type { CampaignState } from './campaignState'
 import { jsonStorage } from './storage'
@@ -38,6 +38,11 @@ export const useCampaignStore = create<CampaignState>()(
                 try {
                     set({ snapshot: await getBackend().load(id) })
                 } catch (error) {
+                    // A dropped connection keeps the campaign open; the next change reloads it.
+                    if (messageOf(error) === UNREACHABLE_MESSAGE) {
+                        set({ notice: UNREACHABLE_MESSAGE })
+                        return
+                    }
                     // Removed from the campaign, or it was deleted.
                     stopListening?.()
                     stopListening = null

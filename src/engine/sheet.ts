@@ -1,6 +1,6 @@
 import { SHIELD_AC_BONUS, findArmor } from '../data/armor'
 import type { ArmorPiece } from '../data/armor'
-import { ABILITIES, SKILLS, SKILL_ABILITIES, getAbilityModifier, getProficiencyBonus } from './abilities'
+import { ABILITIES, ABILITY_NAMES, SKILLS, SKILL_ABILITIES, getAbilityModifier, getProficiencyBonus } from './abilities'
 import {
     abilityScoresOf,
     armorClassFor,
@@ -90,7 +90,7 @@ export function computeSheet(character: Character, baseContent: RulesContent): S
         proficient: boolean,
         targets: Parameters<typeof bonusesFor>[1],
     ): StatLine => {
-        const breakdown = [{ label: `${ability[0].toUpperCase()}${ability.slice(1)}`, value: modifierOf(ability) }]
+        const breakdown = [{ label: ABILITY_NAMES[ability], value: modifierOf(ability) }]
         if (proficient) breakdown.push({ label: 'Proficiency', value: proficiencyBonus })
         breakdown.push(...bonusesFor(effects, targets, context))
         return {
@@ -135,7 +135,7 @@ export function computeSheet(character: Character, baseContent: RulesContent): S
         roll: rollModifiersFor(effects, ['ac'], context),
     }
 
-    const resources: ResourceView[] = getResources(character, content).map((def) => ({
+    const resources: ResourceView[] = getResources(character, content, features).map((def) => ({
         ...def,
         used: usedOf(character, def),
         remaining: remainingOf(character, def),

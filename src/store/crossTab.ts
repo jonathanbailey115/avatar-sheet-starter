@@ -3,6 +3,7 @@ import { useContentStore } from './content'
 import { useLibraryStore } from './library'
 import { useSyncStore } from '../sync/syncStore'
 import { useNpcStore } from './npcs'
+import { useRollLog } from './rollLog'
 
 /**
  * Several tabs can be open on one device (for instance two accounts playing two characters).
@@ -15,6 +16,7 @@ const STORES: Record<string, { persist: { rehydrate: () => Promise<void> | void 
     'avatar-dnd:content': useContentStore,
     'avatar-dnd:campaigns': useCampaignStore,
     'avatar-dnd:cloud-sync': useSyncStore,
+    'avatar-dnd:rolls': useRollLog,
 }
 
 export function startCrossTabSync(): void {

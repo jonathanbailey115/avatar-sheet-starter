@@ -83,6 +83,10 @@ describe('damage', () => {
         expect(getLifeState(down, 14)).toBe('dying')
     })
 
+    it('has no life state to speak of before a maximum is known', () => {
+        expect(getLifeState(c, 0)).toBe('conscious')
+    })
+
     it('massive damage (overflow >= max HP) kills outright', () => {
         expect(getLifeState(applyDamage(c, 14 + 14, 14), 14)).toBe('dead')
         expect(getLifeState(applyDamage(c, 14 + 13, 14), 14)).toBe('dying')

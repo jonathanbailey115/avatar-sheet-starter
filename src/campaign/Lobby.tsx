@@ -3,28 +3,8 @@ import type { FormEvent } from 'react'
 import SectionCard from '../components/SectionCard'
 import { nameFor, useCampaignStore } from '../store/campaign'
 import { formatCode, isPlausibleCode } from './code'
+import { useAction } from './useAction'
 import type { Campaign } from './types'
-
-/** Run an async action and keep its error message for display. */
-function useAction() {
-    const [error, setError] = useState('')
-    const [busy, setBusy] = useState(false)
-
-    const run = async <T,>(task: () => Promise<T>): Promise<T | undefined> => {
-        setBusy(true)
-        setError('')
-        try {
-            return await task()
-        } catch (caught) {
-            setError(caught instanceof Error ? caught.message : 'Something went wrong.')
-            return undefined
-        } finally {
-            setBusy(false)
-        }
-    }
-
-    return { error, busy, run }
-}
 
 export function Lobby({ onOpen }: { onOpen: (campaign: Campaign) => void }) {
     const displayName = useCampaignStore((state) => nameFor(state))

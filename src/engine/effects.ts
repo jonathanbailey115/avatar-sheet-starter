@@ -1,5 +1,4 @@
-import { getAbilityModifier } from './abilities'
-import { SKILL_ABILITIES } from './abilities'
+import { ABILITY_NAMES, SKILL_ABILITIES, getAbilityModifier } from './abilities'
 import type { ArmorPiece } from '../data/armor'
 import type { GrantedFeature } from './features'
 import type {
@@ -215,7 +214,8 @@ export function armorClassFor(
 
     if (context.armor) {
         const cap = context.armor.dexCap
-        const dexPart = cap === null ? dex : Math.min(dex, cap)
+        // Heavy armor (cap 0) adds no Dexterity at all, not even a penalty.
+        const dexPart = cap === null ? dex : cap === 0 ? 0 : Math.min(dex, cap)
         best = {
             total: context.armor.baseAc + dexPart,
             parts: [
@@ -239,7 +239,7 @@ export function armorClassFor(
         const parts = [
             { label: effect.source, value: effect.base },
             ...effect.abilities.map((ability) => ({
-                label: ability[0].toUpperCase() + ability.slice(1),
+                label: ABILITY_NAMES[ability],
                 value: getAbilityModifier(context.abilityScores[ability]),
             })),
         ].filter((part, index) => index === 0 || part.value !== 0)

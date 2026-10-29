@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import SectionCard from '../components/SectionCard'
-import { formatModifier } from '../engine/abilities'
+import { ABILITY_NAMES, formatModifier } from '../engine/abilities'
 import { damageFormula } from '../engine/attacks'
 import type { AttackOption } from '../engine/attacks'
 import type { Sheet } from '../engine/sheet'
@@ -97,7 +97,7 @@ export function AttackPanel({ sheet }: { sheet: Sheet }) {
                 <div className="bending-summary">
                     <div>
                         <span>Bending ability</span>
-                        <strong>{bending.ability[0].toUpperCase() + bending.ability.slice(1)}</strong>
+                        <strong>{ABILITY_NAMES[bending.ability]}</strong>
                     </div>
                     <div>
                         <span>Save DC</span>

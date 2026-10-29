@@ -33,6 +33,7 @@ const LEVEL_ORDER: TechniqueLevel[] = ['Mastered', 'Trained', 'Practiced']
 export function getResources(
     character: Pick<Character, 'level' | 'classId' | 'subclassId' | 'lineageId' | 'backgroundId' | 'selectedFeatureIds'>,
     content: Pick<RulesContent, 'classes' | 'subclasses' | 'lineages' | 'backgrounds' | 'features'>,
+    granted = getGrantedFeatures(character, content),
 ): ResourceDef[] {
     const resources: ResourceDef[] = []
     const characterClass = content.classes.find((item) => item.id === character.classId)
@@ -75,7 +76,7 @@ export function getResources(
         }
     }
 
-    for (const { feature, origin } of getGrantedFeatures(character, content)) {
+    for (const { feature, origin } of granted) {
         if (feature.uses && feature.uses > 0 && feature.recharge) {
             resources.push({
                 id: `feature:${feature.id}`,

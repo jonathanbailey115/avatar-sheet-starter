@@ -54,6 +54,8 @@ describe('armor class', () => {
         const nimble = earth({ dexterity: 18, armorId: 'breastplate' }) // +4 capped to +2
         expect(computeSheet(nimble, realContent).armorClass.total).toBe(16)
         expect(computeSheet(earth({ dexterity: 18, armorId: 'chain-mail' }), realContent).armorClass.total).toBe(16)
+        // Heavy armor adds no Dexterity, so a negative modifier does not reduce it either.
+        expect(computeSheet(earth({ dexterity: 6, armorId: 'chain-mail' }), realContent).armorClass.total).toBe(16)
     })
 
     it('takes the best base, not a sum', () => {

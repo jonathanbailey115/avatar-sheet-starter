@@ -62,7 +62,8 @@ export function getLifeState(
     maxHp: number,
 ): LifeState {
     if (character.deathSaves.failures >= 3) return 'dead'
-    if (getCurrentHp(character, maxHp) > 0) return 'conscious'
+    // No maximum yet (no lineage chosen) is not the same as being at 0 HP.
+    if (maxHp <= 0 || getCurrentHp(character, maxHp) > 0) return 'conscious'
     if (character.deathSaves.successes >= 3) return 'stable'
     return 'dying'
 }

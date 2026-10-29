@@ -1,3 +1,4 @@
+import { ABILITY_NAMES } from './abilities'
 import type {
     AbilityName,
     Character,
@@ -72,18 +73,17 @@ export function damageOptions(
     })
 }
 
-const ABILITY_NAME = (ability: AbilityName) => ability[0].toUpperCase() + ability.slice(1)
 
 /** Plain-language save line, e.g. "Constitution (earthbenders), Strength (others)". */
 export function saveSummary(technique: Technique): string | null {
     const save = technique.save
     if (!save) return null
-    if (save.ability !== 'affinity') return ABILITY_NAME(save.ability)
+    if (save.ability !== 'affinity') return ABILITY_NAMES[save.ability]
 
     const own = technique.element in ELEMENT_ABILITY ? ELEMENT_ABILITY[technique.element as Element] : null
-    const first = own ? `${ABILITY_NAME(own)} (${technique.element.toLowerCase()}benders)` : 'Own element'
+    const first = own ? `${ABILITY_NAMES[own]} (${technique.element.toLowerCase()}benders)` : 'Own element'
     return save.fallback
-        ? `${first}, ${ABILITY_NAME(save.fallback)} (others)`
+        ? `${first}, ${ABILITY_NAMES[save.fallback]} (others)`
         : `${first}; others roll their own element's save (GM decides)`
 }
 

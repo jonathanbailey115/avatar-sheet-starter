@@ -147,3 +147,6 @@ export interface CampaignBackend {
 
 /** A message meant for the person using the app (wrong code, not allowed, and so on). */
 export class CampaignError extends Error {}
+
+/** The message for a failed network call: a hiccup, not a sign that the campaign is gone. */
+export const UNREACHABLE_MESSAGE = 'Could not reach the campaign server. Check your connection.'

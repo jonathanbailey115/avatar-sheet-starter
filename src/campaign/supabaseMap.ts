@@ -1,6 +1,6 @@
 import type { RollEntry } from '../engine/rolls'
 import type { Character } from '../types/schema'
-import { CampaignError } from './types'
+import { CampaignError, UNREACHABLE_MESSAGE } from './types'
 import type { Campaign, CampaignMember, CampaignNpc, CampaignRoll, MemberStatus, PlayerSummary, Visibility } from './types'
 
 /** Row shapes as Postgres returns them. */
@@ -112,7 +112,7 @@ export function friendlyError(error: { message?: string; code?: string } | null 
         return new CampaignError('Anonymous sign-ins are off in your Supabase project. Turn them on under Authentication > Providers.')
     }
     if (/Failed to fetch|NetworkError|network/i.test(message)) {
-        return new CampaignError('Could not reach the campaign server. Check your connection.')
+        return new CampaignError(UNREACHABLE_MESSAGE)
     }
     if (/row-level security|permission denied/i.test(message)) {
         return new CampaignError('You are not allowed to do that in this campaign.')

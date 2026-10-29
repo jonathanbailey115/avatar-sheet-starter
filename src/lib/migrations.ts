@@ -12,6 +12,8 @@ type Raw = Record<string, unknown>
  *      sheets never had a way to enter it, so their value was placeholder data).
  *   4  `weapons` (equipped weapons chosen from the weapon table). Typed weapon notes stay as notes.
  *   5  Techniques carry Training Point state; `customBackground` (player-made background).
+ *   6  Species (`none|human|variant-human`), `speciesAbilityChoices`, `speciesSkill`.
+ *   7  `abilityOption`: the GM allows a class's alternate bending ability.
  *
  * To change the schema: bump CHARACTER_SCHEMA_VERSION, add an `n -> n+1` function below, add a test.
  */

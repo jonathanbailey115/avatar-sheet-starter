@@ -86,6 +86,8 @@ export class SupabaseBackend implements CampaignBackend {
     private async describe(user: { id: string; email?: string | null }): Promise<AccountSession> {
         this.userId = user.id
         const profile = await this.client.from('profiles').select('username').maybeSingle<{ username: string }>()
+        // A failed lookup must not read as 'no username yet', or the person is asked to pick a new one.
+        if (profile.error) throw friendlyError(profile.error)
         return { userId: user.id, email: user.email ?? null, username: profile.data?.username ?? null }
     }
 
@@ -202,7 +204,8 @@ export class SupabaseBackend implements CampaignBackend {
             members: unwrap(members as { data: MemberRow[] | null; error: null }).map(memberFromRow),
             statuses: unwrap(statuses as { data: StatusRow[] | null; error: null }).map(statusFromRow),
             rolls: unwrap(rolls as { data: RollRow[] | null; error: null }).map(rollFromRow),
-            npcs: unwrap(npcs as { data: NpcRow[] | null; error: null }).map(npcFromRow),
+            // The table may predate the latest schema; the campaign should still open without its NPCs.
+            npcs: npcs.error ? [] : unwrap(npcs as { data: NpcRow[] | null; error: null }).map(npcFromRow),
         }
     }
 

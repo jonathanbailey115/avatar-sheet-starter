@@ -35,9 +35,12 @@ function pickClass(ctx: NpcContext, nation: Nation, rng: Rng, avoid?: string): C
     const weights = ctx.template.bendingWeights
     const fitting = ctx.content.classes.filter((item) => classFits(item, nation))
     const options = fitting.filter((item) => item.id !== avoid)
-    const entries = (options.length > 0 ? options : fitting).map((item) => ({
+    const pool = options.length > 0 ? options : fitting
+    const kindOf = (item: CharacterClass) => item.element ?? 'Non-Bender'
+    // A kind's weight is shared by its classes, so having two non-bender classes does not double their odds.
+    const entries = pool.map((item) => ({
         item,
-        weight: weights[item.element ?? 'Non-Bender'] ?? 0,
+        weight: (weights[kindOf(item)] ?? 0) / pool.filter((other) => kindOf(other) === kindOf(item)).length,
     }))
     return weightedPick(entries, rng) ?? pickOne(fitting, rng)
 }
@@ -104,7 +107,7 @@ function warningsFor(character: Character, ctx: NpcContext, requested: NpcSpec |
     return warnings
 }
 
-const rebuild = (character: Character, ctx: NpcContext, rng: Rng): Character =>
+const rebuild = (character: Character, ctx: NpcContext): Character =>
     normalizeCharacter(character, ctx.content)
 
 /** Quick-create: a complete NPC from a template and an optional nation, class and level. */
@@ -123,11 +126,11 @@ export function generateNpc(spec: NpcSpec, ctx: NpcContext, rng: Rng = Math.rand
     character = withClass(character, requested ?? pickClass(ctx, nation, rng), ctx, rng)
     character = withAbilities(character, ctx, rng)
     character = withPersona(character, ctx, rng)
-    character = rebuild(character, ctx, rng)
+    character = rebuild(character, ctx)
     character = learnTechniques(character, ctx.content, rng)
-    character = equip(rebuild(character, ctx, rng), ctx.content, combatOf(ctx), rng)
+    character = equip(rebuild(character, ctx), ctx.content, combatOf(ctx), rng)
 
-    return { character: rebuild(character, ctx, rng), warnings: warningsFor(character, ctx, spec) }
+    return { character: rebuild(character, ctx), warnings: warningsFor(character, ctx, spec) }
 }
 
 /**
@@ -140,23 +143,23 @@ export function rerollPart(character: Character, part: NpcPart, ctx: NpcContext,
     const currentClass = ctx.content.classes.find((item) => item.id === character.classId) ?? null
     const redoFromClass = (base: Character, characterClass: CharacterClass | null) => {
         let result = withClass(base, characterClass, ctx, rng)
-        result = rebuild(withAbilities(result, ctx, rng), ctx, rng)
+        result = rebuild(withAbilities(result, ctx, rng), ctx)
         result = learnTechniques(result, ctx.content, rng)
-        return equip(rebuild(result, ctx, rng), ctx.content, combatOf(ctx), rng)
+        return equip(rebuild(result, ctx), ctx.content, combatOf(ctx), rng)
     }
 
     if (part === 'name') next = { ...next, name: generateName(next.nation, rng) }
     else if (part === 'nation') {
         next = withLineage(next, pickNation(ctx, rng, next.nation), ctx, rng)
-        next = rebuild(next, ctx, rng)
+        next = rebuild(next, ctx)
         next = currentClass && classFits(currentClass, next.nation)
             ? equip(next, ctx.content, combatOf(ctx), rng)
             : redoFromClass(next, pickClass(ctx, next.nation, rng))
     } else if (part === 'class') next = redoFromClass(next, pickClass(ctx, next.nation, rng, next.classId))
     else if (part === 'abilities') next = withAbilities(next, ctx, rng)
-    else if (part === 'techniques') next = learnTechniques(rebuild(next, ctx, rng), ctx.content, rng)
-    else if (part === 'gear') next = equip(rebuild(next, ctx, rng), ctx.content, combatOf(ctx), rng)
+    else if (part === 'techniques') next = learnTechniques(rebuild(next, ctx), ctx.content, rng)
+    else if (part === 'gear') next = equip(rebuild(next, ctx), ctx.content, combatOf(ctx), rng)
     else next = withPersona(next, ctx, rng)
 
-    return { character: rebuild(next, ctx, rng), warnings: warningsFor(next, ctx, null) }
+    return { character: rebuild(next, ctx), warnings: warningsFor(next, ctx, null) }
 }

@@ -1,6 +1,6 @@
 import { findWeapon } from '../data/weapons'
 import type { Weapon } from '../data/weapons'
-import { getAbilityModifier } from './abilities'
+import { ABILITY_NAMES, getAbilityModifier } from './abilities'
 import { bonusesFor, critMinFor, rollModifiersFor } from './effects'
 import type { Effect, EffectContext } from './effects'
 import type { StatLine } from './statLine'
@@ -78,7 +78,6 @@ function weaponAbility(weapon: Weapon, scores: Record<AbilityName, number>): Abi
     return weapon.kind === 'ranged' ? 'dexterity' : 'strength'
 }
 
-const capitalize = (text: string) => text[0].toUpperCase() + text.slice(1)
 
 function attackLine(
     basis: AttackBasis,
@@ -88,7 +87,7 @@ function attackLine(
 ): StatLine {
     const { effects, context } = basis
     const breakdown = [
-        { label: capitalize(ability), value: getAbilityModifier(context.abilityScores[ability]) },
+        { label: ABILITY_NAMES[ability], value: getAbilityModifier(context.abilityScores[ability]) },
         ...(proficient ? [{ label: 'Proficiency', value: context.proficiencyBonus }] : []),
         ...extra,
         ...bonusesFor(effects, ['attack'], context),
@@ -141,7 +140,7 @@ export function getAttacks(basis: AttackBasis): AttackOption[] {
             attack: attackLine(basis, ability, true, []),
             damageDice: characterClass.basicAttack.dice,
             damageFlat: modifier,
-            damageBreakdown: [{ label: capitalize(ability), value: modifier }],
+            damageBreakdown: [{ label: ABILITY_NAMES[ability], value: modifier }],
             damageType: characterClass.basicAttack.damageType ?? '',
             critMin: critMinFor(effects, 'bending', context),
             properties: [],
@@ -169,7 +168,7 @@ export function getAttacks(basis: AttackBasis): AttackOption[] {
             damageBreakdown: weapon.noDamage
                 ? []
                 : [
-                      { label: capitalize(ability), value: modifier },
+                      { label: ABILITY_NAMES[ability], value: modifier },
                       ...(bonus ? [{ label: 'Weapon bonus', value: bonus }] : []),
                   ],
             damageType: weapon.damageType,
