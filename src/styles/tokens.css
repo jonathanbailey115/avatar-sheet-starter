@@ -1,0 +1,130 @@
+/*
+ * Design tokens. Every colour, radius, shadow, space and type size in the app comes from here.
+ *
+ * The accent follows the open character's bending element: set data-element="water|earth|fire|air|none"
+ * on any wrapper and everything inside picks up --accent, --accent-soft and --accent-line.
+ * Without it (no character, campaign and GM screens) the accent is the neutral slate.
+ * Status colours (HP, rolls, saved, errors) never change with the element.
+ */
+:root {
+    color-scheme: dark;
+
+    /* Surfaces, back to front */
+    --ground: #0d1015;
+    --surface-1: #151920;
+    --surface-2: #1c212a;
+    --surface-3: #252b36;
+    --border: #2b323e;
+    --border-strong: #3b4351;
+    --pip-empty: #4a5261;
+
+    /* Text */
+    --text: #eceff4;
+    --text-2: #aeb6c4;
+    --text-3: #848d9c;
+    --text-disabled: #6b7381;
+    --on-accent: #0d1015;
+
+    /* Element accents */
+    --el-water: #4aa8f0;
+    --el-water-rgb: 74 168 240;
+    --el-earth: #6fbf5a;
+    --el-earth-rgb: 111 191 90;
+    --el-fire: #f26a45;
+    --el-fire-rgb: 242 106 69;
+    --el-air: #f2c14e;
+    --el-air-rgb: 242 193 78;
+    --el-none: #c9976b;
+    --el-none-rgb: 201 151 107;
+    --el-neutral: #9ba8bc;
+    --el-neutral-rgb: 155 168 188;
+
+    /* Status */
+    --hp-healthy: #3fc58a;
+    --hp-hurt: #f2a93b;
+    --hp-critical: #f0544f;
+    --crit: #ffd166;
+    --crit-rgb: 255 209 102;
+    --fumble: #b33a36;
+    --adv: #43d1b6;
+    --adv-rgb: 67 209 182;
+    --dis: #f07fa0;
+    --dis-rgb: 240 127 160;
+    --success: #3fc58a;
+    --success-rgb: 63 197 138;
+    --warning: #f2a93b;
+    --warning-rgb: 242 169 59;
+    --danger: #f0544f;
+    --danger-rgb: 240 84 79;
+    --danger-text: #f58a86;
+    --gm: #4a3f6b;
+
+    /* Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-pill: 999px;
+
+    /* Spacing (4px steps) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+
+    /* Elevation */
+    --shadow-raised: inset 0 1px 0 rgb(255 255 255 / 0.03), 0 2px 6px rgb(0 0 0 / 0.35);
+    --shadow-overlay: 0 16px 40px rgb(0 0 0 / 0.55);
+    --glow-crit: 0 0 0 4px rgb(var(--crit-rgb) / 0.14), 0 0 28px rgb(var(--crit-rgb) / 0.28);
+    --glow-danger: 0 0 0 4px rgb(var(--danger-rgb) / 0.16), 0 0 24px rgb(var(--danger-rgb) / 0.25);
+
+    /* Type */
+    --font-display: 'Cinzel', 'Times New Roman', serif;
+    --font-body: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    --text-xs: 0.75rem;   /* 12 */
+    --text-sm: 0.8125rem; /* 13 */
+    --text-md: 0.9375rem; /* 15 */
+    --text-lg: 1.0625rem; /* 17 */
+    --text-xl: 1.375rem;  /* 22 */
+    --text-2xl: 2.25rem;  /* 36 */
+    --num-lg: 1.625rem;   /* 26 */
+    --num-xl: 2.75rem;    /* 44 */
+
+    /* Sizes */
+    --touch: 44px;
+    --app-bar-height: 64px;
+    --bottom-nav-height: 64px;
+
+    /* Neutral accent until a character says otherwise */
+    --accent: var(--el-neutral);
+    --accent-rgb: var(--el-neutral-rgb);
+}
+
+[data-element='water'] { --accent: var(--el-water); --accent-rgb: var(--el-water-rgb); }
+[data-element='earth'] { --accent: var(--el-earth); --accent-rgb: var(--el-earth-rgb); }
+[data-element='fire'] { --accent: var(--el-fire); --accent-rgb: var(--el-fire-rgb); }
+[data-element='air'] { --accent: var(--el-air); --accent-rgb: var(--el-air-rgb); }
+[data-element='none'] { --accent: var(--el-none); --accent-rgb: var(--el-none-rgb); }
+[data-element='neutral'] { --accent: var(--el-neutral); --accent-rgb: var(--el-neutral-rgb); }
+
+/* Derived accent tints. Declared on every element-scoped wrapper so they follow the nearest --accent-rgb. */
+:root,
+[data-element] {
+    --accent-soft: rgb(var(--accent-rgb) / 0.14);
+    --accent-line: rgb(var(--accent-rgb) / 0.45);
+    --accent-wash: rgb(var(--accent-rgb) / 0.2);
+}
+
+/* Older variable names still used across the stylesheets. */
+:root {
+    --bg: var(--ground);
+    --panel: var(--surface-1);
+    --panel-2: var(--surface-2);
+    --muted: var(--text-2);
+    --radius: var(--radius-lg);
+    --shadow: var(--shadow-raised);
+}

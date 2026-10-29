@@ -1,0 +1,244 @@
+/* Play sheet: header, vitals, layout, hit points, abilities, saves and skills. */
+
+.play-sheet { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+
+/* ---------- Header ---------- */
+
+.play-hero {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    margin: calc(var(--space-5) * -1) calc(var(--space-5) * -1) 0;
+    padding: var(--space-6) var(--space-5) var(--space-5);
+    background: linear-gradient(180deg, var(--accent-soft), transparent);
+    border-bottom: 1px solid var(--border);
+}
+.play-hero-text { flex: 1 1 260px; min-width: 0; }
+.play-hero-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.play-hero h2 { margin: 0; font-size: var(--text-2xl); font-weight: 700; line-height: 1.1; }
+.play-hero p { margin: 6px 0 0; }
+
+.element-emblem {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: var(--surface-1);
+    color: var(--accent);
+}
+.element-emblem-lg { width: 72px; height: 72px; }
+.element-emblem-lg svg { width: 36px; height: 36px; }
+.element-emblem-sm { width: 34px; height: 34px; }
+.element-emblem-sm svg { width: 18px; height: 18px; }
+
+.element-chip {
+    padding: 4px 10px;
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius-pill);
+    color: var(--accent);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Phone-only sticky strip: AC, HP, initiative. */
+.play-quick { display: none; }
+
+/* Phone-only section chips */
+.pane-strip { display: none; }
+
+/* ---------- Vitals ---------- */
+
+.vitals-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+    gap: 10px;
+}
+.vital {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 2px;
+    min-height: 96px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface-1);
+    text-align: center;
+}
+.vital > span {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-2);
+}
+.vital strong { font-size: var(--num-lg); font-weight: 700; line-height: 1.15; }
+.vital:first-child strong { font-size: var(--num-xl); line-height: 1; }
+.vital small { color: var(--text-3); font-size: var(--text-xs); }
+
+.stepper { display: flex; justify-content: center; align-items: center; gap: 10px; }
+.stepper button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 1.1rem;
+    line-height: 1;
+}
+.stepper button:hover:not(:disabled) { background: var(--surface-3); }
+.stepper button:disabled { opacity: 0.35; }
+
+/* ---------- Layout ---------- */
+
+.play-grid {
+    display: grid;
+    grid-template-columns: minmax(250px, 0.9fr) minmax(320px, 1.4fr) minmax(260px, 1fr);
+    gap: var(--space-5);
+    align-items: start;
+}
+.play-col { display: grid; gap: var(--space-5); min-width: 0; }
+
+@media (max-width: 1100px) {
+    .play-grid { grid-template-columns: minmax(250px, 1fr) minmax(320px, 1.4fr); }
+    .play-grid > [data-pane='details'] { grid-column: 1 / -1; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+}
+
+/* ---------- Hit points ---------- */
+
+.hp-readout { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.hp-current { font-size: 3rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.hp-max { font-size: 1.375rem; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.hp-temp { margin-left: 12px; color: #7cc4f8; font-weight: 700; }
+
+.hp-bar {
+    height: 12px;
+    margin: 12px 0 16px;
+    background: var(--surface-3);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+}
+.hp-bar-fill { height: 100%; border-radius: inherit; background: var(--text-3); transition: width 0.25s ease, background-color 0.25s; }
+.hp-healthy { background: var(--hp-healthy); }
+.hp-hurt { background: var(--hp-hurt); }
+.hp-critical { background: var(--hp-critical); }
+
+.hp-controls { display: grid; grid-template-columns: minmax(72px, 1fr) repeat(3, auto); gap: 8px; align-items: center; }
+.hp-controls input { margin: 0; text-align: center; }
+.btn-damage, .btn-heal {
+    min-height: var(--touch);
+    padding: 0 16px;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: var(--text-sm);
+}
+.btn-damage { background: rgb(var(--danger-rgb) / 0.12); color: var(--danger-text); border: 1px solid rgb(var(--danger-rgb) / 0.5); }
+.btn-heal { background: rgb(var(--success-rgb) / 0.12); color: #5fd6a0; border: 1px solid rgb(var(--success-rgb) / 0.5); }
+.btn-damage:hover:not(:disabled) { background: rgb(var(--danger-rgb) / 0.22); }
+.btn-heal:hover:not(:disabled) { background: rgb(var(--success-rgb) / 0.22); }
+.btn-damage:disabled, .btn-heal:disabled { opacity: 0.4; }
+
+.life-state { margin: 0 0 var(--space-3); padding: 10px 12px; border-radius: var(--radius-md); font-weight: 600; font-size: var(--text-sm); }
+.life-dying { background: rgb(var(--danger-rgb) / 0.16); color: var(--danger-text); border: 1px solid rgb(var(--danger-rgb) / 0.5); }
+.life-stable { background: rgb(var(--warning-rgb) / 0.14); color: #f6cf8d; }
+.life-dead { background: var(--surface-3); color: var(--text-2); }
+
+/* A dying character's whole sheet is outlined in red so nobody misses it. */
+.play-sheet[data-life='dying'] .play-hero { background: linear-gradient(180deg, rgb(var(--danger-rgb) / 0.22), transparent); }
+.play-sheet[data-life='dying'] [data-pane='actions'] > .card:first-child { border: 2px solid var(--danger); box-shadow: var(--glow-danger); }
+.play-sheet[data-life='dead'] .play-hero { filter: grayscale(1); }
+
+.death-saves h3 { margin: 16px 0 6px; font-size: var(--text-md); }
+.death-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.death-row > span:first-child { width: 80px; color: var(--text-2); font-size: var(--text-sm); }
+
+.hp-setup { padding: 12px 16px; border: 1px dashed var(--border-strong); border-radius: var(--radius-lg); }
+.hp-setup summary { cursor: pointer; color: var(--text-2); }
+.hp-level-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+.hp-level-row select { width: auto; margin: 0; }
+.hp-level-row > span:first-child { width: 64px; color: var(--text-2); }
+.short-rest-box { margin-top: 12px; padding: 14px; border-radius: 12px; background: var(--surface-2); }
+
+/* ---------- Abilities, saves, skills ---------- */
+
+.ability-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ability-tile {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 10px 6px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-2);
+    text-align: center;
+}
+.ability-tile span { font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.12em; color: var(--text-2); }
+.ability-tile strong { font-size: var(--num-lg); font-weight: 700; line-height: 1.15; }
+.ability-tile small {
+    padding: 0 8px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-1);
+    color: var(--text-3);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-list { list-style: none; margin: 0 -8px; padding: 0; }
+.stat-row {
+    display: grid;
+    grid-template-columns: 14px 1fr auto 40px;
+    align-items: center;
+    gap: 10px;
+    min-height: 38px;
+    padding: 0 8px;
+    border-radius: 8px;
+}
+.stat-name { font-size: var(--text-md); }
+.stat-name small { margin-left: 4px; font-size: 0.6875rem; letter-spacing: 0.06em; color: var(--text-3); }
+.stat-total { text-align: right; font-size: var(--text-md); }
+.prof-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--pip-empty); }
+.prof-dot-on { background: var(--accent); border-color: var(--accent); }
+
+/* Saving throws sit two to a row as chunky buttons. */
+.stat-list-saves { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 0; }
+.stat-list-saves .stat-row { min-height: var(--touch); border: 1px solid var(--border); grid-template-columns: 14px 1fr auto auto; }
+
+.roll-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 5px;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    cursor: help;
+    color: var(--on-accent);
+}
+.roll-badge-adv { background: var(--adv); }
+.roll-badge-dis { background: var(--dis); }
+.roll-badge-cancel { background: var(--surface-3); color: var(--text-2); }
+
+/* Everything that rolls: tinted on hover so it reads as a button. */
+button.stat-row, button.ability-tile, .vital-roll {
+    width: 100%;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.12s, border-color 0.12s, transform 0.06s;
+}
+button.stat-row { background: transparent; border: 0; }
+button.ability-tile, .vital-roll { text-align: center; }
+.vital-roll { border-color: var(--accent-line); background: var(--accent-soft); }
+.vital-roll::after { content: 'Tap to roll'; font-size: var(--text-xs); font-weight: 600; color: var(--accent); }
+button.stat-row:hover, button.ability-tile:hover, .vital-roll:hover { background: var(--accent-soft); border-color: var(--accent-line); }
+button.stat-row:active, button.ability-tile:active, .vital-roll:active { transform: scale(0.97); }

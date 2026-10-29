@@ -5,6 +5,7 @@ import { castLevels, damageOptions, saveSummary, textAtLevel } from '../engine/t
 import type { DamageOption } from '../engine/techniques'
 import { canStartTraining, startTraining, stopTraining, TRAINING_POINTS_NEEDED } from '../engine/training'
 import type { Sheet } from '../engine/sheet'
+import { TECHNIQUE_LEVELS } from '../types/schema'
 import type { Character, KnownTechnique, Technique, TechniqueLevel } from '../types/schema'
 import { useRoll } from './RollContext'
 
@@ -20,6 +21,21 @@ const ON_SAVE_TEXT: Record<DamageOption['onSave'], string> = {
     half: 'Half damage on a successful save.',
     negates: 'No damage on a successful save.',
     unaffected: 'The save does not change this.',
+}
+
+/** Three segments: Practiced fills one, Trained two, Mastered all three. */
+function LevelMeter({ level }: { level: TechniqueLevel }) {
+    const filled = TECHNIQUE_LEVELS.indexOf(level) + 1
+    return (
+        <span className="level-meter" data-level={level}>
+            <span className="level-steps" aria-hidden="true">
+                {TECHNIQUE_LEVELS.map((item, index) => (
+                    <span key={item} className={index < filled ? 'level-step level-step-on' : 'level-step'} />
+                ))}
+            </span>
+            <span className="level-name">{level}</span>
+        </span>
+    )
 }
 
 export function TechniqueCard({ character, sheet, technique, known, onChange }: TechniqueCardProps) {
@@ -68,14 +84,13 @@ export function TechniqueCard({ character, sheet, technique, known, onChange }: 
     return (
         <details className="feature-item technique-card">
             <summary>
-                <strong>{technique.name}</strong>
-                <small className="muted">
-                    {' '}
-                    · {known.level}
-                    {technique.rare ? ' · Rare' : ''}
-                    {technique.castingTime ? ` · ${technique.castingTime}` : ''}
-                </small>
-                {known.training.active && <span className="roll-tag roll-tag-crit">TRAINING</span>}
+                <span className="technique-head">
+                    <strong className="technique-name">{technique.name}</strong>
+                    <LevelMeter level={known.level} />
+                    {technique.rare && <span className="source-tag">Rare</span>}
+                    {known.training.active && <span className="roll-tag roll-tag-training">Training</span>}
+                </span>
+                {technique.castingTime && <small className="muted technique-time">{technique.castingTime}</small>}
             </summary>
 
             <p className="technique-text">{textAtLevel(technique, known.level)}</p>

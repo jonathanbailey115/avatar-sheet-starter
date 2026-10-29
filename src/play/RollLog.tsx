@@ -2,6 +2,7 @@ import { ConfirmButton } from '../components/ConfirmButton'
 import SectionCard from '../components/SectionCard'
 import { useRollLog } from '../store/rollLog'
 import { RollResult } from './RollResult'
+import { EmptyState } from '../components/EmptyState'
 
 export function RollLog() {
     const entries = useRollLog((state) => state.entries)
@@ -16,7 +17,7 @@ export function RollLog() {
             </div>
 
             {entries.length === 0 ? (
-                <p className="muted">Rolls will appear here.</p>
+                <EmptyState title="No rolls yet">Tap any modifier on the sheet to roll it.</EmptyState>
             ) : (
                 <div className="roll-log">
                     {entries.slice(0, 40).map((entry) => (

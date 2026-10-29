@@ -1,3 +1,4 @@
+import { ClassPicker } from './ClassPicker'
 import { useMemo } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
@@ -132,35 +133,21 @@ export function BuilderClassPanel({
         [editableSubclasses],
     )
 
+    const chooseClass = (classId: string) => {
+        if (classId === character.classId) return
+        setCharacter((current) => ({
+            ...current,
+            classId,
+            subclassId: undefined,
+            classSkillChoices: [],
+            selectedFeatureIds: current.selectedFeatureIds.filter((featureId) => !subclassFeatureIds.has(featureId)),
+        }))
+    }
+
     return (
         <div className="grid">
-            <SectionCard title="Class Setup">
-                <label>
-                    Class
-                    <select
-                        value={character.classId}
-                        onChange={(event) => {
-                            const classId = event.target.value
-
-                            setCharacter((current) => ({
-                                ...current,
-                                classId,
-                                subclassId: undefined,
-                                classSkillChoices: [],
-                                selectedFeatureIds: current.selectedFeatureIds.filter(
-                                    (featureId) => !subclassFeatureIds.has(featureId),
-                                ),
-                            }))
-                        }}
-                    >
-                        <option value="">Select a class</option>
-                        {editableClasses.map((characterClass) => (
-                            <option key={characterClass.id} value={characterClass.id}>
-                                {characterClass.name}
-                            </option>
-                        ))}
-                    </select>
-                </label>
+            <SectionCard title="Class Setup" className="class-setup">
+                <ClassPicker classes={editableClasses} value={character.classId} onChoose={chooseClass} />
 
                 <label>
                     Level
@@ -182,25 +169,32 @@ export function BuilderClassPanel({
 
                 {selectedClass ? (
                     <>
-                        <p><strong>{selectedClass.name}</strong></p>
-                        <p>{selectedClass.description}</p>
-                        <p>Hit Die: {selectedClass.hitDie}</p>
-                        <p>Primary Ability: {selectedClass.primaryAbility}</p>
-                        <p>
-                            Class Saving Throws:{' '}
-                            {selectedClass.savingThrows.join(', ')}
-                        </p>
-                        <p>
-                            Current Character Saving Throws:{' '}
-                            {character.savingThrowProficiencies.length > 0
-                                ? character.savingThrowProficiencies.join(', ')
-                                : 'None'}
-                        </p>
+                        <p className="class-description">{selectedClass.description}</p>
+                        <dl className="fact-list">
+                            <div>
+                                <dt>Hit Die</dt>
+                                <dd>{selectedClass.hitDie}</dd>
+                            </div>
+                            <div>
+                                <dt>Primary ability</dt>
+                                <dd>{selectedClass.primaryAbility}</dd>
+                            </div>
+                            <div>
+                                <dt>Class saving throws</dt>
+                                <dd>{selectedClass.savingThrows.join(', ') || 'None'}</dd>
+                            </div>
+                            <div>
+                                <dt>Your saving throws</dt>
+                                <dd>
+                                    {character.savingThrowProficiencies.length > 0
+                                        ? character.savingThrowProficiencies.join(', ')
+                                        : 'None'}
+                                </dd>
+                            </div>
+                        </dl>
                         <ClassNotices character={character} setCharacter={setCharacter} selectedClass={selectedClass} />
                     </>
-                ) : (
-                    <p>Select a class to begin class progression.</p>
-                )}
+                ) : null}
             </SectionCard>
 
             <SectionCard title="Subclass">
@@ -294,7 +288,7 @@ export function BuilderClassPanel({
                             if (!feature) return null
 
                             return (
-                                <article key={feature.id} className="npc-item">
+                                <article key={`${feature.id}-${feature.grantedLevel}`} className="npc-item">
                                     <h3>{feature.name}</h3>
                                     <p>Level {feature.grantedLevel}</p>
                                     <p>
@@ -319,7 +313,7 @@ export function BuilderClassPanel({
                             if (!feature) return null
 
                             return (
-                                <li key={feature.id}>
+                                <li key={`${feature.id}-${feature.grantedLevel}`}>
                                     <strong>{feature.name}</strong> — Level{' '}
                                     {feature.grantedLevel}
                                 </li>

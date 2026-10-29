@@ -1,0 +1,194 @@
+/* Page basics, the app bar and the main navigation. Colours and sizes come from tokens.css. */
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-md);
+    line-height: 1.5;
+    background: var(--ground);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+}
+
+h4, h5, h6 { font-family: var(--font-body); }
+
+/* Stats line up in columns. */
+strong, b, input, .tnum { font-variant-numeric: tabular-nums; }
+
+code, kbd { font-family: var(--font-mono); }
+
+a { color: var(--accent); }
+
+::selection { background: var(--accent-wash); }
+
+:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+.muted { color: var(--text-2); }
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* ---------- App frame ---------- */
+
+.app-root { min-height: 100vh; }
+
+.app-shell {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: var(--space-5) var(--space-5) var(--space-8);
+}
+
+.app-bar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: rgb(21 25 32 / 0.96);
+    border-bottom: 1px solid var(--border);
+}
+
+.app-bar-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 var(--space-5);
+    min-height: var(--app-bar-height);
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.brand-mark { width: 26px; height: 26px; color: var(--accent); }
+.brand-text { display: grid; line-height: 1.1; }
+.brand-name { font-family: var(--font-display); font-weight: 700; font-size: 1.125rem; letter-spacing: 0.04em; }
+.brand-sub { font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); }
+
+/* Desktop: tabs in the app bar with an accent underline. */
+.tab-bar {
+    display: flex;
+    align-self: stretch;
+    gap: var(--space-1);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+
+.tab-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0 var(--space-3);
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    background: none;
+    color: var(--text-2);
+    font: 500 var(--text-sm) / 1 var(--font-body);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+.tab-button:hover { color: var(--text); }
+.tab-button.active { color: var(--text); font-weight: 600; border-bottom-color: var(--accent); }
+.tab-icon { width: 18px; height: 18px; flex-shrink: 0; display: none; }
+.tab-label-short { display: none; }
+
+.status-banner { margin: 0 0 var(--space-4); }
+
+/* Phone: the tabs become a bottom bar with icons. */
+@media (max-width: 720px) {
+    .app-shell { padding: var(--space-4) var(--space-4) calc(var(--bottom-nav-height) + var(--space-7) + env(safe-area-inset-bottom)); }
+    .app-bar-inner { padding: 0 var(--space-4); min-height: 52px; }
+    .brand-sub { display: none; }
+
+    .tab-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 40;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 0;
+        height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+        padding-bottom: env(safe-area-inset-bottom);
+        background: var(--surface-1);
+        border-top: 1px solid var(--border);
+        overflow: visible;
+    }
+
+    .tab-button {
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
+        padding: 0 2px;
+        border-bottom: 0;
+        font-size: 0.6875rem;
+        font-weight: 600;
+    }
+    .tab-button.active { border-bottom: 0; }
+    .tab-icon {
+        display: block;
+        width: 44px;
+        height: 28px;
+        padding: 4px 12px;
+        border-radius: var(--radius-pill);
+        transition: background-color 0.15s;
+    }
+    .tab-button.active .tab-icon { background: var(--accent-wash); color: var(--text); }
+    .tab-label-long { display: none; }
+    .tab-label-short { display: inline; }
+}
+
+/* Layout helpers used across screens */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-5);
+}
+
+.two-col {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+}
+
+@media (max-width: 700px) {
+    .two-col { grid-template-columns: 1fr; }
+}
+
+.tab-panel { display: block; }
+.tab-panel > * + .card,
+.tab-panel > .card + * { margin-top: var(--space-5); }
+
+/* Page title row used by Play, Builder and other screens */
+.play-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+.play-header h2 { margin: 0; font-size: var(--text-2xl); font-weight: 700; }
+.play-header .muted { margin: 4px 0 0; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

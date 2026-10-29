@@ -1,0 +1,130 @@
+/* Character builder: step strip, choice cards and form layout. */
+
+.builder-header .eyebrow { margin-bottom: 4px; }
+
+/* Numbered steps. Wraps on desktop, scrolls sideways on phones. */
+.builder-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: var(--space-4) 0 var(--space-5);
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-1);
+}
+.builder-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 12px 0 8px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-2);
+    font: 600 var(--text-sm) / 1 var(--font-body);
+    white-space: nowrap;
+}
+.builder-step:hover { background: var(--surface-2); color: var(--text); }
+.builder-step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--pip-empty);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+.builder-step.active { background: var(--accent-soft); color: var(--text); font-weight: 700; }
+.builder-step.active .builder-step-number { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+
+@media (max-width: 720px) {
+    .builder-steps {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        margin-left: calc(var(--space-4) * -1);
+        margin-right: calc(var(--space-4) * -1);
+        border-radius: 0;
+        border-width: 1px 0;
+        scrollbar-width: none;
+    }
+    .builder-steps::-webkit-scrollbar { display: none; }
+    .builder-step { flex-shrink: 0; }
+}
+
+/* Radio cards (class picker and any one-of-several choice) */
+.choice-fieldset { margin: 0 0 var(--space-4); padding: 0; border: 0; min-width: 0; }
+.choice-fieldset legend {
+    margin-bottom: 8px;
+    padding: 0;
+    color: var(--text-2);
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+.choice-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.choice-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 60px;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-2);
+    color: var(--text);
+    text-align: left;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+.choice-card:hover { border-color: var(--accent-line); }
+.choice-card.selected {
+    border: 2px solid var(--accent);
+    padding: 9px 11px;
+    background: var(--accent-soft);
+}
+.choice-card-text { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.choice-card-text strong { font-family: var(--font-display); font-size: var(--text-md); font-weight: 600; }
+.choice-card-text small { color: var(--text-3); font-size: var(--text-xs); }
+.field-hint { margin: 8px 0 0; font-size: var(--text-sm); }
+
+.choice-list { display: grid; gap: 8px; }
+.choice-list .inline-check {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-2);
+}
+.choice-list .inline-check:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+
+/* Facts about a class, lineage or background */
+.class-description { color: #c8ceda; line-height: 1.6; }
+.fact-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin: var(--space-3) 0;
+}
+.fact-list > div { padding: 10px 12px; border-radius: 10px; background: var(--surface-2); }
+.fact-list dt {
+    margin-bottom: 2px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+}
+.fact-list dd { margin: 0; font-weight: 600; }
+
+/* Builder panels are cards in a grid; give them room. */
+#panel-builder > .grid { align-items: start; }
+.builder-features-layout { display: grid; gap: var(--space-5); }
+.skill-picker { display: grid; gap: 8px; }
+.proficiency-section + .proficiency-section { margin-top: var(--space-5); }
+#panel-builder > .grid { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.class-setup { grid-column: 1 / -1; }
+.class-setup .card-body > label { max-width: 220px; }

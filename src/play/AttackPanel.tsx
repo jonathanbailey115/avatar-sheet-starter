@@ -24,11 +24,8 @@ function AttackRow({ attack }: { attack: AttackOption }) {
         <article className="attack-row">
             <div className="attack-title">
                 <strong>{attack.name}</strong>
-                <small className="muted">
-                    {' '}
-                    · {attack.source}
-                    {!attack.proficient && ' · not proficient'}
-                </small>
+                <span className="source-tag">{attack.source}</span>
+                {!attack.proficient && <small className="muted">Not proficient</small>}
                 {details && <div className="muted attack-details">{details}</div>}
                 {attack.note && <div className="muted attack-details">{attack.note}</div>}
             </div>

@@ -1,0 +1,297 @@
+/* Rolling (roll bar, results, toast), attacks, techniques, resources and the roll log. */
+
+/* ---------- Roll bar ---------- */
+
+.roll-bar {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface-1);
+}
+.roll-bar-controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+
+.segmented {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    flex: 0 1 400px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--ground);
+}
+.seg {
+    min-height: 40px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-2);
+    font: 600 var(--text-sm) / 1 var(--font-body);
+}
+.seg:hover:not(.seg-on) { background: var(--surface-2); color: var(--text); }
+.seg-on { background: var(--surface-3); color: var(--text); font-weight: 700; box-shadow: inset 0 0 0 1px var(--border-strong); }
+.seg-on.seg-advantage { background: rgb(var(--adv-rgb) / 0.16); color: var(--adv); box-shadow: inset 0 0 0 1px rgb(var(--adv-rgb) / 0.55); }
+.seg-on.seg-disadvantage { background: rgb(var(--dis-rgb) / 0.16); color: var(--dis); box-shadow: inset 0 0 0 1px rgb(var(--dis-rgb) / 0.55); }
+
+.roll-custom { display: flex; gap: 8px; align-items: center; }
+.roll-custom input { margin: 0; width: 190px; }
+.roll-share { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: var(--text-sm); color: var(--text-2); }
+.roll-share strong { color: var(--text); }
+.roll-share .inline-check { margin: 0; }
+.roll-hint { margin: 0; font-size: var(--text-xs); color: var(--text-3); }
+
+/* ---------- One roll ---------- */
+
+.roll-result {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas: 'total head' 'total body' 'notes notes';
+    align-items: center;
+    column-gap: 16px;
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-2);
+}
+.roll-result-head { grid-area: head; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: var(--text-sm); }
+.roll-result-body { display: contents; }
+.roll-total {
+    grid-area: total;
+    min-width: 56px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.05;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+.roll-detail { grid-area: body; display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; color: var(--text-2); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+.roll-detail em { color: var(--accent); font-style: normal; }
+.roll-formula { display: none; }
+.roll-notes { grid-area: notes; margin: 8px 0 0; padding-left: 18px; color: var(--text-2); font-size: var(--text-xs); }
+.roll-cast { grid-template-areas: 'head head' 'notes notes'; }
+
+.die {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 6px;
+    background: var(--surface-3);
+    color: var(--text);
+    font-weight: 700;
+}
+.die-dropped { background: transparent; text-decoration: line-through; opacity: 0.55; }
+
+.roll-tag-adv { background: var(--adv); color: var(--on-accent); }
+.roll-tag-dis { background: var(--dis); color: var(--on-accent); }
+.roll-tag-training { background: var(--crit); color: var(--on-accent); }
+
+.roll-adv { border-color: rgb(var(--adv-rgb) / 0.55); }
+.roll-adv .roll-total { color: var(--adv); }
+.roll-dis { border-color: rgb(var(--dis-rgb) / 0.55); }
+.roll-dis .roll-total { color: var(--dis); }
+
+/* Natural 20: gold, glowing, and it pops in. */
+.roll-crit {
+    border-color: var(--crit);
+    background: linear-gradient(rgb(var(--crit-rgb) / 0.1), rgb(var(--crit-rgb) / 0.1)), var(--surface-2);
+    box-shadow: var(--glow-crit);
+}
+.roll-crit .roll-total { color: var(--crit); }
+.roll-crit .die:not(.die-dropped) { background: var(--crit); color: var(--on-accent); }
+
+/* Natural 1: red, with a short shake. */
+.roll-fumble {
+    border-color: rgb(var(--danger-rgb) / 0.6);
+    background: linear-gradient(rgb(var(--danger-rgb) / 0.08), rgb(var(--danger-rgb) / 0.08)), var(--surface-2);
+}
+.roll-fumble .roll-total { color: var(--danger-text); }
+.roll-fumble .die:not(.die-dropped) { background: var(--fumble); }
+
+.latest-roll .roll-result { animation: roll-in 0.28s ease-out; }
+.latest-roll .roll-crit, .roll-toast .roll-crit { animation: roll-crit 0.6s ease-out; }
+.latest-roll .roll-fumble, .roll-toast .roll-fumble { animation: roll-fumble 0.4s ease-out; }
+
+@keyframes roll-in { from { opacity: 0; transform: translateY(6px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes roll-crit { 0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgb(var(--crit-rgb) / 0.7); } 50% { transform: scale(1.04); } 100% { transform: none; } }
+@keyframes roll-fumble { 0%, 100% { transform: none; } 25% { transform: translateX(-5px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
+
+/* Pop-up copy of the newest roll at the bottom of the screen. */
+.roll-toast {
+    position: fixed;
+    right: var(--space-5);
+    bottom: var(--space-5);
+    z-index: 45;
+    width: min(420px, calc(100vw - 24px));
+    border-radius: 14px;
+    box-shadow: var(--shadow-overlay);
+    animation: roll-in 0.25s ease-out;
+}
+.roll-toast .roll-result { padding-right: 44px; background-color: var(--surface-2); }
+.roll-toast-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-3);
+    font-size: 1.3rem;
+    line-height: 1;
+}
+.roll-toast-close:hover { color: var(--text); background: var(--surface-3); }
+
+.roll-log { display: grid; gap: 8px; max-height: 520px; overflow-y: auto; }
+.roll-log .roll-total { font-size: 1.75rem; min-width: 44px; }
+
+/* ---------- Roll buttons (attacks, damage, technique casts) ---------- */
+
+.btn-roll {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--touch);
+    padding: 0 14px;
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius-md);
+    background: var(--accent-soft);
+    color: var(--text);
+    font: 600 var(--text-sm) / 1.2 var(--font-body);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background-color 0.12s, border-color 0.12s, transform 0.06s;
+}
+.btn-roll:hover:not(:disabled) { background: rgb(var(--accent-rgb) / 0.24); border-color: var(--accent); }
+.btn-roll:active:not(:disabled) { transform: scale(0.97); }
+.btn-roll:disabled { background: transparent; border-style: dashed; border-color: var(--border-strong); color: var(--text-disabled); }
+.btn-roll-crit { background: var(--crit); color: var(--on-accent); border-color: var(--crit); box-shadow: var(--glow-crit); }
+.btn-roll-crit:hover:not(:disabled) { background: #ffdc85; border-color: #ffdc85; }
+
+/* ---------- Attacks ---------- */
+
+.bending-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.bending-summary > div { display: grid; gap: 2px; padding: 10px 8px; border-radius: 12px; background: var(--surface-2); text-align: center; }
+.bending-summary span { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); }
+.bending-summary strong { font-size: var(--text-lg); }
+.bending-summary > div:nth-child(2) strong { color: var(--accent); }
+
+.attack-row { display: grid; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); }
+.attack-row + .attack-row { margin-top: 8px; }
+.attack-title { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.attack-title strong { font-size: var(--text-md); }
+.attack-details { flex-basis: 100%; font-size: var(--text-xs); color: var(--text-3); }
+.attack-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+.attack-options { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: var(--text-xs); color: var(--text-3); }
+.attack-options .inline-check { margin: 0; font-size: var(--text-xs); }
+
+/* ---------- Techniques ---------- */
+
+.technique-summary { margin-top: 0; font-size: var(--text-sm); }
+.technique-group h3 { margin: 18px 0 8px; font-size: var(--text-md); }
+
+.technique-card { padding: 0; overflow: hidden; border: 1px solid transparent; }
+.technique-card[open] { border-color: var(--accent-line); }
+.technique-card > summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    padding: 12px 14px;
+    min-height: 56px;
+    list-style: none;
+}
+.technique-card > summary::-webkit-details-marker { display: none; }
+.technique-card > summary:hover { background: rgb(255 255 255 / 0.03); }
+.technique-card > :not(summary) { margin-left: 14px; margin-right: 14px; }
+.technique-card > :last-child { margin-bottom: 14px; }
+.technique-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; flex: 1 1 auto; min-width: 0; }
+.technique-name { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; }
+.technique-time { color: var(--text-3); font-size: var(--text-xs); }
+
+.level-meter { display: inline-flex; align-items: center; gap: 6px; }
+.level-steps { display: inline-flex; gap: 3px; }
+.level-step { width: 16px; height: 6px; border-radius: 2px; background: #353c49; }
+.level-step-on { background: var(--accent); }
+.level-name { font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); }
+.level-meter[data-level='Mastered'] .level-name { color: var(--accent); }
+
+.technique-text { white-space: pre-line; color: #c8ceda; line-height: 1.6; padding-top: 12px; border-top: 1px solid var(--border); }
+.technique-meta { font-size: var(--text-xs); color: var(--text-3); margin: 4px 0 10px; }
+.technique-cast { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin: 10px 0; }
+.technique-cast-level { margin: 0; }
+.technique-cast-level select { width: auto; margin: 0; }
+.technique-cast .btn-roll:not(:disabled) { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700; }
+.technique-save { margin: 10px 0; padding: 8px 10px; border-radius: 8px; background: var(--surface-3); font-size: var(--text-sm); }
+.technique-save strong { color: var(--accent); }
+.technique-damage { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+
+/* Training block: gold to match the Training tag and Training Point pips. */
+.technique-training {
+    display: flex;
+    gap: 10px 14px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border: 1px solid rgb(var(--crit-rgb) / 0.3);
+    border-radius: 10px;
+    background: rgb(var(--crit-rgb) / 0.06);
+}
+.technique-training .pip { width: 14px; height: 14px; }
+.technique-training .pip-on { background: var(--crit); border-color: var(--crit); }
+.technique-training .btn-roll { border-color: rgb(var(--crit-rgb) / 0.5); background: rgb(var(--crit-rgb) / 0.12); color: var(--crit); font-weight: 700; }
+
+/* ---------- Resources and pips ---------- */
+
+.resource-group + .resource-group { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+.resource-group h3 { margin: 0 0 8px; font-size: var(--text-md); }
+.resource-row { display: flex; align-items: center; gap: 4px 12px; margin: 4px 0; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.resource-name { min-width: 90px; font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); }
+.resource-row-wide .resource-name { min-width: 180px; text-transform: none; letter-spacing: 0; font-size: var(--text-sm); color: var(--text); }
+
+.pip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.pip {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid var(--pip-empty);
+    background: transparent;
+}
+.pip-on { background: var(--accent); border-color: var(--accent); }
+.pip-good.pip-on { background: var(--success); border-color: var(--success); }
+.pip-bad { border-radius: 4px; }
+.pip-bad.pip-on { background: var(--danger); border-color: var(--danger); }
+
+/* Tappable resource pips are diamonds with a 36px hit area. */
+.pip-row:has(.pip-button) { gap: 0; margin: 0 -9px; }
+.pip-button {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    cursor: pointer;
+}
+.pip-button::before {
+    content: '';
+    position: absolute;
+    inset: 10px;
+    transform: rotate(45deg);
+    border-radius: 3px;
+    border: 2px solid var(--pip-empty);
+    transition: background-color 0.12s, border-color 0.12s, transform 0.12s;
+}
+.pip-button.pip-on { background: transparent; }
+.pip-button.pip-on::before { background: var(--accent); border-color: var(--accent); }
+.pip-button:hover::before { border-color: var(--text); transform: rotate(45deg) scale(1.1); }
+.roll-result-body[hidden] { display: none; }

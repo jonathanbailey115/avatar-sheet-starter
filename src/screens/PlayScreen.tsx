@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { formatModifier } from '../engine/abilities'
 import { computeSheet } from '../engine/sheet'
 import type { Sheet, StatLine } from '../engine/sheet'
@@ -8,6 +8,9 @@ import { AttackPanel } from '../play/AttackPanel'
 import { DetailsPanel } from '../play/DetailsPanel'
 import { HitPointSetup } from '../play/HitPointSetup'
 import { HpPanel } from '../play/HpPanel'
+import { PlayHeader } from '../play/PlayHeader'
+import { RollToast } from '../play/RollToast'
+import { elementTheme } from '../lib/element'
 import { RestPanel } from '../play/RestPanel'
 import { ResourcesPanel } from '../play/ResourcesPanel'
 import { RollBadge } from '../play/RollBadge'
@@ -19,6 +22,7 @@ import { TechniquesPanel } from '../play/TechniquesPanel'
 import { useActiveCharacter } from '../store/active'
 import { useRulesContent } from '../store/rules'
 import type { Character } from '../types/schema'
+import { EmptyState } from '../components/EmptyState'
 
 function explain(line: StatLine): string {
     return line.breakdown.map((part) => `${part.label} ${formatModifier(part.value)}`).join(', ')
@@ -32,26 +36,46 @@ type PlaySheetProps = {
     onEdit: () => void
 }
 
+/** On phones the sheet shows one of these at a time; on wider screens all of them, in columns. */
+const PANES = [
+    { id: 'stats', label: 'Stats' },
+    { id: 'actions', label: 'Actions' },
+    { id: 'techniques', label: 'Techniques' },
+    { id: 'details', label: 'Details' },
+] as const
+type Pane = (typeof PANES)[number]['id']
+
 function PlaySheet({ character, sheet, content, change, onEdit }: PlaySheetProps) {
     const { rollCheck } = useRoll()
+    const [pane, setPane] = useState<Pane>('stats')
 
     const characterClass = content.classes.find((item) => item.id === character.classId)
     const lineage = content.lineages.find((item) => item.id === character.lineageId)
+    const element = elementTheme(character, content.classes)
+    const subclass = content.subclasses.find((item) => item.id === character.subclassId)
+    const subtitle = [
+        `Level ${character.level} ${characterClass?.name ?? 'No class'}`,
+        subclass?.name,
+        lineage?.name ?? character.nation,
+    ]
+        .filter(Boolean)
+        .join(' · ')
 
     return (
-        <section id="panel-play" role="tabpanel" className="tab-panel play-sheet">
-            <header className="play-header">
-                <div>
-                    <h2>{characterDisplayName(character)}</h2>
-                    <p className="muted">
-                        Level {character.level} · {characterClass?.name ?? 'No class'} ·{' '}
-                        {lineage?.name ?? character.nation}
-                    </p>
-                </div>
-                <button className="secondary-button" type="button" onClick={onEdit}>
-                    Edit character
-                </button>
-            </header>
+        <section
+            id="panel-play"
+            role="tabpanel"
+            className="tab-panel play-sheet"
+            data-element={element}
+            data-life={sheet.lifeState}
+        >
+            <PlayHeader
+                name={characterDisplayName(character)}
+                subtitle={subtitle}
+                element={element}
+                sheet={sheet}
+                onEdit={onEdit}
+            />
 
             {character.migrationNotes.length > 0 && (
                 <p className="status-message">
@@ -119,27 +143,47 @@ function PlaySheet({ character, sheet, content, change, onEdit }: PlaySheetProps
                 </article>
             </div>
 
-            <div className="play-grid">
-                <div className="play-col">
+            <nav className="pane-strip" aria-label="Sheet sections">
+                {PANES.map((item) => (
+                    <button
+                        key={item.id}
+                        type="button"
+                        aria-pressed={pane === item.id}
+                        className={pane === item.id ? 'pane-chip active' : 'pane-chip'}
+                        onClick={() => setPane(item.id)}
+                    >
+                        {item.label}
+                    </button>
+                ))}
+            </nav>
+
+            <div className="play-grid" data-pane={pane}>
+                <div className="play-col" data-pane="stats">
                     <StatsPanel sheet={sheet} />
                 </div>
 
                 <div className="play-col">
-                    <HpPanel character={character} sheet={sheet} onChange={change} />
-                    <AttackPanel sheet={sheet} />
-                    <TechniquesPanel
-                        character={character}
-                        sheet={sheet}
-                        characterClass={characterClass}
-                        techniques={content.techniques}
-                        onChange={change}
-                    />
-                    <ResourcesPanel character={character} sheet={sheet} onChange={change} />
-                    <RestPanel character={character} sheet={sheet} content={content} onChange={change} />
-                    <HitPointSetup character={character} sheet={sheet} onChange={change} />
+                    <div className="play-col" data-pane="actions">
+                        <HpPanel character={character} sheet={sheet} onChange={change} />
+                        <AttackPanel sheet={sheet} />
+                    </div>
+                    <div className="play-col" data-pane="techniques">
+                        <TechniquesPanel
+                            character={character}
+                            sheet={sheet}
+                            characterClass={characterClass}
+                            techniques={content.techniques}
+                            onChange={change}
+                        />
+                        <ResourcesPanel character={character} sheet={sheet} onChange={change} />
+                    </div>
+                    <div className="play-col" data-pane="actions">
+                        <RestPanel character={character} sheet={sheet} content={content} onChange={change} />
+                        <HitPointSetup character={character} sheet={sheet} onChange={change} />
+                    </div>
                 </div>
 
-                <div className="play-col">
+                <div className="play-col" data-pane="details">
                     <DetailsPanel
                         character={character}
                         sheet={sheet}
@@ -151,6 +195,8 @@ function PlaySheet({ character, sheet, content, change, onEdit }: PlaySheetProps
                     <RollLog />
                 </div>
             </div>
+
+            <RollToast characterId={character.id} />
         </section>
     )
 }
@@ -173,10 +219,16 @@ export function PlayScreen({
     if (!character || !sheet) {
         return (
             <section className="tab-panel">
-                <p>No character is open.</p>
-                <button className="primary-button" type="button" onClick={onOpenLibrary}>
-                    Go to My Characters
-                </button>
+                <EmptyState
+                    title="No character is open"
+                    action={
+                        <button className="primary-button" type="button" onClick={onOpenLibrary}>
+                            Go to My Characters
+                        </button>
+                    }
+                >
+                    Pick one from My Characters, or make a new one there.
+                </EmptyState>
             </section>
         )
     }

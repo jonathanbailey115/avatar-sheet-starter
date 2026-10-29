@@ -17,7 +17,12 @@ export function RollResult({
         'roll-result',
         entry.crit || entry.critical ? 'roll-crit' : '',
         entry.fumble ? 'roll-fumble' : '',
-    ].join(' ')
+        entry.mode === 'advantage' ? 'roll-adv' : '',
+        entry.mode === 'disadvantage' ? 'roll-dis' : '',
+        entry.kind === 'technique' ? 'roll-cast' : '',
+    ]
+        .filter(Boolean)
+        .join(' ')
 
     const modifier = entry.modifier === 0 ? '' : entry.modifier > 0 ? ` + ${entry.modifier}` : ` − ${Math.abs(entry.modifier)}`
 
@@ -27,8 +32,8 @@ export function RollResult({
                 <strong>{entry.label}</strong>
                 {(showWho || who) && <small className="muted"> · {who ?? entry.characterName}</small>}
                 {gmOnly && <span className="roll-tag roll-tag-private">GM ONLY</span>}
-                {entry.mode === 'advantage' && <span className="roll-badge roll-badge-adv">A</span>}
-                {entry.mode === 'disadvantage' && <span className="roll-badge roll-badge-dis">D</span>}
+                {entry.mode === 'advantage' && <span className="roll-tag roll-tag-adv">ADV</span>}
+                {entry.mode === 'disadvantage' && <span className="roll-tag roll-tag-dis">DIS</span>}
                 {entry.kind === 'attack' && entry.crit && <span className="roll-tag roll-tag-crit">CRIT</span>}
                 {entry.kind === 'damage' && entry.critical && <span className="roll-tag roll-tag-crit">CRIT</span>}
                 {entry.fumble && entry.kind !== 'damage' && <span className="roll-tag roll-tag-fumble">NAT 1</span>}

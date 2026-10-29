@@ -1,0 +1,141 @@
+/* Campaigns (lobby, party board, game log, GM tools), accounts and NPC Studio. */
+
+.campaign-view { display: grid; gap: var(--space-5); grid-template-columns: minmax(0, 1fr); }
+.campaign-view .card + .card,
+.campaign-view .campaign-grid + .card { margin-top: 0; }
+
+.campaign-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: var(--space-4); }
+.campaign-head .actions { margin-top: 0; }
+.join-code { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+.join-code strong,
+.join-code-big {
+    padding: 6px 12px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+    background: var(--surface-2);
+    font-family: var(--font-mono);
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.roll-tag-gm { background: var(--gm); color: var(--text); }
+.roll-tag-player { background: var(--surface-3); color: var(--text-2); }
+
+/* Party on top across the full width, then the game log. */
+.campaign-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+
+/* ---------- Party board ---------- */
+
+.party-board { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+
+.party-card {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent);
+    border-radius: var(--radius-lg);
+    background: var(--surface-2);
+}
+.party-card header { display: flex; align-items: center; gap: 10px; }
+.party-who { display: grid; min-width: 0; flex: 1 1 auto; line-height: 1.25; }
+.party-who strong { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; overflow-wrap: anywhere; }
+.party-who small { font-size: var(--text-xs); }
+.party-sub { margin: 0; font-size: var(--text-xs); }
+.party-card .hp-bar { margin: 0; height: 10px; }
+
+.party-hp { display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
+.party-hp-now { font-size: 1.75rem; line-height: 1; font-weight: 700; }
+.party-hp-max { color: var(--text-3); }
+.party-health { margin-left: auto; font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.party-card[data-health='healthy'] :is(.party-hp-now, .party-health) { color: var(--hp-healthy); }
+.party-card[data-health='hurt'] :is(.party-hp-now, .party-health) { color: var(--hp-hurt); }
+.party-card[data-health='critical'] :is(.party-hp-now, .party-health) { color: var(--hp-critical); }
+
+.party-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(56px, 1fr)); gap: 6px; }
+.party-stats span {
+    display: grid;
+    padding: 6px 4px;
+    border-radius: 8px;
+    background: var(--surface-1);
+    color: var(--text-2);
+    font-size: 0.6875rem;
+    text-align: center;
+}
+.party-stats b { color: var(--text); font-size: var(--text-lg); }
+.party-card .link-button { justify-self: start; padding-top: 2px; }
+
+/* The GM's own card (no character) is quieter. */
+.party-none { border-top-color: var(--border-strong); background: var(--surface-1); }
+
+/* Dying: red frame and glow, hard to miss from across the table. */
+.party-dying {
+    border: 2px solid var(--danger);
+    background: linear-gradient(rgb(var(--danger-rgb) / 0.1), rgb(var(--danger-rgb) / 0.1)), var(--surface-2);
+    box-shadow: var(--glow-danger);
+    animation: party-dying-pulse 2.4s ease-in-out infinite;
+}
+.party-dying .party-hp-now { color: var(--danger-text); }
+.party-state-dying { background: var(--danger); color: var(--on-accent); font-size: var(--text-xs); }
+@keyframes party-dying-pulse {
+    0%, 100% { box-shadow: var(--glow-danger); }
+    50% { box-shadow: 0 0 0 6px rgb(var(--danger-rgb) / 0.22), 0 0 34px rgb(var(--danger-rgb) / 0.4); }
+}
+
+.party-stable { border-top-color: var(--warning); }
+.party-state-stable { background: rgb(var(--warning-rgb) / 0.18); color: #f6cf8d; }
+
+/* Dead: grey, hatched, struck through. */
+.party-dead {
+    border: 1px dashed var(--pip-empty);
+    background: repeating-linear-gradient(135deg, #12151a 0 10px, #16191f 10px 20px);
+}
+.party-dead .element-emblem { border-color: var(--pip-empty); color: var(--text-3); }
+.party-dead .party-who strong { color: var(--text-3); text-decoration: line-through; }
+.party-dead .party-hp-now { color: var(--text-3); }
+.party-dead .hp-bar { opacity: 0.4; }
+.party-state-dead { background: var(--border-strong); color: var(--text); font-size: var(--text-xs); }
+
+/* ---------- Game log ---------- */
+
+.campaign-log .roll-custom { margin-bottom: 12px; flex-wrap: wrap; }
+.campaign-log .roll-custom input { width: 200px; }
+.campaign-log .roll-log { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); max-height: 640px; align-content: start; }
+.campaign-log .roll-result:has(.roll-tag-private) { border-color: rgb(140 120 200 / 0.4); background: linear-gradient(rgb(74 63 107 / 0.25), rgb(74 63 107 / 0.25)), var(--surface-2); }
+
+.gm-key code { background: var(--surface-2); padding: 3px 8px; border-radius: 6px; user-select: all; word-break: break-all; }
+
+/* ---------- Accounts ---------- */
+
+.account-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface-1);
+}
+.account-settings { flex-basis: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; padding-top: 12px; border-top: 1px dashed var(--border); }
+.keep-signed-in { align-items: flex-start; }
+.keep-signed-in small { display: block; }
+.username-free { color: var(--success); }
+
+/* ---------- NPC Studio ---------- */
+
+.stat-block h3 { margin: 0; font-size: var(--text-xl); }
+.stat-block h4 { margin: 0.9rem 0 0.25rem; color: var(--text-2); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+.npc-abilities { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; list-style: none; padding: 0; margin: 0.5rem 0; }
+.npc-abilities li { padding: 6px 4px; border-radius: 8px; background: var(--surface-1); text-align: center; font-size: var(--text-xs); }
+.reroll-row { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-top: 1rem; }
+
+@media (max-width: 720px) {
+    .party-board { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .party-card { padding: 12px 14px; }
+    .campaign-log .roll-log { grid-template-columns: minmax(0, 1fr); }
+    .npc-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

@@ -71,7 +71,7 @@ export function StatsPanel({ sheet }: { sheet: Sheet }) {
             </SectionCard>
 
             <SectionCard title="Saving Throws">
-                <ul className="stat-list">
+                <ul className="stat-list stat-list-saves">
                     {sheet.abilities.map((ability) => {
                         const line = sheet.saves[ability.key]
                         const abbreviation = ABILITY_ABBREVIATIONS[ability.key]

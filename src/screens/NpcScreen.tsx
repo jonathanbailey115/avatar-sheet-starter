@@ -13,6 +13,7 @@ import { getContent, useCollection, useContentStore } from '../store/content'
 import { useNpcStore } from '../store/npcs'
 import type { Character, NpcTemplate } from '../types/schema'
 import { NpcEditor } from './NpcEditor'
+import { EmptyState } from '../components/EmptyState'
 
 export function NpcScreen() {
     const templates = useCollection('npcTemplates')
@@ -124,7 +125,7 @@ export function NpcScreen() {
 
                 <SectionCard title="Your NPCs">
                     {npcs.length === 0 ? (
-                        <p>No NPCs yet.</p>
+                        <EmptyState title="No NPCs yet">Generate one with Quick create.</EmptyState>
                     ) : (
                         <div className="npc-list">
                             {npcs.map((npc) => (

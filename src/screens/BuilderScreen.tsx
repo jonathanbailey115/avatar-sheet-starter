@@ -14,6 +14,7 @@ import { useActiveCharacter } from '../store/active'
 import { useCollection } from '../store/content'
 import { useLibraryStore } from '../store/library'
 import { nations } from '../types/schema'
+import { EmptyState } from '../components/EmptyState'
 
 const BUILDER_TABS = [
     { id: 'home', label: 'Home' },
@@ -50,10 +51,16 @@ export function BuilderScreen({
     if (!character) {
         return (
             <section className="tab-panel">
-                <p>No character is open.</p>
-                <button className="primary-button" type="button" onClick={onOpenLibrary}>
-                    Go to My Characters
-                </button>
+                <EmptyState
+                    title="No character is open"
+                    action={
+                        <button className="primary-button" type="button" onClick={onOpenLibrary}>
+                            Go to My Characters
+                        </button>
+                    }
+                >
+                    Pick one from My Characters, or make a new one there.
+                </EmptyState>
             </section>
         )
     }
@@ -67,8 +74,11 @@ export function BuilderScreen({
 
     return (
         <section id="panel-builder" role="tabpanel" className="tab-panel">
-            <div className="play-header">
-                <h2>{characterDisplayName(character)}</h2>
+            <div className="play-header builder-header">
+                <div>
+                    <p className="eyebrow">Character builder</p>
+                    <h2>{characterDisplayName(character)}</h2>
+                </div>
                 <button className="primary-button" type="button" onClick={onPlay}>
                     View play sheet
                 </button>
@@ -89,19 +99,22 @@ export function BuilderScreen({
                 </div>
             )}
 
-            <div className="builder-tabs" role="navigation" aria-label="Character builder steps">
-                {BUILDER_TABS.map((item) => (
+            <nav className="builder-steps" aria-label="Character builder steps">
+                {BUILDER_TABS.map((item, index) => (
                     <button
                         key={item.id}
-                        className={tab === item.id ? 'active' : ''}
+                        className={tab === item.id ? 'builder-step active' : 'builder-step'}
                         onClick={() => setTab(item.id)}
                         type="button"
                         aria-current={tab === item.id ? 'step' : undefined}
                     >
+                        <span className="builder-step-number" aria-hidden="true">
+                            {index + 1}
+                        </span>
                         {item.label}
                     </button>
                 ))}
-            </div>
+            </nav>
 
             {tab === 'home' && (
                 <BuilderHomePanel character={character} setCharacter={setCharacter} />

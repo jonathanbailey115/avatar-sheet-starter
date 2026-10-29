@@ -1,0 +1,115 @@
+/* Play sheet on phones: sticky AC / HP / Init strip, section chips, one section at a time. */
+
+@media (max-width: 720px) {
+    .play-sheet { gap: var(--space-4); }
+
+    .play-hero {
+        margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) 0;
+        padding: var(--space-4);
+        gap: var(--space-3);
+        flex-wrap: nowrap;
+    }
+    .element-emblem-lg { width: 44px; height: 44px; }
+    .element-emblem-lg svg { width: 24px; height: 24px; }
+    .play-hero h2 { font-size: var(--text-xl); }
+    .play-hero p { font-size: var(--text-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .play-hero-text { flex: 1 1 auto; }
+    .play-hero .element-chip { display: none; }
+    .play-edit { min-height: 40px; padding: 0 12px; font-size: var(--text-xs); flex-shrink: 0; }
+
+    .play-quick {
+        position: sticky;
+        top: 52px;
+        z-index: 20;
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr) 72px;
+        gap: 8px;
+        margin: 0 calc(var(--space-4) * -1);
+        padding: 8px var(--space-4);
+        background: rgb(13 16 21 / 0.96);
+        border-bottom: 1px solid var(--border);
+    }
+    .quick-tile {
+        display: grid;
+        justify-items: center;
+        align-content: center;
+        min-height: 56px;
+        padding: 4px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface-1);
+        color: var(--text);
+    }
+    .quick-tile span { font-size: 0.625rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); }
+    .quick-tile strong { font-size: var(--num-lg); line-height: 1.1; font-weight: 700; }
+    .quick-roll { border-color: var(--accent-line); background: var(--accent-soft); }
+    .quick-hp { justify-items: stretch; padding: 6px 10px; }
+    .quick-hp-top { display: flex; align-items: baseline; gap: 4px; }
+    .quick-hp-top strong { margin-left: auto; font-size: 1.375rem; }
+    .quick-hp-top small { color: var(--text-3); font-size: var(--text-sm); }
+    .quick-hp .hp-bar { height: 8px; margin: 4px 0 0; }
+
+    .pane-strip {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        margin: 0 calc(var(--space-4) * -1);
+        padding: 0 var(--space-4);
+        scrollbar-width: none;
+    }
+    .pane-strip::-webkit-scrollbar { display: none; }
+    .pane-chip {
+        flex-shrink: 0;
+        min-height: 40px;
+        padding: 0 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        background: transparent;
+        color: var(--text-2);
+        font: 600 var(--text-sm) / 1 var(--font-body);
+    }
+    .pane-chip.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700; }
+
+    /* One section at a time. */
+    .play-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+    .play-grid .play-col { gap: var(--space-4); }
+    .play-grid[data-pane='stats'] [data-pane]:not([data-pane='stats']),
+    .play-grid[data-pane='actions'] [data-pane]:not([data-pane='actions']),
+    .play-grid[data-pane='techniques'] [data-pane]:not([data-pane='techniques']),
+    .play-grid[data-pane='details'] [data-pane]:not([data-pane='details']) { display: none; }
+    .play-grid > [data-pane='details'] { grid-column: auto; grid-template-columns: 1fr; }
+
+    /* Vitals scroll sideways instead of stacking into a tall block. */
+    .vitals-bar {
+        display: flex;
+        overflow-x: auto;
+        margin: 0 calc(var(--space-4) * -1);
+        padding: 0 var(--space-4) 2px;
+        scrollbar-width: none;
+    }
+    .vitals-bar::-webkit-scrollbar { display: none; }
+    .vital { flex: 0 0 auto; min-width: 104px; min-height: 80px; padding: 8px 10px; }
+    /* AC and initiative are already in the sticky strip. */
+    .vitals-bar > .vital:nth-child(-n + 2) { display: none; }
+
+    .roll-bar { padding: 10px; }
+    .roll-bar-controls { gap: 8px; }
+    .segmented { flex: 1 1 100%; }
+    .roll-custom { flex: 1 1 100%; }
+    .roll-custom input { flex: 1 1 auto; width: auto; }
+    .roll-hint { display: none; }
+    .latest-roll { display: none; }
+
+    .card-head { padding: 12px 14px; }
+    .card-body { padding: 12px 14px 14px; }
+    .stat-row { min-height: var(--touch); }
+    .hp-controls { grid-template-columns: 1fr 1fr 1fr; }
+    .hp-controls input { grid-column: 1 / -1; }
+
+    .roll-toast {
+        left: 12px;
+        right: 12px;
+        width: auto;
+        bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 12px);
+    }
+}

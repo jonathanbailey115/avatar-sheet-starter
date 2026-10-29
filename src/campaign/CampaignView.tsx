@@ -58,7 +58,7 @@ export function CampaignView() {
                         </div>
                     </div>
                     <div className="actions inline-actions">
-                        <span className="roll-tag roll-tag-crit">{isGm ? 'YOU ARE THE GM' : 'PLAYER'}</span>
+                        <span className={isGm ? 'roll-tag roll-tag-gm' : 'roll-tag roll-tag-player'}>{isGm ? 'You are the GM' : 'Player'}</span>
                         <button className="secondary-button" type="button" onClick={closeCampaign}>
                             Back to campaigns
                         </button>

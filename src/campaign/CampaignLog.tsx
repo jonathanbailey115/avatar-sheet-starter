@@ -5,6 +5,7 @@ import { newRollId, parseExpression, rollExpression } from '../engine/rolls'
 import type { RollEntry } from '../engine/rolls'
 import { RollResult } from '../play/RollResult'
 import type { CampaignRoll } from './types'
+import { EmptyState } from '../components/EmptyState'
 
 type CampaignLogProps = {
     rolls: CampaignRoll[]
@@ -73,7 +74,7 @@ export function CampaignLog({ rolls, isGm, myName, privateRolls, onClear, onRoll
             {error && <p className="roll-error">{error}</p>}
 
             {rolls.length === 0 ? (
-                <p className="muted">No rolls yet. Rolls from every player appear here as they happen.</p>
+                <EmptyState title="No rolls yet">Rolls from every player appear here as they happen.</EmptyState>
             ) : (
                 <div className="roll-log">
                     {rolls.map((roll) => (

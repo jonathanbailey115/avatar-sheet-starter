@@ -8,6 +8,7 @@ import { useCampaignStore } from '../store/campaign'
 import { getBackend } from './backend'
 import type { CampaignNpc } from './types'
 import { useAction } from './useAction'
+import { EmptyState } from '../components/EmptyState'
 
 /** NPCs saved to this campaign. The GM sees all of them and decides which players may see. */
 export function CampaignNpcs({ campaignId, npcs, isGm }: { campaignId: string; npcs: CampaignNpc[]; isGm: boolean }) {
@@ -21,7 +22,7 @@ export function CampaignNpcs({ campaignId, npcs, isGm }: { campaignId: string; n
 
     return (
         <SectionCard title="NPCs">
-            {npcs.length === 0 && <p className="muted">No NPCs yet. Send one from the NPC Studio tab.</p>}
+            {npcs.length === 0 && <EmptyState title="No NPCs yet">Send one from the NPC Studio tab.</EmptyState>}
             <div className="npc-list">
                 {npcs.map((npc) => (
                     <article key={npc.id} className="npc-item">

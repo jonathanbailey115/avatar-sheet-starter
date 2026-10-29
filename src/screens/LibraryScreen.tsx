@@ -12,6 +12,7 @@ import {
 } from '../lib/characterIO'
 import { useCollection } from '../store/content'
 import { useLibraryStore } from '../store/library'
+import { EmptyState } from '../components/EmptyState'
 
 export function LibraryScreen({ onPlay, onEdit }: { onPlay: () => void; onEdit: () => void }) {
     const characters = useLibraryStore((state) => state.characters)
@@ -117,7 +118,7 @@ export function LibraryScreen({ onPlay, onEdit }: { onPlay: () => void; onEdit: 
                 {message && <p className="status-message">{message}</p>}
 
                 {characters.length === 0 ? (
-                    <p>No characters yet. Create one or import a file from a friend.</p>
+                    <EmptyState title="No characters yet">Create one, or import a file from a friend.</EmptyState>
                 ) : (
                     <div className="npc-list">
                         {characters.map((character) => {
