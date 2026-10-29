@@ -6,6 +6,16 @@ export interface NpcSpec {
     nation: Nation | null
     classId: string | null
     level: number
+    /** Dragon Trainers can come up at random (rare, off by default: they belong to one people). */
+    allowDragonTrainers?: boolean
+    /** Give the NPC a second class. */
+    multiclass?: boolean
+}
+
+/** The random-class options the GM chose; kept with the NPC so rerolls follow them. */
+export interface NpcOptions {
+    allowDragonTrainers?: boolean
+    multiclass?: boolean
 }
 
 /** The pieces of an NPC that can be rerolled on their own. */
@@ -27,6 +37,7 @@ export const DEFAULT_COMBAT = 0.6
 export interface NpcContext {
     template: NpcTemplate
     content: RulesContent
+    options?: NpcOptions
 }
 
 export interface NpcResult {

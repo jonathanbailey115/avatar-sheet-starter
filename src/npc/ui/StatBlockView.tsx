@@ -65,6 +65,12 @@ export function StatBlockView({ block, warnings, onReroll }: Props) {
                 </p>
             )}
 
+            {block.dragon && (
+                <p>
+                    <strong>Dragon companion</strong> {block.dragon}
+                </p>
+            )}
+
             {block.attacks.length > 0 && (
                 <>
                     <h4>Attacks</h4>

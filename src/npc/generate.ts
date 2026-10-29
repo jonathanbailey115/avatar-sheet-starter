@@ -1,5 +1,7 @@
 import { NATION_ELEMENT } from '../engine/bending'
-import { createBlankCharacter } from '../lib/character'
+import { DRAGON_ANCESTRIES } from '../data/dragonAncestry'
+import { DRAGON_TRAINER_ID } from '../data/dragonTrainer'
+import { createBlankCharacter, newId } from '../lib/character'
 import { normalizeCharacter } from '../lib/normalize'
 import { pickMany, pickOne, weightedPick } from '../lib/random'
 import type { Rng } from '../lib/random'
@@ -31,16 +33,23 @@ function classFits(characterClass: CharacterClass, nation: Nation): boolean {
     return !characterClass.element || characterClass.element === NATION_ELEMENT[nation]
 }
 
+/** Dragon Trainers belong to one people (like the Sun Warriors), so even when allowed they come up less often. */
+const DRAGON_TRAINER_WEIGHT = 0.3
+
+/** Can this class come up at random? Player-only classes never do; Dragon Trainers only when the GM allows them. */
+const randomClass = (item: CharacterClass, ctx: NpcContext) =>
+    !item.playerOnly || (item.id === DRAGON_TRAINER_ID && Boolean(ctx.options?.allowDragonTrainers))
+
 function pickClass(ctx: NpcContext, nation: Nation, rng: Rng, avoid?: string): CharacterClass | null {
     const weights = ctx.template.bendingWeights
-    const fitting = ctx.content.classes.filter((item) => classFits(item, nation) && !item.playerOnly)
+    const fitting = ctx.content.classes.filter((item) => classFits(item, nation) && randomClass(item, ctx))
     const options = fitting.filter((item) => item.id !== avoid)
     const pool = options.length > 0 ? options : fitting
     const kindOf = (item: CharacterClass) => item.element ?? 'Non-Bender'
     // A kind's weight is shared by its classes, so having two non-bender classes does not double their odds.
     const entries = pool.map((item) => ({
         item,
-        weight: (weights[kindOf(item)] ?? 0) / pool.filter((other) => kindOf(other) === kindOf(item)).length,
+        weight: ((weights[kindOf(item)] ?? 0) / pool.filter((other) => kindOf(other) === kindOf(item)).length) * (item.id === DRAGON_TRAINER_ID ? DRAGON_TRAINER_WEIGHT : 1),
     }))
     return weightedPick(entries, rng) ?? pickOne(fitting, rng)
 }
@@ -71,6 +80,27 @@ function withClass(character: Character, characterClass: CharacterClass | null, 
         subclassId: pickOne(subclasses, rng)?.id,
         classSkillChoices: choose<SkillName>(characterClass?.skillChoices, rng),
         selectedFeatureIds: [],
+        extraClasses: [],
+        dragonAncestry: characterClass?.id === DRAGON_TRAINER_ID ? (pickOne(DRAGON_ANCESTRIES, rng)?.id ?? '') : '',
+    }
+}
+
+/**
+ * A second class for a multiclassed NPC. A bender takes a non-bending class (gmbinder), a non-bender another
+ * non-bending class. The extra class gets between 1 and half the NPC's levels.
+ */
+function withExtraClass(character: Character, ctx: NpcContext, rng: Rng): Character {
+    if (character.level < 2) return character
+    const options = ctx.content.classes.filter(
+        (item) => !item.element && item.id !== character.classId && randomClass(item, ctx),
+    )
+    const picked = pickOne(options, rng)
+    if (!picked) return character
+    const level = 1 + Math.floor(rng() * Math.max(1, Math.floor(character.level / 2)))
+    const subclasses = ctx.content.subclasses.filter((item) => item.classId === picked.id && item.unlockLevel <= level)
+    return {
+        ...character,
+        extraClasses: [{ id: newId(), classId: picked.id, subclassId: pickOne(subclasses, rng)?.id, level, master: '', gmApproved: true }],
     }
 }
 
@@ -111,7 +141,11 @@ const rebuild = (character: Character, ctx: NpcContext): Character =>
     normalizeCharacter(character, ctx.content)
 
 /** Quick-create: a complete NPC from a template and an optional nation, class and level. */
-export function generateNpc(spec: NpcSpec, ctx: NpcContext, rng: Rng = Math.random): NpcResult {
+export function generateNpc(spec: NpcSpec, baseContext: NpcContext, rng: Rng = Math.random): NpcResult {
+    const ctx: NpcContext = {
+        ...baseContext,
+        options: { allowDragonTrainers: spec.allowDragonTrainers, multiclass: spec.multiclass, ...baseContext.options },
+    }
     const level = clampLevel(spec.level)
     const requested = spec.classId ? ctx.content.classes.find((item) => item.id === spec.classId) ?? null : null
 
@@ -124,6 +158,7 @@ export function generateNpc(spec: NpcSpec, ctx: NpcContext, rng: Rng = Math.rand
     let character: Character = { ...createBlankCharacter('NPC'), level, name: generateName(nation, rng) }
     character = withLineage(character, nation, ctx, rng)
     character = withClass(character, requested ?? pickClass(ctx, nation, rng), ctx, rng)
+    if (ctx.options?.multiclass) character = withExtraClass(character, ctx, rng)
     character = withAbilities(character, ctx, rng)
     character = withPersona(character, ctx, rng)
     character = rebuild(character, ctx)
@@ -143,6 +178,7 @@ export function rerollPart(character: Character, part: NpcPart, ctx: NpcContext,
     const currentClass = ctx.content.classes.find((item) => item.id === character.classId) ?? null
     const redoFromClass = (base: Character, characterClass: CharacterClass | null) => {
         let result = withClass(base, characterClass, ctx, rng)
+        if (ctx.options?.multiclass) result = withExtraClass(result, ctx, rng)
         result = rebuild(withAbilities(result, ctx, rng), ctx)
         result = learnTechniques(result, ctx.content, rng)
         return equip(rebuild(result, ctx), ctx.content, combatOf(ctx), rng)

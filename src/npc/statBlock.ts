@@ -1,4 +1,5 @@
 import { formatModifier } from '../engine/abilities'
+import { classSummary } from '../engine/classLevels'
 import { damageOptions, saveSummary } from '../engine/techniques'
 import { computeSheet } from '../engine/sheet'
 import type { RulesContent } from '../lib/normalize'
@@ -28,6 +29,8 @@ export interface StatBlock {
     attacks: Array<{ name: string; toHit: number; damage: string; note: string }>
     bending: { attackModifier: number; saveDc: number } | null
     techniques: StatBlockTechnique[]
+    /** One line about the Dragon Trainer's companion, when there is one. */
+    dragon: string | null
     features: Array<{ name: string; origin: string }>
     tools: string[]
     languages: string[]
@@ -45,7 +48,11 @@ export function buildStatBlock(character: Character, content: RulesContent): Sta
 
     return {
         name: character.name.trim() || 'Unnamed NPC',
-        subtitle: [`Level ${character.level}`, lineage?.name ?? character.nation, subclass?.name ?? characterClass?.name ?? 'No class']
+        subtitle: [
+            `Level ${character.level}`,
+            lineage?.name ?? character.nation,
+            character.extraClasses.length > 0 ? classSummary(character, content.classes) : (subclass?.name ?? characterClass?.name ?? 'No class'),
+        ]
             .filter(Boolean)
             .join(' · '),
         armorClass: sheet.armorClass.total,
@@ -84,6 +91,9 @@ export function buildStatBlock(character: Character, content: RulesContent): Sta
                 },
             ]
         }),
+        dragon: sheet.dragon?.ancestry
+            ? `${sheet.dragon.ancestry.name} (${sheet.dragon.size.toLowerCase()} ${sheet.dragon.stage.toLowerCase()}): AC ${sheet.dragon.armorClass}, HP ${sheet.dragon.maxHp}, Rend ${formatModifier(sheet.dragon.attacks[0].toHit)} to hit ${sheet.dragon.attacks[0].formula}${sheet.dragon.breath ? `, breath ${sheet.dragon.breath.formula} ${sheet.dragon.breath.damageType} (DC ${sheet.dragon.breath.dc}, ${sheet.dragon.breath.cone}-ft cone)` : ''}`
+            : null,
         features: sheet.features.map((granted) => ({ name: granted.feature.name, origin: granted.origin })),
         tools: character.toolProficiencies,
         languages: character.languages,
@@ -106,6 +116,7 @@ export function statBlockText(block: StatBlock): string {
         const extra = [t.save && `save ${t.save}`, ...t.damage].filter(Boolean).join('; ')
         lines.push(`${t.name} (${t.level})${extra ? `: ${extra}` : ''}`)
     }
+    if (block.dragon) lines.push(`Dragon companion: ${block.dragon}`)
     if (block.features.length) lines.push(`Features: ${block.features.map((f) => f.name).join(', ')}`)
     return lines.join('\n')
 }

@@ -5,7 +5,7 @@ import SectionCard from '../components/SectionCard'
 import { downloadText, safeFileName, serializeCharacter } from '../lib/characterIO'
 import { generateNpc, rerollPart } from '../npc/generate'
 import { buildStatBlock, statBlockText } from '../npc/statBlock'
-import type { NpcContext, NpcPart, NpcSpec } from '../npc/types'
+import type { NpcContext, NpcOptions, NpcPart, NpcSpec } from '../npc/types'
 import { SendToCampaign } from '../npc/ui/SendToCampaign'
 import { QuickCreate } from '../npc/ui/QuickCreate'
 import { StatBlockView } from '../npc/ui/StatBlockView'
@@ -27,6 +27,8 @@ export function NpcScreen() {
 
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [templateRole, setTemplateRole] = useState<Record<string, string>>({})
+    // The random-class options each NPC was made with, so rerolling its class follows them.
+    const [npcOptions, setNpcOptions] = useState<Record<string, NpcOptions>>({})
     const [warnings, setWarnings] = useState<string[]>([])
     const [draft, setDraft] = useState<Character | null>(null)
     const [copied, setCopied] = useState(false)
@@ -38,15 +40,16 @@ export function NpcScreen() {
         [selected, edits],
     )
 
-    const contextFor = (role: string | undefined): NpcContext | null => {
+    const contextFor = (role: string | undefined, options?: NpcOptions): NpcContext | null => {
         const template: NpcTemplate | undefined = templates.find((item) => item.role === role) ?? templates[0]
-        return template ? { template, content: getContent() } : null
+        return template ? { template, content: getContent(), options } : null
     }
 
     const handleGenerate = (template: NpcTemplate, spec: NpcSpec) => {
         const result = generateNpc(spec, { template, content: getContent() })
         addNpc(result.character)
         setTemplateRole((current) => ({ ...current, [result.character.id]: template.role }))
+        setNpcOptions((current) => ({ ...current, [result.character.id]: { allowDragonTrainers: spec.allowDragonTrainers, multiclass: spec.multiclass } }))
         setSelectedId(result.character.id)
         setWarnings(result.warnings)
         setDraft(null)
@@ -55,7 +58,7 @@ export function NpcScreen() {
     const handleReroll = (part: NpcPart) => {
         if (!selected) return
         // Reroll with the role the NPC was made from, falling back to its background note.
-        const ctx = contextFor(templateRole[selected.id] ?? selected.backgroundNotes)
+        const ctx = contextFor(templateRole[selected.id] ?? selected.backgroundNotes, npcOptions[selected.id])
         if (!ctx) return
         const result = rerollPart(selected, part, ctx)
         saveNpc(result.character)

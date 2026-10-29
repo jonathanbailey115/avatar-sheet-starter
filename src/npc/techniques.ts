@@ -42,7 +42,7 @@ export function learnTechniques(character: Character, content: RulesContent, rng
     const upgradable = shuffle(
         current.knownTechniques.filter((known) => {
             const element = content.techniques.find((technique) => technique.id === known.techniqueId)?.element
-            return element !== 'Fighting' && element !== 'Universal'
+            return element !== 'Fighting' && element !== 'Universal' && element !== 'Dragon'
         }),
         rng,
     )
