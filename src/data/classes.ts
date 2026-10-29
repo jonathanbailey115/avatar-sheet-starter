@@ -22,6 +22,8 @@ export const characterClasses: CharacterClass[] = [
         hitDie: 'Lineage-based',
         primaryAbility: 'Strength or Dexterity',
         keyAbilities: ['strength', 'dexterity'],
+        // gmbinder: multiclass into or out of this Fighting Style with Strength or Dexterity 13+.
+        multiclassAbilities: ['strength', 'dexterity'],
         bendingAbility: 'dexterity',
         savingThrows: [],
         skillChoices: {

@@ -168,3 +168,14 @@ describe('schema 6 to 7: alternate bending ability', () => {
         expect(migrated.abilityOption).toBe(false)
     })
 })
+
+describe('schema 7 to 8: multiclassing', () => {
+    it('adds no extra classes, the level cap on and no boons, so the character is unchanged', () => {
+        const old = { ...JSON.parse(JSON.stringify(createBlankCharacter())), schemaVersion: 7, level: 6, classId: 'airbending' }
+        for (const key of ['extraClasses', 'levelCapLifted', 'epicBoons']) delete (old as Record<string, unknown>)[key]
+        const migrated = migrateCharacter(old) as Record<string, unknown>
+        expect(migrated.schemaVersion).toBe(CHARACTER_SCHEMA_VERSION)
+        expect(migrated).toMatchObject({ extraClasses: [], levelCapLifted: false, epicBoons: [], level: 6, classId: 'airbending' })
+        expect(parseCharacterRecord(migrated)).toMatchObject({ level: 6 })
+    })
+})

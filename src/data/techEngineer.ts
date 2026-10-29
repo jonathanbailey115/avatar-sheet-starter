@@ -198,6 +198,8 @@ export const techEngineerClass: CharacterClass = {
     hitDie: 'Lineage-based',
     primaryAbility: 'Intelligence',
     bendingAbility: 'intelligence',
+    // gmbinder lets you multiclass into or out of the Tech-Engineer with Intelligence or Wisdom 13+.
+    multiclassAbilities: ['intelligence', 'wisdom'],
     // "with your GM's permission" a Tech-Engineer may use Wisdom instead (gmbinder, Tech-Engineer).
     altBendingAbility: 'wisdom',
     savingThrows: [],

@@ -14,6 +14,7 @@ type Raw = Record<string, unknown>
  *   5  Techniques carry Training Point state; `customBackground` (player-made background).
  *   6  Species (`none|human|variant-human`), `speciesAbilityChoices`, `speciesSkill`.
  *   7  `abilityOption`: the GM allows a class's alternate bending ability.
+ *   8  Multiclassing: `extraClasses`, `levelCapLifted` (GM allows more than 20 levels) and `epicBoons`.
  *
  * To change the schema: bump CHARACTER_SCHEMA_VERSION, add an `n -> n+1` function below, add a test.
  */
@@ -151,6 +152,10 @@ function migrate6to7(raw: Raw): Raw {
     return { ...raw, schemaVersion: 7, abilityOption: false }
 }
 
+function migrate7to8(raw: Raw): Raw {
+    return { ...raw, schemaVersion: 8, extraClasses: [], levelCapLifted: false, epicBoons: [] }
+}
+
 const MIGRATIONS: Record<number, (raw: Raw) => Raw> = {
     1: migrate1to2,
     2: migrate2to3,
@@ -158,6 +163,7 @@ const MIGRATIONS: Record<number, (raw: Raw) => Raw> = {
     4: migrate4to5,
     5: migrate5to6,
     6: migrate6to7,
+    7: migrate7to8,
 }
 
 /**

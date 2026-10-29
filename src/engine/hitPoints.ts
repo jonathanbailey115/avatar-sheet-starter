@@ -15,6 +15,9 @@ type HpFields = Pick<
 
 export type LifeState = 'conscious' | 'dying' | 'stable' | 'dead'
 
+/** Levels above this add hit points at a quarter of the normal rate. */
+export const HP_SLOWDOWN_LEVEL = 20
+
 export function averageHitDieRoll(die: HitDie): number {
     return Math.floor(die / 2) + 1
 }
@@ -47,7 +50,9 @@ export function computeMaxHp(character: HpFields, hitDie: HitDie | null): number
     let total = Math.max(1, hitDie + con)
 
     for (let level = 2; level <= character.level; level += 1) {
-        total += Math.max(1, hitPointGainForLevel(character, level, hitDie) + con)
+        const gain = hitPointGainForLevel(character, level, hitDie) + con
+        // Past level 20 (a GM-approved cap lift) a level adds a quarter of the normal gain, rounded down (owner decision).
+        total += level > HP_SLOWDOWN_LEVEL ? Math.max(1, Math.floor(gain / 4)) : Math.max(1, gain)
     }
 
     return Math.max(1, total + character.maxHpAdjustment)

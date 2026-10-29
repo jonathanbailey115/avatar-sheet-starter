@@ -6,7 +6,7 @@ export type BendingType = Element | 'Non-Bender'
 export type TechniqueLevel = 'Practiced' | 'Trained' | 'Mastered'
 
 export const TECHNIQUE_LEVELS: TechniqueLevel[] = ['Practiced', 'Trained', 'Mastered']
-export const CHARACTER_SCHEMA_VERSION = 7
+export const CHARACTER_SCHEMA_VERSION = 8
 
 /** gmbinder's Species. "none" means the typed ability scores are already final. */
 export type Species = 'none' | 'human' | 'variant-human'
@@ -229,6 +229,24 @@ export interface EquippedWeapon {
     bonus: number
 }
 
+/** A class taken after the first. A second subclass of the same class is also an extra class. */
+export interface ExtraClass {
+    id: string
+    classId: string
+    subclassId?: string
+    level: number
+    /** The master who taught this (needed for a second subclass of a class you already have). */
+    master: string
+    /** The GM has approved this multiclass. */
+    gmApproved: boolean
+}
+
+export interface EpicBoonPick {
+    boonId: string
+    /** For the ability-score boon: which ability gets +2. */
+    ability?: AbilityName
+}
+
 export interface Character {
     schemaVersion: number
     id: string
@@ -243,7 +261,14 @@ export interface Character {
     speciesAbilityChoices: AbilityName[]
     /** Variant Human: the one skill it grants. */
     speciesSkill: SkillName | null
+    /** Total character level: the first class's levels plus every extra class's levels. */
     level: number
+    /** More classes taken after the first (multiclassing). Each has its own level and subclass. */
+    extraClasses: ExtraClass[]
+    /** The GM allows more than 20 total levels (up to 20 in every class). */
+    levelCapLifted: boolean
+    /** Epic Boons earned by reaching level 20 in a class. */
+    epicBoons: EpicBoonPick[]
     /** Sets max HP directly (GM-set NPCs). Null means derive from lineage, level and Constitution. */
     maxHpOverride: number | null
     /** Manual +/- to max HP (feats, items). */
@@ -315,6 +340,8 @@ export interface CharacterClass {
     description: string
     hitDie: string
     primaryAbility: string
+    /** Abilities, any one of which must be 13+ to multiclass into this class (gmbinder). Defaults to the bending or key ability. */
+    multiclassAbilities?: AbilityName[]
     /** The same as `primaryAbility`, as data, when a class has more than one. Otherwise the bending ability is the key ability. */
     keyAbilities?: AbilityName[]
     savingThrows: AbilityName[]

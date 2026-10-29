@@ -57,8 +57,12 @@ export function getAbilityModifier(score: number): number {
     return Math.floor((score - 10) / 2)
 }
 
-/** Proficiency bonus by total level: +2 (1-4), +3 (5-8), +4 (9-12), +5 (13-16), +6 (17-20). */
+/**
+ * Proficiency bonus by total level: +2 (1-4), +3 (5-8), +4 (9-12), +5 (13-16), +6 (17-20).
+ * Past level 20 (a GM-approved level cap lift) it grows by 1 for every 8 levels above 20 (owner decision).
+ */
 export function getProficiencyBonus(level: number): number {
+    if (level > 20) return 6 + Math.floor((level - 20) / 8)
     if (level >= 17) return 6
     if (level >= 13) return 5
     if (level >= 9) return 4
