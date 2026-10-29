@@ -47,10 +47,14 @@ export function netMode(advantageCount: number, disadvantageCount: number): Roll
     return 'normal'
 }
 
+/** A feature of the same name from two classes (two Extra Attacks) counts once (owner decision LC2). */
 export function collectFeatureEffects(granted: GrantedFeature[]): Effect[] {
-    return granted.flatMap(({ feature }) =>
-        (feature.effects ?? []).map((effect) => ({ ...effect, source: feature.name })),
-    )
+    const seen = new Set<string>()
+    return granted.flatMap(({ feature }) => {
+        if (seen.has(feature.name)) return []
+        seen.add(feature.name)
+        return (feature.effects ?? []).map((effect) => ({ ...effect, source: feature.name }))
+    })
 }
 
 const STRENGTH_DEXTERITY_SKILLS = (Object.keys(SKILL_ABILITIES) as SkillName[]).filter(

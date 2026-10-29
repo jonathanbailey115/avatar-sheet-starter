@@ -1,4 +1,5 @@
 import { ABILITIES } from './abilities'
+import { BOON_ABILITY_BONUS, BOON_ABILITY_CAP, ELEMENT_BOON_ID } from '../data/epicBoons'
 import type { AbilityName, Character } from '../types/schema'
 
 /**
@@ -13,7 +14,7 @@ export const SCORE_CAP = 20
 
 type Scores = Record<AbilityName, number>
 
-type SpeciesFields = Partial<Pick<Character, 'species' | 'speciesAbilityChoices'>>
+type SpeciesFields = Partial<Pick<Character, 'species' | 'speciesAbilityChoices' | 'epicBoons'>>
 
 /** How much the species adds to one ability: 1 for a Human, 1 for each chosen ability of a Variant Human. */
 function bonusFor(character: SpeciesFields, ability: AbilityName): number {
@@ -44,7 +45,10 @@ export function abilityScore<K extends AbilityName>(character: Pick<Character, K
     const base = character[ability] as number
     const bonus = bonusFor(character, ability)
     // A bonus cannot lift a score past 20, but it never lowers a score that is already higher.
-    return bonus > 0 ? Math.max(base, Math.min(SCORE_CAP, base + bonus)) : base
+    const withSpecies = bonus > 0 ? Math.max(base, Math.min(SCORE_CAP, base + bonus)) : base
+    // Each Boon of the Element adds 2 to its ability, up to 30 (owner decision LC3).
+    const boons = (character.epicBoons ?? []).filter((pick) => pick.boonId === ELEMENT_BOON_ID && pick.ability === ability).length
+    return boons > 0 ? Math.max(withSpecies, Math.min(BOON_ABILITY_CAP, withSpecies + boons * BOON_ABILITY_BONUS)) : withSpecies
 }
 
 /** What the sheet uses: typed scores plus the species bonus. */

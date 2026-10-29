@@ -1,5 +1,6 @@
 import { fitLevels, primaryLevelOf } from '../engine/classLevels'
 import { ClassPicker } from './ClassPicker'
+import { BoonsCard } from './BoonsCard'
 import { MulticlassCard } from './MulticlassCard'
 import { useMemo } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
@@ -199,6 +200,8 @@ export function BuilderClassPanel({
             </SectionCard>
 
             <MulticlassCard character={character} setCharacter={setCharacter} classes={editableClasses} subclasses={editableSubclasses} />
+
+            <BoonsCard character={character} setCharacter={setCharacter} classes={editableClasses} />
 
             <SectionCard title="Subclass">
                 {!selectedClass ? (

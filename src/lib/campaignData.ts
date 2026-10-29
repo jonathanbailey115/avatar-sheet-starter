@@ -86,7 +86,7 @@ const featureSchema: z.ZodType<Feature, z.ZodTypeDef, unknown> = z.object({
     id: z.string().min(1),
     name: z.string(),
     description: z.string(),
-    source: z.enum(['Class', 'Subclass', 'Background', 'Lineage', 'Feat', 'Technique', 'Custom']),
+    source: z.enum(['Class', 'Subclass', 'Background', 'Lineage', 'Feat', 'Technique', 'Custom', 'Epic Boon']),
     featureType: z.enum(['Passive', 'Action', 'Bonus Action', 'Reaction', 'Limited Use']),
     levelRequirement: z.number(),
     isActiveByDefault: z.boolean(),

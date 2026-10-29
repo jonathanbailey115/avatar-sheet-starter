@@ -1,5 +1,6 @@
 import type { Character, Feature } from '../types/schema'
 import type { RulesContent } from '../lib/normalize'
+import { findBoon } from '../data/epicBoons'
 import { classEntries, classLevelsOf } from './classLevels'
 
 export interface GrantedFeature {
@@ -13,7 +14,8 @@ export function getGrantedFeatures(
     character: Pick<
         Character,
         'level' | 'classId' | 'subclassId' | 'extraClasses' | 'lineageId' | 'backgroundId' | 'selectedFeatureIds'
-    >,
+    > &
+        Partial<Pick<Character, 'epicBoons'>>,
     content: Pick<
         RulesContent,
         'classes' | 'subclasses' | 'lineages' | 'backgrounds' | 'features'
@@ -51,6 +53,10 @@ export function getGrantedFeatures(
     const background = content.backgrounds.find((item) => item.id === character.backgroundId)
     for (const featureId of background?.featureIds ?? []) {
         add(featureId, `${background?.name} background`)
+    }
+
+    for (const pick of character.epicBoons ?? []) {
+        if (findBoon(pick.boonId)) add(pick.boonId, 'Epic Boon')
     }
 
     for (const featureId of character.selectedFeatureIds) {

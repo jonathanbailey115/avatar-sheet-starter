@@ -1,4 +1,5 @@
-import { fitLevels } from '../engine/classLevels'
+import { boonSlots, fitLevels } from '../engine/classLevels'
+import { findBoon } from '../data/epicBoons'
 import { computeMaxHp, getHitDie } from '../engine/hitPoints'
 import { getResources, usedOf } from '../engine/resources'
 import {
@@ -101,6 +102,20 @@ export function normalizeCharacter(
     }
     next.level = fitted.level
     next.extraClasses = fitted.extraClasses
+
+    // Epic Boons: only real ones, no repeats except Boon of the Element, with an ability where needed, and no more than earned.
+    const earned = boonSlots(next, content.classes)
+    const takenBoons = new Set<string>()
+    next.epicBoons = next.epicBoons
+        .filter((pick) => {
+            const boon = findBoon(pick.boonId)
+            if (!boon) return false
+            if (boon.needsAbility && !pick.ability) return false
+            if (!boon.repeatable && takenBoons.has(pick.boonId)) return false
+            takenBoons.add(pick.boonId)
+            return true
+        })
+        .slice(0, earned)
 
     next.selectedFeatureIds = next.selectedFeatureIds.filter((id) =>
         content.features.some((feature) => feature.id === id),

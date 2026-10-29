@@ -74,7 +74,7 @@ export function BuilderFeaturesPanel({
 
             const passesLevel = feature.levelRequirement <= character.level
 
-            const isNotLineageFeature = feature.source !== 'Lineage'
+            const isNotLineageFeature = feature.source !== 'Lineage' && feature.source !== 'Epic Boon'
 
             return passesFilter && passesLevel && isNotLineageFeature
         })

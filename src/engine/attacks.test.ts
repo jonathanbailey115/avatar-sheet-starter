@@ -200,7 +200,7 @@ describe('advantage and disadvantage on attacks', () => {
     it('a situational bonus carries its value', () => {
         const feature: Feature = {
             id: 'terrain-test',
-            name: 'Lay of the Land',
+            name: 'Terrain Test',
             description: '',
             source: 'Lineage',
             featureType: 'Passive',

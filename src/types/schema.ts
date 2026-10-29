@@ -178,7 +178,7 @@ export interface Feature {
     id: string
     name: string
     description: string
-    source: 'Class' | 'Subclass' | 'Background' | 'Lineage' | 'Feat' | 'Technique' | 'Custom'
+    source: 'Class' | 'Subclass' | 'Background' | 'Lineage' | 'Feat' | 'Technique' | 'Custom' | 'Epic Boon'
     featureType: 'Passive' | 'Action' | 'Bonus Action' | 'Reaction' | 'Limited Use'
     levelRequirement: number
     isActiveByDefault: boolean
