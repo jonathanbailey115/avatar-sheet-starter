@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
+import { getGrantedFeatures } from '../engine/features'
 import type {
     Background,
     Character,
@@ -45,42 +46,21 @@ export function BuilderFeaturesPanel({
         editableFeatures[0]?.id ?? null,
     )
 
-    const selectedClass =
-        editableClasses.find((item) => item.id === character.classId) ?? null
-
-    const selectedSubclass =
-        editableSubclasses.find((item) => item.id === character.subclassId) ?? null
-
-    const selectedBackground =
-        editableBackgrounds.find((item) => item.id === character.backgroundId) ?? null
-
-    const selectedLineage =
-        editableLineages.find((item) => item.id === character.lineageId) ?? null
-
-    const autoGrantedFeatureIds = useMemo(() => {
-        const classFeatureIds =
-            selectedClass?.featureGrants
-                .filter((grant) => grant.level <= character.level)
-                .map((grant) => grant.featureId) ?? []
-
-        const subclassFeatureIds =
-            selectedSubclass?.featureGrants
-                .filter((grant) => grant.level <= character.level)
-                .map((grant) => grant.featureId) ?? []
-
-        const backgroundFeatureIds = selectedBackground?.featureIds ?? []
-
-        const lineageFeatureIds = selectedLineage?.featureIds ?? []
-
-        return Array.from(
-            new Set([
-                ...classFeatureIds,
-                ...subclassFeatureIds,
-                ...backgroundFeatureIds,
-                ...lineageFeatureIds,
-            ]),
-        )
-    }, [selectedClass, selectedSubclass, selectedBackground, selectedLineage, character.level])
+    // Everything the classes (each at its own level), subclasses, lineage and background give for free.
+    const autoGrantedFeatureIds = useMemo(
+        () =>
+            getGrantedFeatures(
+                { ...character, selectedFeatureIds: [] },
+                {
+                    classes: editableClasses,
+                    subclasses: editableSubclasses,
+                    lineages: editableLineages,
+                    backgrounds: editableBackgrounds,
+                    features: editableFeatures,
+                },
+            ).map((item) => item.feature.id),
+        [character, editableClasses, editableSubclasses, editableLineages, editableBackgrounds, editableFeatures],
+    )
 
     const autoGrantedFeatureIdSet = useMemo(
         () => new Set(autoGrantedFeatureIds),

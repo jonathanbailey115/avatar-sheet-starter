@@ -1,4 +1,6 @@
+import { fitLevels, primaryLevelOf } from '../engine/classLevels'
 import { ClassPicker } from './ClassPicker'
+import { MulticlassCard } from './MulticlassCard'
 import { useMemo } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
@@ -155,14 +157,13 @@ export function BuilderClassPanel({
                         type="number"
                         min={1}
                         max={20}
-                        value={character.level}
+                        value={primaryLevelOf(character)}
                         onChange={(event) =>
-                            setCharacter((current) => ({
-                                ...current,
-                                level: Number.isNaN(event.target.valueAsNumber)
-                                    ? 1
-                                    : Math.min(20, Math.max(1, Math.round(event.target.valueAsNumber))),
-                            }))
+                            setCharacter((current) => {
+                                const wanted = Number.isNaN(event.target.valueAsNumber) ? 1 : Math.round(event.target.valueAsNumber)
+                                const next = { ...current, level: Math.min(20, Math.max(1, wanted)) + (current.level - primaryLevelOf(current)) }
+                                return { ...next, ...fitLevels(next) }
+                            })
                         }
                     />
                 </label>
@@ -196,6 +197,8 @@ export function BuilderClassPanel({
                     </>
                 ) : null}
             </SectionCard>
+
+            <MulticlassCard character={character} setCharacter={setCharacter} classes={editableClasses} subclasses={editableSubclasses} />
 
             <SectionCard title="Subclass">
                 {!selectedClass ? (
