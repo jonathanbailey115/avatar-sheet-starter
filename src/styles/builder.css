@@ -128,3 +128,11 @@
 #panel-builder > .grid { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
 .class-setup { grid-column: 1 / -1; }
 .class-setup .card-body > label { max-width: 220px; }
+
+/* Technique slot table and style tabs */
+.slot-table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: var(--text-sm); }
+.slot-table th, .slot-table td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--border); }
+.slot-table th[scope='row'], .slot-table th[scope='col']:first-child { text-align: left; }
+.slot-table thead th { color: var(--text-3); font-weight: 600; }
+.slot-total th, .slot-total td { font-weight: 700; }
+.technique-tabs { flex-wrap: wrap; }

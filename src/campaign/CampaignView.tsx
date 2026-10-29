@@ -6,6 +6,7 @@ import { useLibraryStore } from '../store/library'
 import { CampaignLog } from './CampaignLog'
 import { CampaignNpcs } from './CampaignNpcs'
 import { formatCode } from './code'
+import { MastersNote } from './MastersNote'
 import { PartyBoard } from './PartyBoard'
 
 async function copy(text: string): Promise<void> {
@@ -136,6 +137,8 @@ export function CampaignView() {
                     Leave this campaign
                 </ConfirmButton>
             </SectionCard>
+
+            {isGm && <MastersNote members={snapshot.members} statuses={snapshot.statuses} />}
         </div>
     )
 }

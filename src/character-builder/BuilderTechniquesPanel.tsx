@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
-import { getBendingElement } from '../engine/bending'
-import { bendingClassOf, classLevelsOf } from '../engine/classLevels'
-import { disciplinesOf, learnBlocker, limitStatus, subclassLimits } from '../engine/techniques'
+import { classLevelsOf } from '../engine/classLevels'
+import { disciplinesOf, limitStatus, slotSources, subclassLimits } from '../engine/techniques'
 import { masteredCount, masteredLimit } from '../engine/training'
 import { useCollection } from '../store/content'
-import { DEFAULT_TRAINING, TECHNIQUE_LEVELS } from '../types/schema'
+import { DEFAULT_TRAINING } from '../types/schema'
 import type { Character, CharacterClass, Technique, TechniqueLevel } from '../types/schema'
+import { TechniqueLibrary } from './TechniqueLibrary'
+import type { TechniqueGroup } from './TechniqueLibrary'
 
 type BuilderTechniquesPanelProps = {
     character: Character
@@ -22,78 +23,43 @@ const GROUP_TITLES: Record<string, string> = {
     Dragon: 'Dragon techniques (spend a Training Die)',
 }
 
-export function BuilderTechniquesPanel({
-    character,
-    setCharacter,
-    editableClasses,
-    editableTechniques,
-}: BuilderTechniquesPanelProps) {
+export function BuilderTechniquesPanel({ character, setCharacter, editableClasses, editableTechniques }: BuilderTechniquesPanelProps) {
     const [query, setQuery] = useState('')
     const subclasses = useCollection('subclasses')
     const features = useCollection('features')
-    const selectedClass = editableClasses.find((item) => item.id === character.classId)
-    const element = getBendingElement(character, editableClasses)
     const classLevels = classLevelsOf(character, editableClasses)
-    const bending = bendingClassOf(classLevels)
-    const bendingLevel = bending?.level ?? character.level
+    const bendingLevel = classLevels.find((item) => item.characterClass.element)?.level ?? character.level
     const extraLimits = subclassLimits(character, subclasses)
     const limits = limitStatus(character, classLevels, editableTechniques, extraLimits)
-
-    // A class only offers the kinds its limits mention; custom techniques for the bender's element also show.
-    const allowedKinds = new Set(limits.flatMap((entry) => entry.limit.kinds))
-    const available = editableTechniques.filter(
-        (technique) =>
-            (allowedKinds.size === 0
-                ? technique.element === 'Universal' || technique.element === element
-                : allowedKinds.has(technique.element)) &&
-            technique.name.toLowerCase().includes(query.trim().toLowerCase()),
-    )
-
     const disciplines = disciplinesOf(character, subclasses, features)
 
-    const levelOf = (techniqueId: string): TechniqueLevel | null =>
-        character.knownTechniques.find((known) => known.techniqueId === techniqueId)?.level ?? null
-
-    const learn = (techniqueId: string) =>
-        setCharacter((current) => ({
-            ...current,
-            knownTechniques: [
-                ...current.knownTechniques,
-                { techniqueId, level: 'Practiced', training: { ...DEFAULT_TRAINING } },
-            ],
-        }))
-
-    const forget = (techniqueId: string) =>
-        setCharacter((current) => ({
-            ...current,
-            knownTechniques: current.knownTechniques.filter((known) => known.techniqueId !== techniqueId),
-        }))
-
-    const setLevel = (techniqueId: string, level: TechniqueLevel) =>
-        setCharacter((current) => ({
-            ...current,
-            knownTechniques: current.knownTechniques.map((known) =>
-                known.techniqueId === techniqueId
-                    ? { ...known, level, training: { ...DEFAULT_TRAINING } }
-                    : known,
-            ),
-        }))
-
-    // The class's own element first, then Universal, then Fighting techniques.
+    // A class only offers the kinds its limits mention; custom techniques for a bender's element also show.
     const elements = [...new Set(classLevels.map((item) => item.characterClass.element))]
+    const allowedKinds = new Set<string>(limits.flatMap((entry) => entry.limit.kinds))
+    const matches = (technique: Technique) => technique.name.toLowerCase().includes(query.trim().toLowerCase())
+    const available = editableTechniques.filter(
+        (technique) =>
+            (allowedKinds.size === 0 ? technique.element === 'Universal' || elements.some((element) => element === technique.element) : allowedKinds.has(technique.element)) &&
+            matches(technique),
+    )
+
     const dragonElements = extraLimits.flatMap((item) => item.limit.kinds)
     const kinds = [...new Set([...elements, ...dragonElements]), 'Universal', 'Fighting', 'Dragon'].filter((kind): kind is string => Boolean(kind))
-    const groups = kinds
+    const groups: TechniqueGroup[] = kinds
         .map((kind) => ({
             kind,
             title: GROUP_TITLES[kind] ?? `${kind}bending techniques`,
+            tab: GROUP_TITLES[kind] ? kind : `${kind}bending`,
             items: available.filter((technique) => technique.element === kind),
         }))
         .filter((group) => group.items.length > 0)
 
-    // What the class table gives at this level, next to what the character actually knows.
-    const slots = bending?.characterClass.techniqueSlots?.[Math.min(20, Math.max(1, bendingLevel)) - 1]
-    const masteredMax = masteredLimit(slots)
+    const sources = slotSources(character, classLevels, subclasses)
+    const total = sources.reduce(
+        (sum, source) => ({ practiced: sum.practiced + source.practiced, trained: sum.trained + source.trained, mastered: sum.mastered + source.mastered }),
+        { practiced: 0, trained: 0, mastered: 0 },
+    )
+    const masteredMax = masteredLimit(sources.length > 0 ? total : undefined)
     const capReached = masteredCount(character) >= masteredMax
     const pools = classLevels.flatMap(({ characterClass, level }) =>
         (characterClass.resources ?? [])
@@ -101,25 +67,67 @@ export function BuilderTechniquesPanel({
             .map((pool) => ({ pool, max: pool.maxByLevel[Math.min(20, Math.max(1, level)) - 1] })),
     )
     const knownAt = (level: TechniqueLevel) => character.knownTechniques.filter((known) => known.level === level).length
-    const overSlots = slots
-        ? ([['Trained', slots.trained], ['Mastered', slots.mastered]] as const).filter(([level, max]) => knownAt(level) > max)
-        : []
+    const overSlots = sources.length > 0 ? ([['Trained', total.trained], ['Mastered', total.mastered]] as const).filter(([level, max]) => knownAt(level) > max) : []
+
+    const learn = (techniqueId: string) =>
+        setCharacter((current) => ({
+            ...current,
+            knownTechniques: [...current.knownTechniques, { techniqueId, level: 'Practiced', training: { ...DEFAULT_TRAINING } }],
+        }))
+    const forget = (techniqueId: string) =>
+        setCharacter((current) => ({ ...current, knownTechniques: current.knownTechniques.filter((known) => known.techniqueId !== techniqueId) }))
+    const setLevel = (techniqueId: string, level: TechniqueLevel) =>
+        setCharacter((current) => ({
+            ...current,
+            knownTechniques: current.knownTechniques.map((known) => (known.techniqueId === techniqueId ? { ...known, level, training: { ...DEFAULT_TRAINING } } : known)),
+        }))
 
     return (
         <div className="grid">
-            <SectionCard title="Bending and limits">
-                {!selectedClass ? (
+            <SectionCard title="Technique slots">
+                {classLevels.length === 0 ? (
                     <p>Choose a class on the Class tab. Your bending and techniques come from your class.</p>
-                ) : element ? (
-                    <p>
-                        <strong>{element}bending</strong> (from {selectedClass.name}).
-                    </p>
+                ) : sources.length === 0 ? (
+                    <p className="muted">Your classes give no technique slots.</p>
                 ) : (
-                    <p>
-                        <strong>Non-bender</strong> ({selectedClass.name}).
-                    </p>
+                    <table className="slot-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">From</th>
+                                <th scope="col">Practiced</th>
+                                <th scope="col">Trained</th>
+                                <th scope="col">Mastered</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sources.map((source) => (
+                                <tr key={source.label}>
+                                    <th scope="row">{source.label}</th>
+                                    <td>{source.practiced}</td>
+                                    <td>{source.trained}</td>
+                                    <td>{source.mastered}</td>
+                                </tr>
+                            ))}
+                            {sources.length > 1 && (
+                                <tr className="slot-total">
+                                    <th scope="row">Total</th>
+                                    <td>{total.practiced}</td>
+                                    <td>{total.trained}</td>
+                                    <td>{total.mastered}</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 )}
+                {pools.map(({ pool, max }) => (
+                    <p key={pool.id}>
+                        <strong>{pool.name}:</strong> {max}
+                    </p>
+                ))}
+                <p className="muted">Slots at bending level {bendingLevel}. Slots return after a long rest.</p>
+            </SectionCard>
 
+            <SectionCard title="Techniques known">
                 <ul className="stats">
                     {limits.map((entry) => (
                         <li key={entry.limit.id}>
@@ -127,20 +135,8 @@ export function BuilderTechniquesPanel({
                             {entry.used > entry.max && ' (over the limit for your level)'}
                         </li>
                     ))}
-                    {slots && (
-                        <li>
-                            <strong>Technique slots at level {bendingLevel}:</strong> Practiced {slots.practiced} · Trained {slots.trained} ·
-                            Mastered {slots.mastered}
-                        </li>
-                    )}
-                    {pools.map(({ pool, max }) => (
-                        <li key={pool.id}>
-                            <strong>{pool.name}:</strong> {max}
-                        </li>
-                    ))}
                     <li>
-                        <strong>Known at each level:</strong> Practiced {knownAt('Practiced')} · Trained {knownAt('Trained')} · Mastered{' '}
-                        {knownAt('Mastered')}
+                        <strong>At each level:</strong> Practiced {knownAt('Practiced')} · Trained {knownAt('Trained')} · Mastered {knownAt('Mastered')}
                         {overSlots.map(([level]) => (
                             <span key={level} className="roll-error">
                                 {' '}
@@ -151,101 +147,24 @@ export function BuilderTechniquesPanel({
                     <li>
                         <strong>Mastered:</strong> {masteredCount(character)} of {masteredMax}
                     </li>
-                    {bendingLevel < 8 && (
-                        <li className="muted">Rare techniques (marked *) unlock at level 8.</li>
-                    )}
+                    {bendingLevel < 8 && <li className="muted">Rare techniques (marked *) unlock at level 8.</li>}
                 </ul>
             </SectionCard>
 
-            <SectionCard title="Technique Library">
-                <label>
-                    Search
-                    <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tremors" />
-                </label>
-
-                {groups.length === 0 ? (
-                    <p>
-                        No techniques are available. Pick a class first, or your GM can add custom techniques under
-                        Campaign Data.
-                    </p>
-                ) : (
-                    groups.map((group) => (
-                        <div key={group.kind} className="technique-group">
-                            <h3>{group.title}</h3>
-                            <div className="checkbox-list">
-                                {group.items.map((technique) => {
-                                    const level = levelOf(technique.id)
-                                    const blocker = level
-                                        ? null
-                                        : learnBlocker(character, technique, classLevels, editableTechniques, disciplines, extraLimits)
-
-                                    return (
-                                        <div key={technique.id} className="technique-item">
-                                            <span>
-                                                <strong>
-                                                    {technique.name}
-                                                    {technique.rare ? ' *' : ''}
-                                                </strong>
-                                                {technique.castingTime ? ` — ${technique.castingTime}` : ''}
-                                                <br />
-                                                <small>
-                                                    {technique.description.length > 220
-                                                        ? `${technique.description.slice(0, 220)}…`
-                                                        : technique.description}
-                                                </small>
-                                                {technique.prerequisite && (
-                                                    <small className="muted"> Requires {technique.prerequisite}.</small>
-                                                )}
-                                            </span>
-
-                                            {level ? (
-                                                <span className="actions inline-actions">
-                                                    {technique.element !== 'Dragon' && (
-                                                        <select
-                                                            value={level}
-                                                            aria-label={`${technique.name} level`}
-                                                            onChange={(event) =>
-                                                                setLevel(technique.id, event.target.value as TechniqueLevel)
-                                                            }
-                                                        >
-                                                            {TECHNIQUE_LEVELS.map((option) => (
-                                                                <option
-                                                                    key={option}
-                                                                    value={option}
-                                                                    disabled={option === 'Mastered' && level !== 'Mastered' && capReached}
-                                                                >
-                                                                    {option}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                    )}
-                                                    <button
-                                                        className="secondary-button"
-                                                        type="button"
-                                                        onClick={() => forget(technique.id)}
-                                                    >
-                                                        Forget
-                                                    </button>
-                                                </span>
-                                            ) : (
-                                                <button
-                                                    className="primary-button"
-                                                    type="button"
-                                                    disabled={blocker !== null}
-                                                    title={blocker ?? 'Learn this technique'}
-                                                    onClick={() => learn(technique.id)}
-                                                >
-                                                    {blocker ?? 'Learn'}
-                                                </button>
-                                            )}
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
-                    ))
-                )}
-            </SectionCard>
+            <TechniqueLibrary
+                groups={groups}
+                query={query}
+                onQuery={setQuery}
+                character={character}
+                classLevels={classLevels}
+                all={editableTechniques}
+                disciplines={disciplines}
+                extraLimits={extraLimits}
+                capReached={capReached}
+                onLearn={learn}
+                onForget={forget}
+                onSetLevel={setLevel}
+            />
         </div>
     )
 }

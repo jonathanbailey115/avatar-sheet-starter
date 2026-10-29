@@ -139,3 +139,5 @@
     .campaign-log .roll-log { grid-template-columns: minmax(0, 1fr); }
     .npc-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+.status-ok { color: var(--success); font-weight: 600; }

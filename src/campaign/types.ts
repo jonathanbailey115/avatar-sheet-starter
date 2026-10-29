@@ -18,6 +18,15 @@ export interface CampaignMember {
 }
 
 /** What the party board shows for one player. Small and safe to share with the table. */
+/** An extra class or second subclass a character took, with who taught it. Shown to the GM only. */
+export interface ClassNote {
+    className: string
+    subclassName?: string
+    level: number
+    master: string
+    gmApproved: boolean
+}
+
 export interface PlayerSummary {
     characterId: string
     name: string
@@ -32,6 +41,8 @@ export interface PlayerSummary {
     exhaustion: number
     initiative: number
     saveDc: number | null
+    /** Extra classes (multiclass) with their master and approval. Missing on older summaries. */
+    classNotes?: ClassNote[]
 }
 
 export interface MemberStatus {

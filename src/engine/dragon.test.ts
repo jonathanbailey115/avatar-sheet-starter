@@ -9,7 +9,7 @@ import { classProficiencies } from './classProficiencies'
 import { computeDragon, damageDragon, dragonDefiance, healDragon, reviveDragon } from './dragon'
 import { getResources } from './resources'
 import { computeSheet } from './sheet'
-import { learnBlocker, limitStatus, subclassLimits } from './techniques'
+import { learnBlocker, limitStatus, slotSources, subclassLimits } from './techniques'
 
 const trainer = (level: number, overrides: Partial<Character> = {}): Character => ({
     ...createBlankCharacter(),
@@ -116,5 +116,14 @@ describe('Dragon Trainer class', () => {
         const sheet = computeSheet(trainer(5, { subclassId: 'dragon-knight', lineageId: 'earth-kingdom-human' }), realContent)
         expect(sheet.dragon?.maxHp).toBe(36)
         expect(sheet.armorProficiencies).toContain('Heavy Armor')
+    })
+})
+
+describe('slot sources', () => {
+    it('lists each class and a Dragon Mage subclass separately', () => {
+        const mage = trainer(7, { subclassId: 'dragon-mage', dragonAncestry: 'ember' })
+        const sources = slotSources(mage, classLevelsOf(mage, characterClasses), realContent.subclasses)
+        expect(sources).toEqual([{ label: 'Dragon Mage', practiced: 4, trained: 2, mastered: 0 }])
+        expect(slotSources(trainer(7), classLevelsOf(trainer(7), characterClasses), realContent.subclasses)).toEqual([])
     })
 })

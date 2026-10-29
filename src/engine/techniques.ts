@@ -241,3 +241,30 @@ export function limitStatus(
     }))
     return [...fromClasses, ...fromSubclasses]
 }
+
+/** Where technique slots come from: each class with a slot table (at its level) and each subclass that adds slots (Dragon Mage). */
+export interface SlotSource {
+    label: string
+    practiced: number
+    trained: number
+    mastered: number
+}
+
+export function slotSources(
+    character: Pick<Character, 'classId' | 'level'> & Partial<Pick<Character, 'subclassId' | 'extraClasses'>>,
+    classLevels: ClassLevel[],
+    subclasses: CharacterSubclass[],
+): SlotSource[] {
+    const at = (level: number) => Math.min(20, Math.max(1, level)) - 1
+    const fromClasses = classLevels.flatMap(({ characterClass, level }) => {
+        const row = characterClass.techniqueSlots?.[at(level)]
+        return row ? [{ label: characterClass.name, practiced: row.practiced, trained: row.trained, mastered: row.mastered }] : []
+    })
+    const fromSubclasses = classEntries(character).flatMap((entry) => {
+        const subclass = subclasses.find((item) => item.id === entry.subclassId && item.classId === entry.classId)
+        const row = subclass?.techniqueSlots?.[at(entry.level)]
+        const total = row ? row.practiced + row.trained + row.mastered : 0
+        return subclass && row && total > 0 ? [{ label: subclass.name, practiced: row.practiced, trained: row.trained, mastered: row.mastered }] : []
+    })
+    return [...fromClasses, ...fromSubclasses]
+}

@@ -23,5 +23,12 @@ export function summarizeCharacter(character: Character, sheet: Sheet, content: 
         exhaustion: character.exhaustion,
         initiative: sheet.initiative.total,
         saveDc: sheet.bending?.saveDc ?? null,
+        classNotes: character.extraClasses.map((extra) => ({
+            className: content.classes.find((item) => item.id === extra.classId)?.name ?? extra.classId,
+            subclassName: content.subclasses.find((item) => item.id === extra.subclassId)?.name,
+            level: extra.level,
+            master: extra.master.trim(),
+            gmApproved: extra.gmApproved,
+        })),
     }
 }
