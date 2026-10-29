@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
-import { ABILITIES, formatModifier, getAbilityModifier } from '../engine/abilities'
+import { ABILITIES, ABILITY_NAMES, formatModifier, getAbilityModifier } from '../engine/abilities'
 import { abilityScoresOf, baseScoresOf, speciesBonuses } from '../engine/abilityScores'
 import type { AbilityName, Character } from '../types/schema'
 import { AbilityMethods } from './AbilityMethods'
@@ -11,13 +11,13 @@ type BuilderAbilitiesPanelProps = {
     setCharacter: Dispatch<SetStateAction<Character>>
 }
 
-const DESCRIPTIONS: Record<AbilityName, { label: string; text: string }> = {
-    strength: { label: 'Strength', text: 'Physical power, lifting, shoving, and raw force.' },
-    dexterity: { label: 'Dexterity', text: 'Agility, reflexes, balance, and precise movement.' },
-    constitution: { label: 'Constitution', text: 'Durability, endurance, stamina, and physical resilience.' },
-    intelligence: { label: 'Intelligence', text: 'Reasoning, memory, study, analysis, and technical knowledge.' },
-    wisdom: { label: 'Wisdom', text: 'Awareness, intuition, discipline, and reading situations.' },
-    charisma: { label: 'Charisma', text: 'Presence, force of personality, leadership, and influence.' },
+const DESCRIPTIONS: Record<AbilityName, string> = {
+    strength: 'Physical power, lifting, shoving, and raw force.',
+    dexterity: 'Agility, reflexes, balance, and precise movement.',
+    constitution: 'Durability, endurance, stamina, and physical resilience.',
+    intelligence: 'Reasoning, memory, study, analysis, and technical knowledge.',
+    wisdom: 'Awareness, intuition, discipline, and reading situations.',
+    charisma: 'Presence, force of personality, leadership, and influence.',
 }
 
 export function BuilderAbilitiesPanel({ character, setCharacter }: BuilderAbilitiesPanelProps) {
@@ -41,7 +41,7 @@ export function BuilderAbilitiesPanel({ character, setCharacter }: BuilderAbilit
                 <ul className="stats">
                     {ABILITIES.map((ability) => (
                         <li key={ability}>
-                            <strong>{DESCRIPTIONS[ability].label}</strong> — {total[ability]} ({formatModifier(getAbilityModifier(total[ability]))})
+                            <strong>{ABILITY_NAMES[ability]}</strong> — {total[ability]} ({formatModifier(getAbilityModifier(total[ability]))})
                             {bonus[ability] > 0 && (
                                 <small className="muted">
                                     {' '}
@@ -49,7 +49,7 @@ export function BuilderAbilitiesPanel({ character, setCharacter }: BuilderAbilit
                                 </small>
                             )}
                             <br />
-                            <small className="muted">{DESCRIPTIONS[ability].text}</small>
+                            <small className="muted">{DESCRIPTIONS[ability]}</small>
                         </li>
                     ))}
                 </ul>

@@ -54,11 +54,19 @@ create table if not exists public.member_status (
 create table if not exists public.campaign_npcs (
     id uuid primary key default gen_random_uuid(),
     campaign_id uuid not null references public.campaigns (id) on delete cascade,
+    -- The NPC's own id on the GM's device. Unique per campaign, so one NPC can be in several campaigns.
+    npc_id text not null default gen_random_uuid()::text,
     data jsonb not null check (pg_column_size(data) < 60000),
     revealed boolean not null default false,
     updated_at timestamptz not null default now()
 );
 create index if not exists campaign_npcs_by_campaign on public.campaign_npcs (campaign_id);
+-- Projects set up before npc_id existed: add it, keep each old row's identity (its id was the NPC's id), then require it.
+alter table public.campaign_npcs add column if not exists npc_id text;
+update public.campaign_npcs set npc_id = id::text where npc_id is null;
+alter table public.campaign_npcs alter column npc_id set not null;
+alter table public.campaign_npcs alter column npc_id set default gen_random_uuid()::text;
+create unique index if not exists campaign_npcs_one_per_campaign on public.campaign_npcs (campaign_id, npc_id);
 
 -- Accounts. Supabase Auth stores the email and the (hashed) password. This table holds the
 -- username players choose. Sign-ups pass it along and a trigger below fills this in.

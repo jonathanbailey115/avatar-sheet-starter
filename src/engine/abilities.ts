@@ -9,6 +9,15 @@ export const ABILITIES: AbilityName[] = [
     'charisma',
 ]
 
+export const ABILITY_NAMES: Record<AbilityName, string> = {
+    strength: 'Strength',
+    dexterity: 'Dexterity',
+    constitution: 'Constitution',
+    intelligence: 'Intelligence',
+    wisdom: 'Wisdom',
+    charisma: 'Charisma',
+}
+
 export const ABILITY_ABBREVIATIONS: Record<AbilityName, string> = {
     strength: 'STR',
     dexterity: 'DEX',

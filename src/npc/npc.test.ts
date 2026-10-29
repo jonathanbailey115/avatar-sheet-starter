@@ -3,6 +3,7 @@ import { NATION_ELEMENT } from '../engine/bending'
 import { limitStatus } from '../engine/techniques'
 import { realContent } from '../lib/testFixtures'
 import { npcTemplates } from '../data/npcTemplates'
+import { primaryAbility } from './abilities'
 import { generateNpc, rerollPart } from './generate'
 import { buildStatBlock, statBlockText } from './statBlock'
 import { NPC_PARTS } from './types'
@@ -126,6 +127,36 @@ describe('rerolling one part', () => {
             const { character } = rerollPart(earthbender, 'nation', guard, seeded(seed))
             const cls = realContent.classes.find((c) => c.id === character.classId)
             if (cls?.element) expect(NATION_ELEMENT[character.nation]).toBe(cls.element)
+        }
+    })
+})
+
+describe('NPC ability scores', () => {
+    it('the key ability comes from the class: Tech-Engineers lean on Intelligence, benders on their element', () => {
+        const key = (classId: string) => primaryAbility(realContent.classes.find((c) => c.id === classId), seeded(1))
+        expect(key('tech-engineer')).toBe('intelligence')
+        expect(key('waterbending')).toBe('charisma')
+        expect(key('firebending')).toBe('strength')
+        expect(key('airbending')).toBe('wisdom')
+        expect(key('earthbending')).toBe('constitution')
+        expect(['strength', 'dexterity']).toContain(key('weaponsmaster'))
+    })
+
+    it('a Tech-Engineer NPC gets a high Intelligence, so its Save DC works', () => {
+        for (let seed = 1; seed <= 20; seed += 1) {
+            const { character } = generateNpc({ nation: null, classId: 'tech-engineer', level: 10 }, guard, seeded(seed))
+            expect(character.intelligence).toBeGreaterThanOrEqual(15)
+        }
+    })
+
+    it('no score ever passes 20, even at level 20', () => {
+        for (const cls of realContent.classes) {
+            for (let seed = 1; seed <= 10; seed += 1) {
+                const { character } = generateNpc({ nation: null, classId: cls.id, level: 20 }, guard, seeded(seed))
+                for (const ability of ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'] as const) {
+                    expect(character[ability], `${cls.id} ${ability}`).toBeLessThanOrEqual(20)
+                }
+            }
         }
     })
 })

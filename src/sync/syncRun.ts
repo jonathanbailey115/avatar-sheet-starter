@@ -15,6 +15,11 @@ export interface SyncDeps {
     applying: (active: boolean) => void
     /** Called after each collection is brought up to date, with its kind. */
     settled?: (collection: Collection) => void
+    /**
+     * False once this account is no longer the one signed in. The pass then stops at the next step, so it
+     * never writes one account's characters through another account's session.
+     */
+    stillCurrent?: () => boolean
 }
 
 export interface SyncResult {
@@ -29,10 +34,12 @@ export interface SyncResult {
 export async function runSync(userId: string, deps: SyncDeps): Promise<SyncResult> {
     const { backend, collections, store, content } = deps
     const result: SyncResult = { downloaded: 0, removed: 0, uploaded: 0, unreadable: 0 }
+    const live = () => deps.stillCurrent?.() ?? true
     const remote = await backend.listSavedCharacters()
     const uploads: SavedUpload[] = []
 
     for (const collection of collections) {
+        if (!live()) return result
         const kind = collection.kind
         const owned = ownedBy(store.getState(), userId, kind)
         const tombstones = buriedBy(store.getState(), userId, kind)
@@ -47,6 +54,7 @@ export async function runSync(userId: string, deps: SyncDeps): Promise<SyncResul
 
         if (plan.download.length > 0) {
             const rows = await backend.loadSavedCharacters(kind, plan.download)
+            if (!live()) return result
             const records = rows.map((row) => ({ ...(row.data as Record<string, unknown>), id: row.id }))
             const loaded = loadStoredCharacters(records, content)
             result.unreadable += loaded.quarantine.length
@@ -85,6 +93,7 @@ export async function runSync(userId: string, deps: SyncDeps): Promise<SyncResul
         deps.settled?.(collection)
     }
 
+    if (!live()) return result
     if (uploads.length > 0) await backend.saveCharacters(uploads)
     result.uploaded = uploads.length
     return result

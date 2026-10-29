@@ -31,7 +31,18 @@ let again = false
 let applying = false
 const seen = new Map<SavedKind, Map<string, string>>()
 
-const snapshot = (collection: Collection) => new Map(collection.all().map((item) => [item.id, JSON.stringify(item)]))
+/** The store replaces a character object when it changes, so an object's JSON never goes stale. */
+const jsonCache = new WeakMap<Character, string>()
+function jsonOf(item: Character): string {
+    let json = jsonCache.get(item)
+    if (json === undefined) {
+        json = JSON.stringify(item)
+        jsonCache.set(item, json)
+    }
+    return json
+}
+
+const snapshot = (collection: Collection) => new Map(collection.all().map((item) => [item.id, jsonOf(item)]))
 
 function messageOf(error: unknown): string {
     return error instanceof Error ? error.message : 'Could not reach your account.'
@@ -75,9 +86,9 @@ function onCollectionChanged(collection: Collection): void {
 }
 
 async function runOnce(): Promise<void> {
-    const sync = useSyncStore.getState()
-    sync.setStatus('syncing')
-    const result = await runSync(userId, {
+    const forUser = userId
+    useSyncStore.getState().setStatus('syncing')
+    const result = await runSync(forUser, {
         backend: getBackend(),
         collections,
         store: useSyncStore,
@@ -86,7 +97,10 @@ async function runOnce(): Promise<void> {
             applying = active
         },
         settled: (collection) => seen.set(collection.kind, snapshot(collection)),
+        stillCurrent: () => userId === forUser,
     })
+    // Signed out or switched account meanwhile: that already reset the status, so do not overwrite it.
+    if (userId !== forUser) return
     useSyncStore.getState().setStatus(
         'idle',
         result.unreadable > 0 ? `${result.unreadable} saved character${result.unreadable === 1 ? ' was' : 's were'} unreadable and skipped.` : '',

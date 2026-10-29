@@ -21,6 +21,7 @@ export const characterClasses: CharacterClass[] = [
             'A versatile and clever non-bending fighter who uses weapons, discipline, and combat expertise to strike down opponents in a world where bending rules the battlefield.',
         hitDie: 'Lineage-based',
         primaryAbility: 'Strength or Dexterity',
+        keyAbilities: ['strength', 'dexterity'],
         bendingAbility: 'dexterity',
         savingThrows: [],
         skillChoices: {

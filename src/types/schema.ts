@@ -315,6 +315,8 @@ export interface CharacterClass {
     description: string
     hitDie: string
     primaryAbility: string
+    /** The same as `primaryAbility`, as data, when a class has more than one. Otherwise the bending ability is the key ability. */
+    keyAbilities?: AbilityName[]
     savingThrows: AbilityName[]
     skillChoices: {
         choose: number

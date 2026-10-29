@@ -13,19 +13,18 @@ export const SCORE_CAP = 20
 
 type Scores = Record<AbilityName, number>
 
-/** How much the species adds to each ability. */
 type SpeciesFields = Partial<Pick<Character, 'species' | 'speciesAbilityChoices'>>
 
-export function speciesBonuses(
-    character: SpeciesFields,
-): Record<AbilityName, number> {
-    const bonuses = Object.fromEntries(ABILITIES.map((ability) => [ability, 0])) as Record<AbilityName, number>
-    if (character.species === 'human') {
-        for (const ability of ABILITIES) bonuses[ability] = 1
-    } else if (character.species === 'variant-human') {
-        for (const ability of new Set(character.speciesAbilityChoices ?? []).values()) bonuses[ability] = 1
-    }
-    return bonuses
+/** How much the species adds to one ability: 1 for a Human, 1 for each chosen ability of a Variant Human. */
+function bonusFor(character: SpeciesFields, ability: AbilityName): number {
+    if (character.species === 'human') return 1
+    if (character.species === 'variant-human') return character.speciesAbilityChoices?.includes(ability) ? 1 : 0
+    return 0
+}
+
+/** How much the species adds to each ability. */
+export function speciesBonuses(character: SpeciesFields): Record<AbilityName, number> {
+    return Object.fromEntries(ABILITIES.map((ability) => [ability, bonusFor(character, ability)])) as Record<AbilityName, number>
 }
 
 /** The six typed scores, before the species. */
@@ -43,7 +42,7 @@ export function baseScoresOf(character: Pick<Character, AbilityName>): Scores {
 /** One score as the sheet uses it: typed score plus the species bonus. */
 export function abilityScore<K extends AbilityName>(character: Pick<Character, K> & SpeciesFields, ability: K): number {
     const base = character[ability] as number
-    const bonus = speciesBonuses(character)[ability]
+    const bonus = bonusFor(character, ability)
     // A bonus cannot lift a score past 20, but it never lowers a score that is already higher.
     return bonus > 0 ? Math.max(base, Math.min(SCORE_CAP, base + bonus)) : base
 }

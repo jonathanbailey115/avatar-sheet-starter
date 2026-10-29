@@ -14,24 +14,24 @@ export async function saveCampaignNpc(
     if (!npc.revealed) {
         // Realtime never announces an update that makes a row unreadable to a player, so a player's screen would keep
         // showing an NPC the GM just hid. Delete events do reach everyone, so hide by deleting, then saving it hidden.
-        const removed = await client.from('campaign_npcs').delete().eq('campaign_id', campaignId).eq('id', npc.id)
+        const removed = await client.from('campaign_npcs').delete().eq('campaign_id', campaignId).eq('npc_id', npc.id)
         if (removed.error) throw friendlyError(removed.error)
     }
     const { error } = await client.from('campaign_npcs').upsert(
         {
-            id: npc.id,
+            npc_id: npc.id,
             campaign_id: campaignId,
             data: { character: npc.character },
             revealed: npc.revealed,
             updated_at: new Date().toISOString(),
         },
-        { onConflict: 'id' },
+        { onConflict: 'campaign_id,npc_id' },
     )
     if (error) throw friendlyError(error)
 }
 
 export async function deleteCampaignNpc(client: SupabaseClient, campaignId: string, npcId: string): Promise<void> {
-    const { error } = await client.from('campaign_npcs').delete().eq('campaign_id', campaignId).eq('id', npcId)
+    const { error } = await client.from('campaign_npcs').delete().eq('campaign_id', campaignId).eq('npc_id', npcId)
     if (error) throw friendlyError(error)
 }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
-import { ABILITIES, ABILITY_ABBREVIATIONS } from '../engine/abilities'
+import { ABILITIES, ABILITY_ABBREVIATIONS, ABILITY_NAMES } from '../engine/abilities'
 import {
     POINT_BUY_BUDGET,
     POINT_BUY_MIN,
@@ -14,15 +14,6 @@ import {
 import type { AbilityName, Character } from '../types/schema'
 
 export type Method = 'manual' | 'array' | 'pointbuy' | 'roll'
-
-const NAMES: Record<AbilityName, string> = {
-    strength: 'Strength',
-    dexterity: 'Dexterity',
-    constitution: 'Constitution',
-    intelligence: 'Intelligence',
-    wisdom: 'Wisdom',
-    charisma: 'Charisma',
-}
 
 interface Props {
     character: Character
@@ -63,7 +54,7 @@ function PoolAssigner({ pool, character, setCharacter }: Props & { pool: number[
                     const options = given[ability] ? [scores[ability], ...free].sort((a, b) => b - a) : free
                     return (
                         <label key={ability} className="ability-card">
-                            {NAMES[ability]}
+                            {ABILITY_NAMES[ability]}
                             <select value={given[ability] ? String(scores[ability]) : ''} onChange={(event) => assign(ability, event.target.value)}>
                                 <option value="">—</option>
                                 {[...new Set(options)].map((value) => (
@@ -141,7 +132,7 @@ function PointBuy({ character, setCharacter }: Props) {
                             <button
                                 className="secondary-button"
                                 type="button"
-                                aria-label={`Lower ${NAMES[ability]}`}
+                                aria-label={`Lower ${ABILITY_NAMES[ability]}`}
                                 disabled={!canStep(scores, ability, -1)}
                                 onClick={() => setScores(setCharacter, { [ability]: scores[ability] - 1 })}
                             >
@@ -151,7 +142,7 @@ function PointBuy({ character, setCharacter }: Props) {
                             <button
                                 className="secondary-button"
                                 type="button"
-                                aria-label={`Raise ${NAMES[ability]}`}
+                                aria-label={`Raise ${ABILITY_NAMES[ability]}`}
                                 disabled={!canStep(scores, ability, 1)}
                                 onClick={() => setScores(setCharacter, { [ability]: scores[ability] + 1 })}
                             >
@@ -171,7 +162,7 @@ function Manual({ character, setCharacter }: Props) {
         <div className="ability-grid">
             {ABILITIES.map((ability) => (
                 <label key={ability} className="ability-card">
-                    {NAMES[ability]}
+                    {ABILITY_NAMES[ability]}
                     <input
                         type="number"
                         min={1}

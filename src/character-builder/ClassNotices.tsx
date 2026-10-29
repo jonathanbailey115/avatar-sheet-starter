@@ -1,15 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react'
+import { ABILITY_NAMES } from '../engine/abilities'
 import { useCollection } from '../store/content'
-import type { AbilityName, Character, CharacterClass } from '../types/schema'
-
-const NAME: Record<AbilityName, string> = {
-    strength: 'Strength',
-    dexterity: 'Dexterity',
-    constitution: 'Constitution',
-    intelligence: 'Intelligence',
-    wisdom: 'Wisdom',
-    charisma: 'Charisma',
-}
+import type { Character, CharacterClass } from '../types/schema'
 
 interface Props {
     character: Character
@@ -33,10 +25,10 @@ export function ClassNotices({ character, setCharacter, selectedClass }: Props) 
                         onChange={(event) => setCharacter((current) => ({ ...current, abilityOption: event.target.checked }))}
                     />
                     <span>
-                        My GM allows {NAME[alternate]} instead of {NAME[selectedClass.bendingAbility]}
+                        My GM allows {ABILITY_NAMES[alternate]} instead of {ABILITY_NAMES[selectedClass.bendingAbility]}
                         <small className="muted">
                             {' '}
-                            gmbinder lets you use {NAME[alternate]} for your Bending Save DC, attack modifier and basic attack "with your GM’s
+                            gmbinder lets you use {ABILITY_NAMES[alternate]} for your Bending Save DC, attack modifier and basic attack "with your GM’s
                             permission".
                         </small>
                     </span>

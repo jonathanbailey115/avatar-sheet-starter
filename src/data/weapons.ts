@@ -31,7 +31,8 @@ export interface Weapon {
      * matched case-insensitively ignoring plurals and spaces.
      */
     groups: string[]
-    source: 'gmbinder' | 'Baseline 5e'
+    /** Where the numbers come from. 'Stand-in' is this app's own value where gmbinder gives none and 5e has none. */
+    source: 'gmbinder' | 'Baseline 5e' | 'Stand-in'
 }
 
 const w = (
@@ -43,7 +44,7 @@ const w = (
     damageType: string,
     properties: WeaponProperty[],
     groups: string[],
-    extra: Partial<Pick<Weapon, 'versatileDamage' | 'range' | 'noDamage' | 'note'>> = {},
+    extra: Partial<Pick<Weapon, 'versatileDamage' | 'range' | 'noDamage' | 'note' | 'source'>> = {},
 ): Weapon => ({ id, name, category, kind, damage, damageType, properties, groups, source: 'Baseline 5e', ...extra })
 
 /** Items gmbinder defines itself (Items section). */
@@ -112,10 +113,12 @@ export const weaponTable: Weapon[] = [
         note: 'A Large or smaller creature hit is restrained until freed (5e Net).',
     }),
     w('bolas', 'Bolas', 'martial', 'ranged', '1d4', 'bludgeoning', ['thrown'], ['Bolas'], {
+        source: 'Stand-in',
         range: '20/60',
         note: 'Stand-in stats; a Large or smaller target may be tripped or slowed at the GM’s call.',
     }),
     w('war-fan', 'War fan', 'martial', 'melee', '1d6', 'slashing', ['finesse', 'light'], ['War Fans'], {
+        source: 'Stand-in',
         note: 'Stand-in stats. Airbenders can use a war fan as an extension of their airbending (+10 ft range).',
     }),
     w('longbow', 'Longbow', 'martial', 'ranged', '1d8', 'piercing', ['ammunition', 'heavy', 'two-handed'], ['Bows', 'Longbows'], { range: '150/600' }),

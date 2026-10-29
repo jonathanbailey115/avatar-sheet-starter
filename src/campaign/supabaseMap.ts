@@ -30,14 +30,14 @@ export interface RollRow {
 }
 
 export interface NpcRow {
-    id: string
+    npc_id: string
     data: { character: Character }
     revealed: boolean
     updated_at: string
 }
 
 export const npcFromRow = (row: NpcRow): CampaignNpc => ({
-    id: row.id,
+    id: row.npc_id,
     character: row.data.character,
     revealed: row.revealed,
     updatedAt: Date.parse(row.updated_at),

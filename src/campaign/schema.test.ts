@@ -266,6 +266,22 @@ describe('NPCs (used by the NPC Studio)', () => {
 
         await expect(as(BOB, () => db.query(`insert into campaign_npcs (campaign_id, data) values ($1, '{}')`, [campaignId]))).rejects.toThrow(/row-level security/)
     })
+
+    it('one NPC can be in several campaigns, but only once in each', async () => {
+        const gm = '55555555-5555-5555-5555-555555555555'
+        const other = (await as(gm, () => rows<{ out_id: string }>(`select * from create_campaign('Second game', 'Gm')`)))[0].out_id
+        const put = (campaign: string) =>
+            db.query(`insert into campaign_npcs (campaign_id, npc_id, data) values ($1, 'shared-npc', '{}')`, [campaign])
+
+        await as(gm, () => put(campaignId))
+        await as(gm, () => put(other))
+        await expect(as(gm, () => put(campaignId))).rejects.toThrow(/duplicate key|unique/i)
+
+        const copies = await as(gm, () => rows<{ campaign_id: string }>(`select campaign_id from campaign_npcs where npc_id = 'shared-npc'`))
+        expect(copies.map((row) => row.campaign_id).sort()).toEqual([campaignId, other].sort())
+        await as(gm, () => db.query(`delete from campaign_npcs where npc_id = 'shared-npc'`))
+        await as(gm, () => db.query(`delete from campaigns where id = $1`, [other]))
+    })
 })
 
 describe('deleting a campaign', () => {

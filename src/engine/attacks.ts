@@ -162,7 +162,7 @@ export function getAttacks(basis: AttackBasis): AttackOption[] {
             id: `weapon:${equipped.id}`,
             name: weapon.name,
             kind: 'weapon',
-            source: weapon.source === 'gmbinder' ? 'gmbinder' : 'Baseline 5e',
+            source: weapon.source,
             attack: attackLine(basis, ability, proficient, bonus ? [{ label: 'Weapon bonus', value: bonus }] : []),
             damageDice: weapon.damage,
             damageFlat: weapon.noDamage ? 0 : modifier + bonus,

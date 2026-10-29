@@ -6,7 +6,9 @@
 //   copy is used only when there is no connection.
 // - Built files under /assets/ have a fingerprint in their name and never change, so once saved
 //   they are used straight away.
-const CACHE = 'avatar-dnd-v1'
+// The app registers this file as /sw.js?v=<build id>, so every deploy gets a new worker and a new cache; the
+// activate step below deletes the old cache together with every file it held.
+const CACHE = `avatar-dnd-${new URL(self.location.href).searchParams.get('v') ?? 'dev'}`
 
 self.addEventListener('install', () => {
     self.skipWaiting()

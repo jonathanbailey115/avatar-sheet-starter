@@ -38,16 +38,17 @@ export class SupabaseBackend implements CampaignBackend {
     readonly kind = 'supabase' as const
     readonly accounts = true
     private client: SupabaseClient
+    private stopListening: () => void = () => undefined
     private userId = ''
     private signedOutListener: (() => void) | null = null
 
     constructor(
         private url: string,
         private anonKey: string,
-        scope: SessionScope = currentScope(),
+        private scope: SessionScope = currentScope(),
         private factory: ClientFactory = createClient,
     ) {
-        this.client = this.build(scope)
+        this.client = this.build(this.scope)
     }
 
     private build(scope: SessionScope): SupabaseClient {
@@ -60,9 +61,10 @@ export class SupabaseBackend implements CampaignBackend {
             },
         })
         // A sign-out in another tab that shares this sign-in reaches us here.
-        client.auth.onAuthStateChange?.((event) => {
+        const subscription = client.auth.onAuthStateChange?.((event) => {
             if (event === 'SIGNED_OUT' && client === this.client) this.signedOutListener?.()
         })
+        this.stopListening = () => subscription?.data.subscription.unsubscribe()
         return client
     }
 
@@ -72,6 +74,12 @@ export class SupabaseBackend implements CampaignBackend {
 
     setSessionScope(scope: SessionScope): void {
         rememberScope(scope)
+        // Same scope: keep the client. A second one on the same sign-in would also refresh the single-use
+        // refresh token, and the two can invalidate each other.
+        if (scope === this.scope) return
+        this.stopListening()
+        void this.client.auth.stopAutoRefresh?.()
+        this.scope = scope
         this.client = this.build(scope)
     }
 
@@ -186,7 +194,7 @@ export class SupabaseBackend implements CampaignBackend {
                 .eq('campaign_id', campaignId)
                 .order('created_at', { ascending: false })
                 .limit(ROLL_LIMIT),
-            this.client.from('campaign_npcs').select('id, data, revealed, updated_at').eq('campaign_id', campaignId),
+            this.client.from('campaign_npcs').select('npc_id, data, revealed, updated_at').eq('campaign_id', campaignId),
         ])
 
         return {

@@ -1,16 +1,8 @@
+import { useEffect, useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
-import { ABILITIES, SKILLS } from '../engine/abilities'
+import { ABILITIES, ABILITY_NAMES, SKILLS } from '../engine/abilities'
 import type { AbilityName, Character, SkillName, Species } from '../types/schema'
-
-const LABELS: Record<AbilityName, string> = {
-    strength: 'Strength',
-    dexterity: 'Dexterity',
-    constitution: 'Constitution',
-    intelligence: 'Intelligence',
-    wisdom: 'Wisdom',
-    charisma: 'Charisma',
-}
 
 const OPTIONS: Array<{ id: Species; label: string; help: string }> = [
     { id: 'human', label: 'Human', help: 'Your ability scores each increase by 1.' },
@@ -21,6 +13,9 @@ const OPTIONS: Array<{ id: Species; label: string; help: string }> = [
     },
     { id: 'none', label: 'Scores are final', help: 'No species bonus. The scores you type are the scores used (older characters, and NPCs).' },
 ]
+
+type Choice = AbilityName | ''
+const toSlots = (choices: AbilityName[]): [Choice, Choice] => [choices[0] ?? '', choices[1] ?? '']
 
 interface Props {
     character: Character
@@ -37,18 +32,20 @@ export function SpeciesCard({ character, setCharacter }: Props) {
             speciesSkill: species === 'variant-human' ? current.speciesSkill : null,
         }))
 
-    const setChoice = (index: 0 | 1, value: AbilityName | '') =>
-        setCharacter((current) => {
-            const next: AbilityName[] = [current.speciesAbilityChoices[0], current.speciesAbilityChoices[1]].filter(
-                (item): item is AbilityName => Boolean(item),
-            )
-            const slots: Array<AbilityName | undefined> = [next[0], next[1]]
-            slots[index] = value === '' ? undefined : value
-            return { ...current, speciesAbilityChoices: slots.filter((item): item is AbilityName => Boolean(item)) }
-        })
+    // The two dropdowns keep fixed positions, so picking the second one first does not jump into the first.
+    const [[first, second], setSlots] = useState<[Choice, Choice]>(() => toSlots(character.speciesAbilityChoices))
+    const stored = character.speciesAbilityChoices.join(',')
+    useEffect(() => {
+        // Something else changed the choices (a species switch, an import): follow it.
+        if ([first, second].filter(Boolean).join(',') !== stored) setSlots(toSlots(character.speciesAbilityChoices))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [stored])
 
-    const first = character.speciesAbilityChoices[0] ?? ''
-    const second = character.speciesAbilityChoices[1] ?? ''
+    const setChoice = (index: 0 | 1, value: Choice) => {
+        const next: [Choice, Choice] = index === 0 ? [value, second] : [first, value]
+        setSlots(next)
+        setCharacter((current) => ({ ...current, speciesAbilityChoices: next.filter((item): item is AbilityName => item !== '') }))
+    }
 
     return (
         <SectionCard title="Species">
@@ -70,11 +67,11 @@ export function SpeciesCard({ character, setCharacter }: Props) {
                         return (
                             <label key={index}>
                                 +1 to ability {index + 1}
-                                <select value={index === 0 ? first : second} onChange={(event) => setChoice(index, event.target.value as AbilityName | '')}>
+                                <select value={index === 0 ? first : second} onChange={(event) => setChoice(index, event.target.value as Choice)}>
                                     <option value="">Choose…</option>
                                     {ABILITIES.filter((ability) => ability !== other).map((ability) => (
                                         <option key={ability} value={ability}>
-                                            {LABELS[ability]}
+                                            {ABILITY_NAMES[ability]}
                                         </option>
                                     ))}
                                 </select>

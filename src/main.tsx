@@ -12,7 +12,7 @@ startCloudSync()
 // Only the built app registers the service worker, so `npm run dev` never serves stale files.
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => undefined)
+    navigator.serviceWorker.register(`/sw.js?v=${__BUILD_ID__}`).catch(() => undefined)
   })
 }
 

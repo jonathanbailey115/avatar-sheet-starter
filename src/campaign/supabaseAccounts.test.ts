@@ -180,3 +180,35 @@ describe('losing the sign-in', () => {
         expect(told).toBe(1)
     })
 })
+
+describe('changing the sign-in scope', () => {
+    function counting() {
+        const clients: Array<{ stopped: boolean; unsubscribed: boolean }> = []
+        const factory = (() => {
+            const state = { stopped: false, unsubscribed: false }
+            clients.push(state)
+            return {
+                auth: {
+                    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => (state.unsubscribed = true) } } }),
+                    stopAutoRefresh: async () => (state.stopped = true),
+                },
+            }
+        }) as never
+        return { clients, backend: new SupabaseBackend('https://abc.supabase.co', 'key', 'device', factory) }
+    }
+
+    it('keeps the one client when the scope has not changed', () => {
+        const { clients, backend } = counting()
+        backend.setSessionScope('device')
+        backend.setSessionScope('device')
+        expect(clients).toHaveLength(1)
+    })
+
+    it('stops the old client completely before using a new one', () => {
+        const { clients, backend } = counting()
+        backend.setSessionScope('tab')
+        expect(clients).toHaveLength(2)
+        expect(clients[0]).toEqual({ stopped: true, unsubscribed: true })
+        expect(clients[1]).toEqual({ stopped: false, unsubscribed: false })
+    })
+})

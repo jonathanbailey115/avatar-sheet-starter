@@ -1,5 +1,8 @@
 /// <reference types="vite/client" />
 
+/** Set by vite.config.ts: a new value on every build. */
+declare const __BUILD_ID__: string
+
 interface ImportMetaEnv {
     /** Supabase project URL (Settings -> API). Leave unset to use local test mode. */
     readonly VITE_SUPABASE_URL?: string

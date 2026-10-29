@@ -209,3 +209,30 @@ describe('syncing two devices through an account', () => {
         if (result.downloaded === 1) expect(phone.lists.character[0].name).toBe('Old sheet')
     })
 })
+
+describe('when the account changes during a sync', () => {
+    it('stops before writing anything, so one account never uploads through another', async () => {
+        const account = new FakeAccount()
+        const laptop = device(account)
+        laptop.add('Ling', 1_000)
+        let current = true
+        const original = account.listSavedCharacters
+        // The player switches account while the list request is in flight.
+        account.listSavedCharacters = async () => {
+            const rows = await original()
+            current = false
+            return rows
+        }
+        const result = await runSync(ME, {
+            backend: account,
+            collections: [{ kind: 'character', all: () => laptop.lists.character, put: () => undefined, remove: () => undefined, subscribe: () => () => undefined }],
+            store: laptop.store,
+            content: realContent,
+            applying: () => undefined,
+            stillCurrent: () => current,
+        })
+        expect(result).toEqual({ downloaded: 0, removed: 0, uploaded: 0, unreadable: 0 })
+        expect(account.rows.size).toBe(0)
+        expect(account.saves).toBe(0)
+    })
+})
