@@ -22,14 +22,14 @@ export interface ClassEntry {
     primary: boolean
 }
 
-type LevelFields = Pick<Character, 'level' | 'classId' | 'subclassId' | 'extraClasses'>
+type LevelFields = Pick<Character, 'classId'> & Partial<Pick<Character, 'level' | 'subclassId' | 'extraClasses'>>
 
-export const totalExtraLevels = (character: Pick<Character, 'extraClasses'>): number =>
-    character.extraClasses.reduce((sum, extra) => sum + extra.level, 0)
+export const totalExtraLevels = (character: Partial<Pick<Character, 'extraClasses'>>): number =>
+    (character.extraClasses ?? []).reduce((sum, extra) => sum + extra.level, 0)
 
 /** Levels in the first class: whatever the extra classes do not use. */
-export const primaryLevelOf = (character: Pick<Character, 'level' | 'extraClasses'>): number =>
-    Math.max(0, character.level - totalExtraLevels(character))
+export const primaryLevelOf = (character: Partial<Pick<Character, 'level' | 'extraClasses'>>): number =>
+    Math.max(0, (character.level ?? MAX_CLASS_LEVEL) - totalExtraLevels(character))
 
 /** Every class entry, the first class first. */
 export function classEntries(character: LevelFields): ClassEntry[] {
@@ -43,7 +43,7 @@ export function classEntries(character: LevelFields): ClassEntry[] {
             primary: true,
         })
     }
-    for (const extra of character.extraClasses) {
+    for (const extra of character.extraClasses ?? []) {
         entries.push({
             key: extra.id,
             classId: extra.classId,
@@ -92,13 +92,39 @@ export function boonSlots(character: LevelFields, classes: CharacterClass[]): nu
     return classLevelsOf(character, classes).filter((item) => item.level >= MAX_CLASS_LEVEL).length
 }
 
-/** "Airbending 3 / Dragon Trainer 2", or "No class". */
+/** "Airbending 3 / Dragon Trainer 2" for several classes, just the name for one, or "No class". */
 export function classSummary(character: LevelFields, classes: CharacterClass[]): string {
-    const names = classEntries(character).map((entry) => {
-        const name = classes.find((item) => item.id === entry.classId)?.name ?? entry.classId
-        return `${name} ${entry.level}`
-    })
-    return names.length > 0 ? names.join(' / ') : 'No class'
+    const entries = classEntries(character)
+    const nameOf = (classId: string) => classes.find((item) => item.id === classId)?.name ?? classId
+    if (entries.length === 0) return 'No class'
+    if (entries.length === 1) return nameOf(entries[0].classId)
+    return entries.map((entry) => `${nameOf(entry.classId)} ${entry.level}`).join(' / ')
+}
+
+/** The levels and extra classes made legal: each class 1-20, total 20 unless the GM lifted the cap, first class at least 1. */
+export function fitLevels(
+    character: Pick<Character, 'classId' | 'level' | 'extraClasses' | 'levelCapLifted'>,
+): Pick<Character, 'level' | 'extraClasses'> {
+    const extras = character.classId
+        ? character.extraClasses.map((extra) => ({ ...extra, level: Math.min(MAX_CLASS_LEVEL, Math.max(1, Math.round(extra.level))) }))
+        : []
+    const sum = () => extras.reduce((total, extra) => total + extra.level, 0)
+
+    if (character.levelCapLifted) {
+        // The first class gets whatever the extras leave, between 1 and 20 levels.
+        const level = Math.min(sum() + MAX_CLASS_LEVEL, Math.max(sum() + 1, Math.round(character.level) || 1))
+        return { level, extraClasses: extras }
+    }
+
+    const level = Math.min(MAX_CLASS_LEVEL, Math.max(1, Math.round(character.level) || 1))
+    // Total level cannot pass 20 here: take levels back from the last extra class first, keeping one for the first class.
+    while (extras.length > 0 && sum() > level - 1) {
+        const last = extras[extras.length - 1]
+        const over = sum() - (level - 1)
+        if (last.level > over) last.level -= over
+        else extras.pop()
+    }
+    return { level, extraClasses: extras }
 }
 
 /** Abilities, any one of which must be 13 or more to multiclass into this class. */

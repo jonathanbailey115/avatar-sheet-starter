@@ -10,6 +10,7 @@ import {
     serializeCharacter,
     serializeLibrary,
 } from '../lib/characterIO'
+import { classSummary } from '../engine/classLevels'
 import { useCollection } from '../store/content'
 import { useLibraryStore } from '../store/library'
 import { EmptyState } from '../components/EmptyState'
@@ -122,9 +123,7 @@ export function LibraryScreen({ onPlay, onEdit }: { onPlay: () => void; onEdit: 
                 ) : (
                     <div className="npc-list">
                         {characters.map((character) => {
-                            const className =
-                                classes.find((item) => item.id === character.classId)?.name ??
-                                'No class'
+                            const className = classSummary(character, classes)
                             const lineageName =
                                 lineages.find((item) => item.id === character.lineageId)?.name ??
                                 'No lineage'

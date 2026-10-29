@@ -1,3 +1,4 @@
+import { bendingClassOf, classLevelsOf } from './classLevels'
 import { getGrantedFeatures } from './features'
 import type { RulesContent } from '../lib/normalize'
 import type { Character, Recharge, TechniqueLevel } from '../types/schema'
@@ -31,15 +32,16 @@ const SLOT_VALUE: SlotCounts = { Practiced: 1, Trained: 2, Mastered: 4 }
 const LEVEL_ORDER: TechniqueLevel[] = ['Mastered', 'Trained', 'Practiced']
 
 export function getResources(
-    character: Pick<Character, 'level' | 'classId' | 'subclassId' | 'lineageId' | 'backgroundId' | 'selectedFeatureIds'>,
+    character: Pick<Character, 'level' | 'classId' | 'subclassId' | 'extraClasses' | 'lineageId' | 'backgroundId' | 'selectedFeatureIds'>,
     content: Pick<RulesContent, 'classes' | 'subclasses' | 'lineages' | 'backgrounds' | 'features'>,
     granted = getGrantedFeatures(character, content),
 ): ResourceDef[] {
     const resources: ResourceDef[] = []
-    const characterClass = content.classes.find((item) => item.id === character.classId)
-    const levelIndex = Math.min(20, Math.max(1, character.level)) - 1
-
-    const slotRow = characterClass?.techniqueSlots?.[levelIndex]
+    const classLevels = classLevelsOf(character, content.classes)
+    // Technique slots come from the one bending class; every class's own pools come from its own level.
+    const bending = bendingClassOf(classLevels)
+    const characterClass = bending?.characterClass
+    const slotRow = characterClass?.techniqueSlots?.[Math.min(20, Math.max(1, bending?.level ?? 1)) - 1]
     if (characterClass && slotRow) {
         const counts: SlotCounts = {
             Practiced: slotRow.practiced,
@@ -61,18 +63,20 @@ export function getResources(
         }
     }
 
-    for (const pool of characterClass?.resources ?? []) {
-        const max = pool.maxByLevel[levelIndex] ?? 0
-        if (max > 0) {
-            resources.push({
-                id: `${characterClass?.id}:${pool.id}`,
-                name: pool.name,
-                kind: 'pool',
-                max,
-                recharge: pool.recharge,
-                origin: characterClass?.name ?? '',
-                description: pool.description,
-            })
+    for (const { characterClass: owner, level } of classLevels) {
+        for (const pool of owner.resources ?? []) {
+            const max = pool.maxByLevel[Math.min(20, Math.max(1, level)) - 1] ?? 0
+            if (max > 0) {
+                resources.push({
+                    id: `${owner.id}:${pool.id}`,
+                    name: pool.name,
+                    kind: 'pool',
+                    max,
+                    recharge: pool.recharge,
+                    origin: owner.name,
+                    description: pool.description,
+                })
+            }
         }
     }
 

@@ -9,12 +9,11 @@ import {
     castLevels,
     damageDiceAt,
     damageOptions,
-    learnBlocker,
-    limitStatus,
     parsePrerequisite,
     saveSummary,
     textAtLevel,
 } from './techniques'
+import { learnBlockerFor, limitStatusFor } from './classLevelsTestKit'
 
 const byId = (id: string) => techniques.find((technique) => technique.id === id)!
 const known = (techniqueId: string, level: KnownTechnique['level'] = 'Practiced'): KnownTechnique => ({
@@ -117,28 +116,28 @@ describe('prerequisites and limits', () => {
 
     it('Earthquake needs Trained Tremors and level 8 (rare)', () => {
         const quake = byId('earth-earthquake')
-        expect(learnBlocker(earthbender(5), quake, earthClass, techniques)).toMatch(/level 8/)
-        expect(learnBlocker(earthbender(8, [known('earth-tremors')]), quake, earthClass, techniques)).toMatch(/Trained Tremors/)
-        expect(learnBlocker(earthbender(8, [known('earth-tremors', 'Trained')]), quake, earthClass, techniques)).toBeNull()
+        expect(learnBlockerFor(earthbender(5), quake, earthClass, techniques)).toMatch(/level 8/)
+        expect(learnBlockerFor(earthbender(8, [known('earth-tremors')]), quake, earthClass, techniques)).toMatch(/Trained Tremors/)
+        expect(learnBlockerFor(earthbender(8, [known('earth-tremors', 'Trained')]), quake, earthClass, techniques)).toBeNull()
     })
 
     it('a level 1 bender knows 2 techniques (Benders table)', () => {
-        const status = limitStatus(earthbender(1), earthClass, techniques)
+        const status = limitStatusFor(earthbender(1), earthClass, techniques)
         expect(status).toHaveLength(1)
         expect(status[0].max).toBe(2)
     })
 
     it('blocks learning once the limit is reached, counting Universal techniques too', () => {
         const full = earthbender(1, [known('earth-tremors'), known('universal-fear')])
-        expect(learnBlocker(full, byId('earth-shatter'), earthClass, techniques)).toMatch(/full \(2\/2\)/)
+        expect(learnBlockerFor(full, byId('earth-shatter'), earthClass, techniques)).toMatch(/full \(2\/2\)/)
     })
 
     it('does not offer a technique twice', () => {
-        expect(learnBlocker(earthbender(3, [known('earth-tremors')]), byId('earth-tremors'), earthClass, techniques)).toBe('Already known')
+        expect(learnBlockerFor(earthbender(3, [known('earth-tremors')]), byId('earth-tremors'), earthClass, techniques)).toBe('Already known')
     })
 
     it('Weaponsmaster: 2 Universal (3 at 6th, 4 at 13th) and a Fighting technique every 3 levels', () => {
-        const at = (level: number) => limitStatus({ level, knownTechniques: [] }, weaponsmasterClass, techniques).map((s) => s.max)
+        const at = (level: number) => limitStatusFor({ level, knownTechniques: [] }, weaponsmasterClass, techniques).map((s) => s.max)
         expect(at(1)).toEqual([2, 1])
         expect(at(5)).toEqual([2, 2])
         expect(at(6)).toEqual([3, 2])

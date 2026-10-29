@@ -1,3 +1,4 @@
+import { fitLevels } from '../engine/classLevels'
 import { computeMaxHp, getHitDie } from '../engine/hitPoints'
 import { getResources, usedOf } from '../engine/resources'
 import {
@@ -86,6 +87,20 @@ export function normalizeCharacter(
         const subclass = content.subclasses.find((item) => item.id === next.subclassId)
         if (!subclass || subclass.classId !== next.classId) next.subclassId = undefined
     }
+
+    // Extra classes: only classes that exist, with a subclass of that class.
+    next.extraClasses = next.extraClasses
+        .filter((extra) => content.classes.some((item) => item.id === extra.classId))
+        .map((extra) => {
+            const subclass = content.subclasses.find((item) => item.id === extra.subclassId)
+            return subclass && subclass.classId === extra.classId ? extra : { ...extra, subclassId: undefined }
+        })
+    const fitted = fitLevels(next)
+    if (fitted.level !== next.level && options.reportRemovals) {
+        addNote(notes, 'The levels were above what the rules allow without a GM-approved level cap lift, so they were reduced.')
+    }
+    next.level = fitted.level
+    next.extraClasses = fitted.extraClasses
 
     next.selectedFeatureIds = next.selectedFeatureIds.filter((id) =>
         content.features.some((feature) => feature.id === id),

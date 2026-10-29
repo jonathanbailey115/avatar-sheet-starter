@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { characterClasses, characterSubclasses } from '../data'
+import { COMBAT_EXPERTISE_POINTS } from '../data/benderTable'
+import { realContent } from '../lib/testFixtures'
 import { createBlankCharacter } from '../lib/character'
 import type { Character, ExtraClass } from '../types/schema'
 import { getProficiencyBonus } from './abilities'
+import { getGrantedFeatures } from './features'
 import { computeMaxHp } from './hitPoints'
+import { getResources } from './resources'
+import { learnBlocker, limitStatus } from './techniques'
 import {
     boonSlots,
+    fitLevels,
     classEntries,
     classLevelsOf,
     classSummary,
@@ -67,6 +73,7 @@ describe('class entries', () => {
     it('summarises the classes', () => {
         const c = character({ level: 8, extraClasses: [extra({ level: 3 })] })
         expect(classSummary(c, characterClasses)).toBe('Earthbending 5 / Weaponsmaster 3')
+        expect(classSummary(character(), characterClasses)).toBe('Earthbending')
         expect(classSummary(character({ classId: '' }), characterClasses)).toBe('No class')
     })
 })
@@ -141,5 +148,60 @@ describe('multiclass warnings (never blocking)', () => {
             extraClasses: [extra({ classId: 'earthbending', subclassId: 'other', master: 'Master Yu', gmApproved: true })],
         })
         expect(warn(ready)).toEqual([])
+    })
+})
+
+describe('fitLevels', () => {
+    const fit = (overrides: Partial<Character>) => {
+        const result = fitLevels({ ...character(), ...overrides })
+        return { level: result.level, extras: result.extraClasses.map((item) => item.level) }
+    }
+
+    it('keeps total level 1-20 without the cap lift, shaving the last extra class first', () => {
+        expect(fit({ level: 25 })).toEqual({ level: 20, extras: [] })
+        expect(fit({ level: 20, extraClasses: [extra({ level: 15 }), extra({ id: 'x2', level: 10 })] })).toEqual({ level: 20, extras: [15, 4] })
+        expect(fit({ level: 10, extraClasses: [extra({ level: 15 })] })).toEqual({ level: 10, extras: [9] })
+        expect(fit({ level: 0 })).toEqual({ level: 1, extras: [] })
+    })
+
+    it('with the lift, each class goes up to 20 and the total follows', () => {
+        expect(fit({ levelCapLifted: true, level: 35, extraClasses: [extra({ level: 20 })] })).toEqual({ level: 35, extras: [20] })
+        expect(fit({ levelCapLifted: true, level: 70, extraClasses: [extra({ level: 20 })] })).toEqual({ level: 40, extras: [20] })
+        expect(fit({ levelCapLifted: true, level: 10, extraClasses: [extra({ level: 20 })] })).toEqual({ level: 21, extras: [20] })
+    })
+
+    it('extra classes need a first class', () => {
+        expect(fit({ classId: '', level: 5, extraClasses: [extra({ level: 3 })] })).toEqual({ level: 5, extras: [] })
+    })
+})
+
+describe('what each class gives a multiclass character', () => {
+    const multi = character({ level: 8, strength: 14, extraClasses: [extra({ classId: 'weaponsmaster', level: 3 })] })
+    const ids = getGrantedFeatures(multi, realContent).map((item) => item.feature.id)
+
+    it('each class gives features up to its own level, not the total level', () => {
+        // Earthbending 5: Extra Attack at 5. Weaponsmaster 3: Action Surge at 3, but not its Extra Attack at 5.
+        expect(ids).toContain('class-earthbending-extra-attack')
+        expect(ids).toContain('class-weaponsmaster-action-surge')
+        expect(ids).not.toContain('class-weaponsmaster-extra-attack')
+        expect(ids).not.toContain('class-earthbending-rare-techniques')
+    })
+
+    it('technique slots come from the bending class level and pools from each class level', () => {
+        const resources = getResources(multi, realContent)
+        const slots = resources.filter((item) => item.kind === 'slot')
+        expect(slots.length).toBeGreaterThan(0)
+        expect(slots.every((item) => item.origin === 'Earthbending')).toBe(true)
+        const earthRow = characterClasses.find((item) => item.id === 'earthbending')!.techniqueSlots![4]
+        expect(resources.find((item) => item.id === 'slots:Practiced')?.max).toBe(earthRow.practiced)
+        expect(resources.find((item) => item.id === 'weaponsmaster:combat-expertise')?.max).toBe(COMBAT_EXPERTISE_POINTS[2])
+    })
+
+    it('technique limits add up across classes and rare techniques follow the bending class level', () => {
+        const levels = classLevelsOf(multi, characterClasses)
+        const kinds = limitStatus(multi, levels, realContent.techniques).map((item) => item.limit.id)
+        expect(kinds).toEqual(['known', 'universal', 'fighting'])
+        const rare = realContent.techniques.find((item) => item.rare && item.element === 'Earth' && !item.prerequisite)!
+        expect(learnBlocker(multi, rare, levels, realContent.techniques)).toMatch(/level 8/)
     })
 })

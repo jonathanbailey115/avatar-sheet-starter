@@ -1,3 +1,4 @@
+import { classLevelsOf } from '../engine/classLevels'
 import { disciplinesOf, learnBlocker, limitStatus } from '../engine/techniques'
 import { DEFAULT_TRAINING } from '../types/schema'
 import type { Character, KnownTechnique, TechniqueLevel } from '../types/schema'
@@ -18,15 +19,16 @@ export function learnTechniques(character: Character, content: RulesContent, rng
     let current: Character = { ...character, knownTechniques: [] }
     if (!characterClass) return current
     const disciplines = disciplinesOf(character, content.subclasses, content.features)
+    const classLevels = classLevelsOf(character, content.classes)
 
     for (let guard = 0; guard < 60; guard += 1) {
-        const open = limitStatus(current, characterClass, content.techniques).filter((status) => status.used < status.max)
+        const open = limitStatus(current, classLevels, content.techniques).filter((status) => status.used < status.max)
         if (open.length === 0) break
 
         const options = shuffle(content.techniques, rng).filter(
             (technique) =>
                 open.some((status) => status.limit.kinds.includes(technique.element)) &&
-                learnBlocker(current, technique, characterClass, content.techniques, disciplines) === null,
+                learnBlocker(current, technique, classLevels, content.techniques, disciplines) === null,
         )
         const pick = options[0]
         if (!pick) break

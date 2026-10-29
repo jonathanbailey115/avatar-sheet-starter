@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import SectionCard from '../components/SectionCard'
 import { getBendingElement } from '../engine/bending'
+import { bendingClassOf, classLevelsOf } from '../engine/classLevels'
 import { disciplinesOf, learnBlocker, limitStatus } from '../engine/techniques'
 import { masteredCount, masteredLimit } from '../engine/training'
 import { useCollection } from '../store/content'
@@ -31,7 +32,10 @@ export function BuilderTechniquesPanel({
     const features = useCollection('features')
     const selectedClass = editableClasses.find((item) => item.id === character.classId)
     const element = getBendingElement(character, editableClasses)
-    const limits = limitStatus(character, selectedClass, editableTechniques)
+    const classLevels = classLevelsOf(character, editableClasses)
+    const bending = bendingClassOf(classLevels)
+    const bendingLevel = bending?.level ?? character.level
+    const limits = limitStatus(character, classLevels, editableTechniques)
 
     // A class only offers the kinds its limits mention; custom techniques for the bender's element also show.
     const allowedKinds = new Set(limits.flatMap((entry) => entry.limit.kinds))
@@ -74,7 +78,8 @@ export function BuilderTechniquesPanel({
         }))
 
     // The class's own element first, then Universal, then Fighting techniques.
-    const kinds = [element, 'Universal', 'Fighting'].filter((kind): kind is string => Boolean(kind))
+    const elements = [...new Set(classLevels.map((item) => item.characterClass.element))]
+    const kinds = [...elements, 'Universal', 'Fighting'].filter((kind): kind is string => Boolean(kind))
     const groups = kinds
         .map((kind) => ({
             kind,
@@ -84,11 +89,14 @@ export function BuilderTechniquesPanel({
         .filter((group) => group.items.length > 0)
 
     // What the class table gives at this level, next to what the character actually knows.
-    const levelIndex = Math.min(20, Math.max(1, character.level)) - 1
-    const slots = selectedClass?.techniqueSlots?.[levelIndex]
+    const slots = bending?.characterClass.techniqueSlots?.[Math.min(20, Math.max(1, bendingLevel)) - 1]
     const masteredMax = masteredLimit(slots)
     const capReached = masteredCount(character) >= masteredMax
-    const pools = (selectedClass?.resources ?? []).filter((pool) => pool.id.endsWith('universal-slots'))
+    const pools = classLevels.flatMap(({ characterClass, level }) =>
+        (characterClass.resources ?? [])
+            .filter((pool) => pool.id.endsWith('universal-slots'))
+            .map((pool) => ({ pool, max: pool.maxByLevel[Math.min(20, Math.max(1, level)) - 1] })),
+    )
     const knownAt = (level: TechniqueLevel) => character.knownTechniques.filter((known) => known.level === level).length
     const overSlots = slots
         ? ([['Trained', slots.trained], ['Mastered', slots.mastered]] as const).filter(([level, max]) => knownAt(level) > max)
@@ -118,13 +126,13 @@ export function BuilderTechniquesPanel({
                     ))}
                     {slots && (
                         <li>
-                            <strong>Technique slots at level {character.level}:</strong> Practiced {slots.practiced} · Trained {slots.trained} ·
+                            <strong>Technique slots at level {bendingLevel}:</strong> Practiced {slots.practiced} · Trained {slots.trained} ·
                             Mastered {slots.mastered}
                         </li>
                     )}
-                    {pools.map((pool) => (
+                    {pools.map(({ pool, max }) => (
                         <li key={pool.id}>
-                            <strong>{pool.name}:</strong> {pool.maxByLevel[levelIndex]}
+                            <strong>{pool.name}:</strong> {max}
                         </li>
                     ))}
                     <li>
@@ -140,7 +148,7 @@ export function BuilderTechniquesPanel({
                     <li>
                         <strong>Mastered:</strong> {masteredCount(character)} of {masteredMax}
                     </li>
-                    {character.level < 8 && (
+                    {bendingLevel < 8 && (
                         <li className="muted">Rare techniques (marked *) unlock at level 8.</li>
                     )}
                 </ul>
@@ -166,7 +174,7 @@ export function BuilderTechniquesPanel({
                                     const level = levelOf(technique.id)
                                     const blocker = level
                                         ? null
-                                        : learnBlocker(character, technique, selectedClass, editableTechniques, disciplines)
+                                        : learnBlocker(character, technique, classLevels, editableTechniques, disciplines)
 
                                     return (
                                         <div key={technique.id} className="technique-item">

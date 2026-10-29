@@ -1,4 +1,6 @@
 import { ABILITY_NAMES } from './abilities'
+import { bendingClassOf, classEntries } from './classLevels'
+import type { ClassLevel } from './classLevels'
 import type {
     AbilityName,
     Character,
@@ -92,14 +94,16 @@ export function textAtLevel(technique: Technique, level: TechniqueLevel): string
     return technique.levelText?.[level] || technique.description
 }
 
-/** Sub-bendings the character's subclass lets them use. */
+/** Sub-bendings the character's subclasses (one per class entry) let them use. */
 export function disciplinesOf(
-    character: Pick<Character, 'subclassId' | 'level'> & Partial<Pick<Character, 'selectedFeatureIds'>>,
+    character: Pick<Character, 'classId' | 'subclassId' | 'level'> & Partial<Pick<Character, 'selectedFeatureIds' | 'extraClasses'>>,
     subclasses: CharacterSubclass[],
     features: Feature[] = [],
 ): TechniqueDiscipline[] {
-    const subclass = subclasses.find((item) => item.id === character.subclassId)
-    const fromSubclass = subclass && subclass.unlockLevel <= character.level ? (subclass.disciplines ?? []) : []
+    const fromSubclass = classEntries(character).flatMap((entry) => {
+        const subclass = subclasses.find((item) => item.id === entry.subclassId)
+        return subclass && subclass.unlockLevel <= entry.level ? (subclass.disciplines ?? []) : []
+    })
     const fromFeats = features
         .filter((feature) => feature.grantsDiscipline && (character.selectedFeatureIds ?? []).includes(feature.id))
         .map((feature) => feature.grantsDiscipline as TechniqueDiscipline)
@@ -130,14 +134,16 @@ export function parsePrerequisite(technique: Technique, all: Technique[]): Prere
 export function learnBlocker(
     character: Pick<Character, 'level' | 'knownTechniques'>,
     technique: Technique,
-    characterClass: CharacterClass | undefined,
+    classLevels: ClassLevel[],
     all: Technique[],
     /** Sub-bendings the character's subclass grants (see disciplinesOf). */
     disciplines: TechniqueDiscipline[] = [],
 ): string | null {
     if (character.knownTechniques.some((known) => known.techniqueId === technique.id)) return 'Already known'
 
-    if (technique.rare && character.level < 8) return 'Rare techniques unlock at level 8'
+    // Rare techniques unlock at level 8 of the bending class (of the total level when there is none).
+    const rareLevel = bendingClassOf(classLevels)?.level ?? character.level
+    if (technique.rare && rareLevel < 8) return 'Rare techniques unlock at level 8'
 
     if (technique.discipline && !disciplines.includes(technique.discipline)) {
         return `Needs a path or principle that grants ${technique.discipline}`
@@ -153,10 +159,12 @@ export function learnBlocker(
         }
     }
 
-    const status = limitStatus(character, characterClass, all).find((entry) =>
-        entry.limit.kinds.includes(technique.element),
-    )
-    if (status && status.used >= status.max) return `${status.limit.label} full (${status.used}/${status.max})`
+    // Several classes can each count this kind; it only counts as full when every one of them is full.
+    const statuses = limitStatus(character, classLevels, all).filter((entry) => entry.limit.kinds.includes(technique.element))
+    const full = statuses.find((entry) => entry.used >= entry.max)
+    if (full && statuses.every((entry) => entry.used >= entry.max)) {
+        return `${full.limit.label} full (${full.used}/${full.max})`
+    }
 
     return null
 }
@@ -169,20 +177,21 @@ export interface LimitStatus {
 
 /** How many techniques of each counted kind the character knows versus the class allows. */
 export function limitStatus(
-    character: Pick<Character, 'level' | 'knownTechniques'>,
-    characterClass: CharacterClass | undefined,
+    character: Pick<Character, 'knownTechniques'>,
+    classLevels: ClassLevel[],
     all: Technique[],
 ): LimitStatus[] {
-    const levelIndex = Math.min(20, Math.max(1, character.level)) - 1
     const kindOf = (techniqueId: string): TechniqueElement | undefined =>
         all.find((technique) => technique.id === techniqueId)?.element
 
-    return (characterClass?.techniqueLimits ?? []).map((limit) => ({
-        limit,
-        max: limit.maxByLevel[levelIndex] ?? 0,
-        used: character.knownTechniques.filter((known) => {
-            const kind = kindOf(known.techniqueId)
-            return kind !== undefined && limit.kinds.includes(kind)
-        }).length,
-    }))
+    return classLevels.flatMap(({ characterClass, level }) =>
+        (characterClass.techniqueLimits ?? []).map((limit) => ({
+            limit,
+            max: limit.maxByLevel[Math.min(20, Math.max(1, level)) - 1] ?? 0,
+            used: character.knownTechniques.filter((known) => {
+                const kind = kindOf(known.techniqueId)
+                return kind !== undefined && limit.kinds.includes(kind)
+            }).length,
+        })),
+    )
 }

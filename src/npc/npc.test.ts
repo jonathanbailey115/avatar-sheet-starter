@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { NATION_ELEMENT } from '../engine/bending'
-import { limitStatus } from '../engine/techniques'
+import { limitStatusFor } from '../engine/classLevelsTestKit'
 import { realContent } from '../lib/testFixtures'
 import { npcTemplates } from '../data/npcTemplates'
 import { primaryAbility } from './abilities'
@@ -41,7 +41,7 @@ describe('quick-create', () => {
         for (let seed = 1; seed <= 30; seed += 1) {
             const { character } = generateNpc({ ...none, level: 1 + (seed % 20) }, guard, seeded(seed))
             const cls = realContent.classes.find((c) => c.id === character.classId)
-            for (const status of limitStatus(character, cls, realContent.techniques)) expect(status.used).toBeLessThanOrEqual(status.max)
+            for (const status of limitStatusFor(character, cls, realContent.techniques)) expect(status.used).toBeLessThanOrEqual(status.max)
         }
     })
 
@@ -83,7 +83,7 @@ describe('every class', () => {
             expect(character.classId).toBe(classId)
             const cls = realContent.classes.find((item) => item.id === classId)
             if (cls?.element) expect(NATION_ELEMENT[character.nation]).toBe(cls.element)
-            for (const status of limitStatus(character, cls, realContent.techniques)) expect(status.used).toBeLessThanOrEqual(status.max)
+            for (const status of limitStatusFor(character, cls, realContent.techniques)) expect(status.used).toBeLessThanOrEqual(status.max)
             expect(buildStatBlock(character, realContent).hp).toBeGreaterThan(0)
         }
     })

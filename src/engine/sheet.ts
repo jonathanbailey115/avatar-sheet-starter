@@ -14,6 +14,7 @@ import type { EffectContext } from './effects'
 import type { StatLine } from './statLine'
 
 export type { StatLine }
+import { bendingClassOf, classLevelsOf } from './classLevels'
 import { getGrantedFeatures } from './features'
 import type { GrantedFeature } from './features'
 import { getAttacks, getBendingSummary } from './attacks'
@@ -135,6 +136,7 @@ export function computeSheet(character: Character, baseContent: RulesContent): S
         roll: rollModifiersFor(effects, ['ac'], context),
     }
 
+    const classLevels = classLevelsOf(character, content.classes)
     const resources: ResourceView[] = getResources(character, content, features).map((def) => ({
         ...def,
         used: usedOf(character, def),
@@ -143,7 +145,8 @@ export function computeSheet(character: Character, baseContent: RulesContent): S
 
     const attackBasis = {
         character,
-        characterClass: content.classes.find((item) => item.id === character.classId),
+        // The bending class gives the Save DC and basic attack; without one, the first class.
+        characterClass: (bendingClassOf(classLevels) ?? classLevels[0])?.characterClass,
         lineage,
         effects,
         context,

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { formatModifier } from '../engine/abilities'
+import { classEntries, classSummary } from '../engine/classLevels'
 import { computeSheet } from '../engine/sheet'
 import type { Sheet, StatLine } from '../engine/sheet'
 import type { RulesContent } from '../lib/normalize'
@@ -49,13 +50,15 @@ function PlaySheet({ character, sheet, content, change, onEdit }: PlaySheetProps
     const { rollCheck } = useRoll()
     const [pane, setPane] = useState<Pane>('stats')
 
-    const characterClass = content.classes.find((item) => item.id === character.classId)
     const lineage = content.lineages.find((item) => item.id === character.lineageId)
     const element = elementTheme(character, content.classes)
-    const subclass = content.subclasses.find((item) => item.id === character.subclassId)
+    const subclassNames = classEntries(character)
+        .map((entry) => content.subclasses.find((item) => item.id === entry.subclassId)?.name)
+        .filter(Boolean)
+        .join(', ')
     const subtitle = [
-        `Level ${character.level} ${characterClass?.name ?? 'No class'}`,
-        subclass?.name,
+        `Level ${character.level} ${classSummary(character, content.classes)}`,
+        subclassNames,
         lineage?.name ?? character.nation,
     ]
         .filter(Boolean)
@@ -171,7 +174,7 @@ function PlaySheet({ character, sheet, content, change, onEdit }: PlaySheetProps
                         <TechniquesPanel
                             character={character}
                             sheet={sheet}
-                            characterClass={characterClass}
+                            classes={content.classes}
                             techniques={content.techniques}
                             onChange={change}
                         />

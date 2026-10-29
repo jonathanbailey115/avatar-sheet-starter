@@ -1,5 +1,6 @@
 import type { Character, Feature } from '../types/schema'
 import type { RulesContent } from '../lib/normalize'
+import { classEntries, classLevelsOf } from './classLevels'
 
 export interface GrantedFeature {
     feature: Feature
@@ -11,7 +12,7 @@ export interface GrantedFeature {
 export function getGrantedFeatures(
     character: Pick<
         Character,
-        'level' | 'classId' | 'subclassId' | 'lineageId' | 'backgroundId' | 'selectedFeatureIds'
+        'level' | 'classId' | 'subclassId' | 'extraClasses' | 'lineageId' | 'backgroundId' | 'selectedFeatureIds'
     >,
     content: Pick<
         RulesContent,
@@ -21,21 +22,25 @@ export function getGrantedFeatures(
     const byId = new Map(content.features.map((feature) => [feature.id, feature]))
     const granted = new Map<string, GrantedFeature>()
 
-    const add = (featureId: string, origin: string, minLevel = 1) => {
+    /** `available` is the level that counts: a class's own level for its features, the total level otherwise. */
+    const add = (featureId: string, origin: string, minLevel = 1, available = character.level) => {
         const feature = byId.get(featureId)
         if (!feature || granted.has(featureId)) return
-        if (minLevel > character.level || feature.levelRequirement > character.level) return
+        if (minLevel > available || feature.levelRequirement > available) return
         granted.set(featureId, { feature, origin })
     }
 
-    const characterClass = content.classes.find((item) => item.id === character.classId)
-    for (const grant of characterClass?.featureGrants ?? []) {
-        add(grant.featureId, `${characterClass?.name} ${grant.level}`, grant.level)
+    // Each class gives its features up to its effective level; each subclass up to the levels put into it.
+    for (const { characterClass, level } of classLevelsOf(character, content.classes)) {
+        for (const grant of characterClass.featureGrants) {
+            add(grant.featureId, `${characterClass.name} ${grant.level}`, grant.level, level)
+        }
     }
-
-    const subclass = content.subclasses.find((item) => item.id === character.subclassId)
-    for (const grant of subclass?.featureGrants ?? []) {
-        add(grant.featureId, `${subclass?.name} ${grant.level}`, grant.level)
+    for (const entry of classEntries(character)) {
+        const subclass = content.subclasses.find((item) => item.id === entry.subclassId && item.classId === entry.classId)
+        for (const grant of subclass?.featureGrants ?? []) {
+            add(grant.featureId, `${subclass?.name} ${grant.level}`, grant.level, entry.level)
+        }
     }
 
     const lineage = content.lineages.find((item) => item.id === character.lineageId)

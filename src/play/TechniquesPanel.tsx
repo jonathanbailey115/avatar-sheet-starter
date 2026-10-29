@@ -1,4 +1,5 @@
 import SectionCard from '../components/SectionCard'
+import { classLevelsOf } from '../engine/classLevels'
 import { limitStatus } from '../engine/techniques'
 import type { Sheet } from '../engine/sheet'
 import { trainingSlotsUsed } from '../engine/training'
@@ -9,13 +10,13 @@ import { TechniqueCard } from './TechniqueCard'
 type TechniquesPanelProps = {
     character: Character
     sheet: Sheet
-    characterClass: CharacterClass | undefined
+    classes: CharacterClass[]
     techniques: Technique[]
     onChange: (update: (current: Character) => Character) => void
 }
 
-export function TechniquesPanel({ character, sheet, characterClass, techniques, onChange }: TechniquesPanelProps) {
-    const limits = limitStatus(character, characterClass, techniques)
+export function TechniquesPanel({ character, sheet, classes, techniques, onChange }: TechniquesPanelProps) {
+    const limits = limitStatus(character, classLevelsOf(character, classes), techniques)
     const shown = character.knownTechniques.flatMap((known) => {
         const technique = techniques.find((item) => item.id === known.techniqueId)
         return technique ? [{ known, technique }] : []

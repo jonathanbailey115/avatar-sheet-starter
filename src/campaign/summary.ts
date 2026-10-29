@@ -1,3 +1,4 @@
+import { classEntries } from '../engine/classLevels'
 import type { Sheet } from '../engine/sheet'
 import type { RulesContent } from '../lib/normalize'
 import type { Character } from '../types/schema'
@@ -8,7 +9,10 @@ export function summarizeCharacter(character: Character, sheet: Sheet, content: 
     return {
         characterId: character.id,
         name: character.name.trim() || 'Unnamed character',
-        className: content.classes.find((item) => item.id === character.classId)?.name ?? 'No class',
+        className:
+            classEntries(character)
+                .map((entry) => content.classes.find((item) => item.id === entry.classId)?.name ?? 'No class')
+                .join(' / ') || 'No class',
         lineageName: content.lineages.find((item) => item.id === character.lineageId)?.name ?? character.nation,
         level: character.level,
         hp: sheet.currentHp,

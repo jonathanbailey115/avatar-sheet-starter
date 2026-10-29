@@ -20,6 +20,7 @@ export function elementTheme(
 
 /** The same theme looked up by class name, for places that only have the name (the party board). */
 export function elementThemeForClassName(className: string, classes: CharacterClass[]): ElementTheme {
-    const found = classes.find((item) => item.name === className)
+    // Several classes arrive as "Airbending / Dragon Trainer"; the first names the character's accent.
+    const found = classes.find((item) => item.name === className.split(' / ')[0])
     return found ? elementTheme({ classId: found.id }, classes) : 'neutral'
 }

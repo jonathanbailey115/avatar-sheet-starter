@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { computeSheet } from '../engine/sheet'
-import { disciplinesOf, learnBlocker } from '../engine/techniques'
+import { learnBlockerFor } from '../engine/classLevelsTestKit'
+import { disciplinesOf } from '../engine/techniques'
 import { NATION_ELEMENT } from '../engine/bending'
 import { createBlankCharacter } from '../lib/character'
 import { realContent } from '../lib/testFixtures'
@@ -73,7 +74,7 @@ describe('sub-bending disciplines', () => {
         const plain = build('waterbending', 'Water Tribe', 5, { subclassId: 'path-of-the-waterbender' })
         const blood = build('waterbending', 'Water Tribe', 5, { subclassId: 'path-of-the-bloodbender' })
         const learnable = (c: Character) =>
-            learnBlocker(c, { ...bloodTechnique, rare: false, prerequisite: undefined }, water, realContent.techniques, disciplinesOf(c, realContent.subclasses))
+            learnBlockerFor(c, { ...bloodTechnique, rare: false, prerequisite: undefined }, water, realContent.techniques, disciplinesOf(c, realContent.subclasses))
         expect(learnable(plain)).toMatch(/Bloodbending/)
         expect(learnable(blood)).toBeNull()
     })
@@ -81,14 +82,14 @@ describe('sub-bending disciplines', () => {
     it('the gate only opens once the subclass is unlocked', () => {
         const early = build('firebending', 'Fire Nation', 2, { subclassId: 'principles-of-the-combustionbender' })
         expect(disciplinesOf(early, realContent.subclasses)).toEqual([])
-        expect(learnBlocker(early, { ...combustion, rare: false, prerequisite: undefined }, fire, realContent.techniques, [])).toMatch(/Combustionbending/)
+        expect(learnBlockerFor(early, { ...combustion, rare: false, prerequisite: undefined }, fire, realContent.techniques, [])).toMatch(/Combustionbending/)
     })
 
     it('a prerequisite written with two names still finds its technique (Water Whip / Water Rope)', () => {
         const wall = realContent.techniques.find((item) => item.prerequisite?.includes('Water Whip'))
         if (!wall) return
         const character = build('waterbending', 'Water Tribe', 9)
-        expect(learnBlocker(character, wall, water, realContent.techniques)).toMatch(/Requires .*Water Whip/)
+        expect(learnBlockerFor(character, wall, water, realContent.techniques)).toMatch(/Requires .*Water Whip/)
     })
 })
 
@@ -252,7 +253,7 @@ describe('Lightningbending', () => {
         const withFeat = build('firebending', 'Fire Nation', 9, { selectedFeatureIds: ['feat-lightning-generation'] })
         const blocker = (character: Character) => {
             const technique = { ...lightning.find((item) => item.name === 'Stunning Strike')!, rare: false }
-            return learnBlocker(character, technique, fire, realContent.techniques, disciplinesOf(character, realContent.subclasses, realContent.features))
+            return learnBlockerFor(character, technique, fire, realContent.techniques, disciplinesOf(character, realContent.subclasses, realContent.features))
         }
         expect(blocker(without)).toMatch(/Lightningbending/)
         expect(blocker(withFeat)).toBeNull()
